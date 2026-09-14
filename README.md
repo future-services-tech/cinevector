@@ -113,7 +113,7 @@ dotnet run --project src/CineVector.Api
 ## 5. Avvio del frontend
 
 ```bash
-cd src/moviecatalog-web
+cd src/cinevector-web
 cp .env.example .env
 npm install
 npm run dev
@@ -171,7 +171,7 @@ src/
 ├── CineVector.Worker/         Background worker (crawler/embedding, dalla Fase 3)
 ├── CineVector.Search/         Motore di ricerca ibrido (dalla Fase 2)
 ├── CineVector.Contracts/      DTO condivisi tra Application e Api
-└── moviecatalog-web/            Frontend React + Vite + TypeScript
+└── cinevector-web/            Frontend React + Vite + TypeScript
 
 tests/
 ├── CineVector.UnitTests/

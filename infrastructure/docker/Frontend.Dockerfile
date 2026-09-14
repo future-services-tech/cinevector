@@ -1,10 +1,10 @@
 FROM node:22-alpine AS build
 WORKDIR /app
 
-COPY src/moviecatalog-web/package.json src/moviecatalog-web/package-lock.json ./
+COPY src/cinevector-web/package.json src/cinevector-web/package-lock.json ./
 RUN npm ci
 
-COPY src/moviecatalog-web/ ./
+COPY src/cinevector-web/ ./
 ARG VITE_API_BASE_URL=http://localhost:5080
 ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 RUN npm run build
