@@ -2,7 +2,7 @@
 
 Catalogo cinematografico e motore di ricerca avanzata sui metadati dei film (titolo, trama, cast, regia, generi, poster). Nessuna funzionalità di streaming, download o estrazione di URL video: il link "Apri sulla piattaforma" porta sempre e solo alla pagina pubblica della fonte (es. TMDb).
 
-Stato attuale: **Fasi 1-5 completate** (solution .NET 10, dominio, PostgreSQL/EF Core, CRUD film, full-text search con filtri strutturati e facet, frontend React con ricerca, crawler TMDb con deduplicazione e tracciamento CrawlJob, embedding semantici con pgvector/HNSW, ranking ibrido a tre segnali, ricerca in linguaggio naturale, film simili). Le fasi successive (Redis/worker, dashboard admin, sicurezza/osservabilità di produzione) sono descritte in fondo a questo file.
+Stato attuale: **Fasi 1-5 completate** (solution .NET 10, dominio, PostgreSQL/EF Core, CRUD film, full-text search con filtri strutturati e facet, frontend React con ricerca, crawler TMDb con deduplicazione, tracciamento CrawlJob e gestione del ciclo di vita dei job (pausa/stop/eliminazione, rilevamento job orfani), embedding semantici con pgvector/HNSW, ranking ibrido a tre segnali, ricerca in linguaggio naturale, film simili). Le fasi successive (Redis/worker, sicurezza/osservabilità di produzione) sono descritte in fondo a questo file.
 
 ## Prerequisiti
 
@@ -13,7 +13,7 @@ Stato attuale: **Fasi 1-5 completate** (solution .NET 10, dominio, PostgreSQL/EF
 
 ## 0. Crawler TMDb (Fase 3)
 
-Il crawler usa l'API ufficiale TMDb (mai scraping HTML), tramite `TmdbSourceAdapter` (`src/CineVector.Infrastructure/Sources/Tmdb`). Per usarlo:
+Il crawler usa l'API ufficiale TMDb (mai scraping HTML), tramite `TmdbSourceAdapter` (`src/CineVector.Infrastructure/Sources/Tmdb`). Il crawl gira in background nel processo `CineVector.Api` stesso (fire-and-forget su un `Task.Run` per richiesta di avvio), non nel Worker. Per usarlo:
 
 1. Ottieni un **Read Access Token v4** da https://www.themoviedb.org/settings/api e mettilo in `.env` come `TMDB_API_KEY`.
 2. Crea la fonte (una sola volta):
@@ -21,18 +21,24 @@ Il crawler usa l'API ufficiale TMDb (mai scraping HTML), tramite `TmdbSourceAdap
    curl -X POST http://localhost:5080/api/sources -H "Content-Type: application/json" \
      -d '{"name":"TMDb","baseUrl":"https://www.themoviedb.org","enabled":true,"adapterType":"Tmdb"}'
    ```
-3. Avvia un crawl:
+3. Avvia e gestisci un crawl:
    ```bash
-   curl -X POST http://localhost:5080/api/crawl/{sourceId}/start
-   curl http://localhost:5080/api/crawl/jobs/{jobId}   # stato/avanzamento
-   curl -X POST http://localhost:5080/api/crawl/{sourceId}/cancel
+   curl -X POST http://localhost:5080/api/crawl/{sourceId}/start -d '{"mode":"Popular"}'
+   curl http://localhost:5080/api/crawl/jobs                    # job recenti (con isOrphaned)
+   curl http://localhost:5080/api/crawl/jobs/{jobId}             # stato/avanzamento di un job
+   curl -X POST http://localhost:5080/api/crawl/jobs/{jobId}/pause
+   curl -X POST http://localhost:5080/api/crawl/jobs/{jobId}/resume
+   curl -X POST http://localhost:5080/api/crawl/jobs/{jobId}/cancel
+   curl -X DELETE http://localhost:5080/api/crawl/jobs/{jobId}
    ```
 
 Note tecniche:
 - `Tmdb:BaseUrl` in `appsettings.json` (mai `Source.BaseUrl`, modificabile da un admin) è l'unico endpoint contattato: evita che una fonte manomessa diventi un vettore SSRF.
 - `Tmdb:DiscoverPages` limita quante pagine di `/discover/movie` scaricare per esecuzione (20 film/pagina).
 - Deduplicazione: chiave primaria (SourceId, ExternalId); un film esistente viene riscritto solo se l'hash dei metadati cambia (altrimenti si aggiorna solo `LastSeenAt`). Un titolo+anno coincidente su un'altra fonte viene loggato come possibile duplicato, mai unito automaticamente.
-- La cancellazione (`/cancel`) usa un registro di `CancellationTokenSource` in-process: funziona con una singola istanza API. Il coordinamento cross-istanza via Redis arriva in Fase 6.
+- **Stati del job**: `Pending → Running → Completed | Failed | Cancelled`, più `Paused` (sospeso tra un URL e l'altro del crawl, riprendibile con `/resume`). Un job non può partire se esiste già un job `Running`/`Paused` per la stessa fonte con lo **stesso criterio** (`QueryMode` + `Query`, es. due `Popular` o due ricerche sullo stesso attore): la richiesta torna `409 Conflict`. Criteri diversi sulla stessa fonte (es. `Popular` insieme a un attore specifico) girano invece in parallelo senza conflitti.
+- **Job orfani ("zombie")**: cancellazione e pausa si appoggiano a un registro di `CancellationTokenSource` in-process (una singola istanza API; il coordinamento cross-istanza via Redis arriva in Fase 6) — se l'istanza che eseguiva un job viene riavviata, quel job resta `Running`/`Paused` in DB ma nessuno lo sta più eseguendo davvero. `GET /api/crawl/jobs` espone questo caso con `isOrphaned: true`: va fermato (`POST .../jobs/{id}/cancel`, che in questo caso riconcilia direttamente lo stato a `Cancelled`) o eliminato (`DELETE .../jobs/{id}`, che rimuove il record e i suoi errori dal DB — l'unica traccia resta nei log applicativi).
+- Il frontend espone questi controlli nella pagina **Crawler & Sync** (bottoni Pausa/Ferma/Elimina per riga, badge "⚠ Zombie" sui job orfani) e ne riassume lo stato anche in Dashboard.
 
 ## 0b. Ricerca semantica ed embedding (Fase 4)
 
@@ -103,7 +109,7 @@ dotnet run --project src/CineVector.Api
 - Health check: `GET /health`, `/health/live`, `/health/ready`
 - CRUD film: `GET|POST /api/movies`, `GET|PUT|DELETE /api/movies/{id}`
 - CRUD fonti: `GET|POST /api/sources`, `GET|PUT|DELETE /api/sources/{id}`
-- Crawler: `GET /api/crawl/jobs`, `GET /api/crawl/jobs/{id}`, `POST /api/crawl/start`, `POST /api/crawl/{sourceId}/start`, `POST /api/crawl/{sourceId}/cancel`
+- Crawler: `GET /api/crawl/jobs`, `GET /api/crawl/jobs/{id}`, `POST /api/crawl/start`, `POST /api/crawl/{sourceId}/start`, `POST /api/crawl/{sourceId}/cancel`, `POST /api/crawl/jobs/{id}/cancel`, `POST /api/crawl/jobs/{id}/pause`, `POST /api/crawl/jobs/{id}/resume`, `DELETE /api/crawl/jobs/{id}`
 - Embedding: `POST /api/embeddings/backfill?batchSize=50`
 - Film simili: `GET /api/movies/{id}/similar?maxResults=20&minSimilarity=0.3`
 - Ricerca: `GET|POST /api/search?query=...&genres=...&actors=...&directors=...&yearFrom=...&yearTo=...&ratingFrom=...&ratingTo=...&language=...&sort=...&page=...&pageSize=...`
@@ -168,7 +174,7 @@ src/
 ├── CineVector.Application/    Servizi applicativi, validazione, DTO mapping
 ├── CineVector.Domain/         Entità di dominio (Movie, Person, Genre, Source, CrawlJob, ...)
 ├── CineVector.Infrastructure/ EF Core, PostgreSQL/pgvector, repository, migration
-├── CineVector.Worker/         Background worker (crawler/embedding, dalla Fase 3)
+├── CineVector.Worker/         Progetto worker .NET (template di base, non ancora usato: il crawling gira nell'Api)
 ├── CineVector.Search/         Motore di ricerca ibrido (dalla Fase 2)
 ├── CineVector.Contracts/      DTO condivisi tra Application e Api
 └── cinevector-web/            Frontend React + Vite + TypeScript
@@ -183,5 +189,5 @@ infrastructure/docker/           Dockerfile di Api, Worker, Frontend
 
 ## Roadmap (fasi successive)
 
-- **Fase 6** — Redis (cache, lock crawler), dashboard admin/crawler, statistiche.
+- **Fase 6** — Redis (cache, coordinamento cross-istanza del crawler — pausa/cancellazione/rilevamento zombie oggi funzionano solo in-process su una singola istanza API), statistiche avanzate.
 - **Fase 7** — Sicurezza (SSRF guard, allowlist host), osservabilità (Serilog + correlation id), ottimizzazione indici, test di integrazione/ricerca, Docker di produzione.
