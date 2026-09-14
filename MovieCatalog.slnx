@@ -1,0 +1,16 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/MovieCatalog.Api/MovieCatalog.Api.csproj" />
+    <Project Path="src/MovieCatalog.Application/MovieCatalog.Application.csproj" />
+    <Project Path="src/MovieCatalog.Contracts/MovieCatalog.Contracts.csproj" />
+    <Project Path="src/MovieCatalog.Domain/MovieCatalog.Domain.csproj" />
+    <Project Path="src/MovieCatalog.Infrastructure/MovieCatalog.Infrastructure.csproj" />
+    <Project Path="src/MovieCatalog.Search/MovieCatalog.Search.csproj" />
+    <Project Path="src/MovieCatalog.Worker/MovieCatalog.Worker.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/MovieCatalog.IntegrationTests/MovieCatalog.IntegrationTests.csproj" />
+    <Project Path="tests/MovieCatalog.SearchTests/MovieCatalog.SearchTests.csproj" />
+    <Project Path="tests/MovieCatalog.UnitTests/MovieCatalog.UnitTests.csproj" />
+  </Folder>
+</Solution>

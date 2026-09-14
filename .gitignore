@@ -1,0 +1,25 @@
+## .NET
+bin/
+obj/
+*.user
+.vs/
+
+## Node / React
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+## Env / secrets
+.env
+.env.*
+!.env.example
+appsettings.Local.json
+appsettings.*.local.json
+
+## Python venv (residuo non collegato allo stack .NET/React)
+.venv/
+
+## OS / editor
+.DS_Store
+Thumbs.db

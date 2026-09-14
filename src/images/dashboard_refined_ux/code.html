@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="it"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CineVector - Dashboard &amp; Console Vettoriale</title>
+<!-- Fonts & Material Symbols -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;family=Plus+Jakarta+Sans:wght@500;600;700;800&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "surface-container-lowest": "#010f1f",
+            "surface-container-low": "#091728",
+            "surface-container": "#0e2034",
+            "surface-container-high": "#162b42",
+            "surface-container-highest": "#203752",
+            "background": "#051424",
+            "surface": "#051424",
+            "primary": "#a5e7ff",
+            "primary-container": "#00d2ff",
+            "on-primary-container": "#003543",
+            "secondary": "#adc6ff",
+            "secondary-container": "#0566d9",
+            "tertiary": "#69f6b9",
+            "tertiary-container": "#48d99e",
+            "outline": "#859399",
+            "outline-variant": "#233748",
+            "on-surface": "#d4e4fa",
+            "on-surface-variant": "#94a9be",
+            "amber-rating": "#f59e0b",
+            "emerald-online": "#10b981"
+          },
+          fontFamily: {
+            sans: ["Inter", "sans-serif"],
+            display: ["Plus Jakarta Sans", "Inter", "sans-serif"],
+            mono: ["JetBrains Mono", "monospace"]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    @layer base {
+      html, body {
+        margin: 0;
+        padding: 0;
+        background-color: #051424;
+      }
+    }
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #051424;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1e354f;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #00d2ff;
+    }
+  </style>
+</head>
+<body class="bg-background text-on-surface font-sans antialiased min-h-screen flex overflow-x-hidden selection:bg-primary-container selection:text-on-primary-container">
+<!-- SIDEBAR DI SINISTRA (CineVector Studio Lead Console) -->
+<aside class="fixed left-0 top-0 h-screen w-64 bg-[#071322] border-r border-[#15273b] z-50 flex flex-col justify-between shadow-2xl">
+<div class="flex flex-col">
+<!-- Logo Header -->
+<div class="h-16 px-5 flex items-center justify-between border-b border-[#15273b] bg-[#050f1c]">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center text-[#051424] shadow-md shadow-cyan-500/20">
+<span class="material-symbols-outlined text-[20px] font-bold">hub</span>
+</div>
+<div class="flex flex-col">
+<span class="font-display font-bold text-base tracking-tight text-white flex items-center gap-1.5">
+              CineVector
+              <span class="text-[9px] px-1.5 py-0.2 rounded bg-cyan-500/20 text-cyan-300 font-mono font-medium">v2.4</span>
+</span>
+<span class="text-[10px] text-slate-400 font-mono tracking-wider uppercase">Semantic Engine</span>
+</div>
+</div>
+</div>
+<!-- Section Label -->
+<div class="px-5 pt-4 pb-2">
+<span class="text-[11px] font-semibold uppercase tracking-widest text-slate-400 font-mono">Console Vettoriale</span>
+</div>
+<!-- Navigation Links -->
+<nav class="flex flex-col gap-1 px-3">
+<!-- Active Nav Item: Dashboard -->
+<a aria-current="page" class="relative flex items-center justify-between px-3 py-2.5 rounded-lg bg-gradient-to-r from-cyan-500/20 to-transparent border-l-4 border-cyan-400 text-cyan-300 font-semibold text-sm transition-all" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[20px] text-cyan-400">space_dashboard</span>
+<span>Dashboard</span>
+</div>
+<span class="text-[9px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded bg-cyan-400/20 text-cyan-300 border border-cyan-400/30 font-bold">ATTIVO</span>
+</a>
+<!-- Movies -->
+<a class="flex items-center justify-between px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-[#102237] transition-all text-sm font-medium group" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-cyan-400 transition-colors">movie</span>
+<span>Movies</span>
+</div>
+<span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-800 text-slate-400">12.4k</span>
+</a>
+<!-- Advanced Search -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-[#102237] transition-all text-sm font-medium group" href="#">
+<span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-cyan-400 transition-colors">travel_explore</span>
+<span>Advanced Search</span>
+</a>
+<!-- Movie Details -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-[#102237] transition-all text-sm font-medium group" href="#">
+<span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-cyan-400 transition-colors">auto_stories</span>
+<span>Movie Details</span>
+</a>
+<!-- Sources -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-[#102237] transition-all text-sm font-medium group" href="#">
+<span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-cyan-400 transition-colors">account_tree</span>
+<span>Sources</span>
+</a>
+<!-- Crawler & Sync -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-[#102237] transition-all text-sm font-medium group" href="#">
+<span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-cyan-400 transition-colors">polyline</span>
+<span>Crawler &amp; Sync</span>
+</a>
+<!-- Statistics -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-[#102237] transition-all text-sm font-medium group" href="#">
+<span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-cyan-400 transition-colors">analytics</span>
+<span>Statistics</span>
+</a>
+<!-- Settings -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-[#102237] transition-all text-sm font-medium group" href="#">
+<span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-cyan-400 transition-colors">settings</span>
+<span>Settings</span>
+</a>
+</nav>
+</div>
+<!-- Vector DB Telemetry & User Profile Bottom Section -->
+<div class="p-3 border-t border-[#15273b] bg-[#050f1c] flex flex-col gap-3">
+<!-- Telemetry Box -->
+<div class="p-3 rounded-lg bg-[#0c1c2e] border border-cyan-500/20 flex flex-col gap-1.5">
+<div class="flex items-center justify-between">
+<span class="text-[10px] font-mono font-bold tracking-wider text-cyan-300 uppercase">Vector DB State</span>
+<span class="flex items-center gap-1 text-[10px] font-mono text-emerald-400 font-semibold">
+<span class="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            ONLINE
+          </span>
+</div>
+<p class="text-[12px] font-mono text-slate-200 font-semibold leading-tight">100k+ embeddings</p>
+<div class="flex items-center justify-between text-[11px] font-mono text-slate-400">
+<span>Latent Dim: 1536 (Cosine)</span>
+<span class="text-cyan-400 font-semibold">0.9984 top</span>
+</div>
+</div>
+<!-- Studio Lead User -->
+<div class="flex items-center justify-between px-1 py-0.5">
+<div class="flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-full bg-gradient-to-tr from-cyan-600 to-blue-500 flex items-center justify-center text-white ring-1 ring-cyan-400/40 font-semibold text-xs shadow-md">
+            SL
+          </div>
+<div class="flex flex-col">
+<span class="text-xs font-semibold text-slate-200 leading-tight">Studio Lead</span>
+<span class="text-[10px] text-slate-400 font-mono leading-tight">Production Console</span>
+</div>
+</div>
+<button aria-label="Impostazioni profilo" class="p-1 rounded text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</div>
+</aside>
+<!-- MAIN WRAPPER -->
+<div class="pl-64 w-full flex flex-col min-h-screen">
+<!-- HEADER SUPERIORE -->
+<header class="sticky top-0 z-40 h-16 bg-[#071322]/90 backdrop-blur-md border-b border-[#15273b] px-8 flex items-center justify-between gap-4">
+<!-- Omnibar Search & Breadcrumb -->
+<div class="flex items-center gap-4 flex-1 max-w-2xl">
+<div class="flex items-center gap-2 bg-[#0c1a29] border border-slate-700/60 focus-within:border-cyan-400/80 px-3 py-1.5 rounded-lg w-full transition-all">
+<span class="material-symbols-outlined text-[18px] text-cyan-400">search</span>
+<input class="bg-transparent text-xs text-slate-100 placeholder-slate-400 focus:outline-none w-full font-sans" id="headerSearchInput" placeholder="Cerca nello spazio semantico o titolo..." type="text"/>
+<span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-400">⌘K</span>
+</div>
+</div>
+<!-- Right Telemetry & Status Badges -->
+<div class="flex items-center gap-3">
+<div class="hidden lg:flex items-center gap-2 px-2.5 py-1 rounded-full bg-[#0d1d2e] border border-emerald-500/30">
+<span class="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
+<span class="text-[11px] font-mono font-medium text-emerald-400">DB Online • 1536-dim</span>
+</div>
+<div class="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#0d1d2e] border border-slate-800 text-slate-300 text-xs font-mono">
+<span class="material-symbols-outlined text-[15px] text-cyan-400">cloud_done</span>
+<span>Cluster: <strong class="text-white font-medium">EU-Central-1</strong></span>
+</div>
+<div class="w-px h-4 bg-slate-700 hidden sm:block"></div>
+<button aria-label="Notifiche" class="relative p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">
+<span class="material-symbols-outlined text-[20px]">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-cyan-400"></span>
+</button>
+<button aria-label="Parametri vettoriali" class="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors" title="Parametri avanzati">
+<span class="material-symbols-outlined text-[20px]">tune</span>
+</button>
+</div>
+</header>
+<!-- MAIN CONTENT CONTAINER -->
+<main class="flex-1 px-8 py-6 max-w-7xl w-full mx-auto flex flex-col gap-8">
+<!-- TOP COMMAND TELEMETRY METRICS STRIP -->
+<section class="grid grid-cols-2 md:grid-cols-4 gap-4">
+<!-- Metric 1: Catalogati -->
+<div class="bg-[#091829] border border-cyan-500/20 rounded-xl p-4 flex flex-col justify-between shadow-lg">
+<div class="flex items-center justify-between text-slate-400">
+<span class="text-[11px] font-mono uppercase tracking-wider">Film Censiti</span>
+<span class="material-symbols-outlined text-cyan-400 text-[18px]">movie_filter</span>
+</div>
+<div class="mt-2 flex items-baseline gap-2">
+<span class="font-display text-2xl font-bold text-white">48,290</span>
+<span class="text-[11px] font-mono text-emerald-400 font-semibold bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">+124 oggi</span>
+</div>
+</div>
+<!-- Metric 2: Ultimo Sync -->
+<div class="bg-[#091829] border border-cyan-500/20 rounded-xl p-4 flex flex-col justify-between shadow-lg">
+<div class="flex items-center justify-between text-slate-400">
+<span class="text-[11px] font-mono uppercase tracking-wider">Ultimo Sync</span>
+<span class="material-symbols-outlined text-cyan-400 text-[18px]">sync_saved_locally</span>
+</div>
+<div class="mt-2 flex items-baseline gap-2">
+<span class="font-display text-2xl font-bold text-white">12m fa</span>
+<span class="text-[11px] font-mono text-slate-400">Delta check OK</span>
+</div>
+</div>
+<!-- Metric 3: Vettori Attivi -->
+<div class="bg-[#091829] border border-cyan-500/20 rounded-xl p-4 flex flex-col justify-between shadow-lg">
+<div class="flex items-center justify-between text-slate-400">
+<span class="text-[11px] font-mono uppercase tracking-wider">Vettori Attivi</span>
+<span class="material-symbols-outlined text-emerald-400 text-[18px]">hub</span>
+</div>
+<div class="mt-2 flex items-baseline gap-2">
+<span class="font-display text-2xl font-bold text-white">1,536-D</span>
+<span class="text-[11px] font-mono text-cyan-400">Cos. Sim ≥ 0.88</span>
+</div>
+</div>
+<!-- Metric 4: Crawler Pipeline -->
+<div class="bg-[#091829] border border-cyan-500/20 rounded-xl p-4 flex flex-col justify-between shadow-lg">
+<div class="flex items-center justify-between text-slate-400">
+<span class="text-[11px] font-mono uppercase tracking-wider">Crawler Engine</span>
+<span class="material-symbols-outlined text-cyan-400 text-[18px]">stream</span>
+</div>
+<div class="mt-2 flex items-baseline gap-2">
+<span class="font-display text-2xl font-bold text-white">6 Fonti</span>
+<span class="text-[11px] font-mono text-emerald-400 font-semibold flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              4 Pipeline Live
+            </span>
+</div>
+</div>
+</section>
+<!-- HERO CINEMATOGRAFICO SPOTLIGHT (High Contrast & Polish) -->
+<section class="relative w-full rounded-2xl overflow-hidden border border-cyan-500/20 bg-[#071322] shadow-2xl">
+<div class="relative w-full min-h-[460px] lg:min-h-[500px] flex flex-col justify-end p-8 md:p-10">
+<!-- Backdrop image -->
+<img alt="Dune Parte Due Cinematic Landscape" class="absolute inset-0 w-full h-full object-cover object-center pointer-events-none" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAST1Z92HAI_57MXFlY9aH0g4FOlg-Yoi23tSxefa666-6BYJir94_A2GIKR-_Qk9E8S4PiRCoJk_ZIkLtJArQDqjKppW5AvbACgvxb0msTC-fGhntNbRFhqHeOjQxkVKuNPHzUJLfBcAkL8V7xf1ogmpyy101w6wPraHD8IAnRAXK3qP3NEVYCIhbRLMeBD0PHM1Da-_tMvora01isAyYB4MFRmDVjtr914RsQ_IWH7g6IV_NrywEo"/>
+<!-- Scrim Gradients for crisp typography contrast -->
+<div class="absolute inset-0 bg-gradient-to-t from-[#071322] via-[#071322]/85 to-transparent"></div>
+<div class="absolute inset-0 bg-gradient-to-r from-[#071322] via-[#071322]/90 to-transparent max-w-4xl"></div>
+<!-- Content Matrix -->
+<div class="relative z-10 flex flex-col gap-4 max-w-3xl">
+<!-- Top Badges -->
+<div class="flex flex-wrap items-center gap-2">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-950/80 border border-cyan-500/40 text-cyan-300 text-xs font-mono font-semibold backdrop-blur-md">
+<span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+                Spotlight del Giorno
+              </span>
+<span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#0a1829]/80 border border-slate-700 text-slate-300 text-xs font-mono backdrop-blur-md">
+<span class="material-symbols-outlined text-[14px] text-cyan-400">hub</span>
+                Cluster: Epic Sci-Fi Space Opera • 99.4% Cosine Match
+              </span>
+</div>
+<!-- Title & Metadata -->
+<div class="flex flex-col">
+<h1 class="font-display text-4xl sm:text-5xl font-extrabold tracking-tight text-white leading-tight drop-shadow-md">
+                Dune - Parte Due
+              </h1>
+<p class="text-sm text-slate-300 font-medium mt-1">
+                Denis Villeneuve • <span class="text-cyan-400 font-mono">2024</span> • Warner Bros.
+              </p>
+</div>
+<!-- Tags, Specs & Ratings -->
+<div class="flex flex-wrap items-center gap-3 pt-0.5">
+<div class="flex items-center gap-1.5">
+<span class="px-2.5 py-0.5 rounded bg-cyan-500/15 border border-cyan-500/30 text-cyan-300 text-xs font-semibold uppercase tracking-wider">Fantascienza Epica</span>
+<span class="px-2.5 py-0.5 rounded bg-cyan-500/15 border border-cyan-500/30 text-cyan-300 text-xs font-semibold uppercase tracking-wider">Space Opera</span>
+</div>
+<span class="text-slate-600">•</span>
+<!-- Rating -->
+<div class="flex items-center gap-2 bg-[#091829]/90 border border-amber-500/30 px-3 py-1 rounded-lg backdrop-blur-md">
+<span class="material-symbols-outlined text-amber-400 text-[18px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-display font-bold text-amber-400 text-sm">8.8</span>
+<span class="text-slate-400 text-xs font-mono">/ 10</span>
+</div>
+<!-- Specs -->
+<div class="flex items-center gap-2 text-xs font-mono text-slate-300 bg-[#091829]/80 border border-slate-700/60 px-2.5 py-1 rounded-lg backdrop-blur-md">
+<span class="material-symbols-outlined text-[15px] text-cyan-400">schedule</span>
+<span>2h 46min</span>
+<span class="text-slate-600">|</span>
+<span class="text-cyan-300">4K HDR • Dolby Atmos</span>
+</div>
+</div>
+<!-- Synopsis -->
+<p class="text-sm sm:text-base text-slate-200 leading-relaxed font-sans font-normal line-clamp-3 max-w-2xl">
+              Paul Atreides si unisce a Chani e ai Fremen mentre trama la vendetta contro i cospiratori che hanno distrutto la sua casata. Di fronte alla scelta tra l'amore della sua vita e il destino dell'universo, intraprende una guerra per prevenire un futuro oscuro che solo la sua visione può scorgere.
+            </p>
+<!-- Actions Strip -->
+<div class="flex flex-wrap items-center gap-3 pt-2">
+<a class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-[#051424] font-bold text-sm shadow-lg shadow-cyan-400/25 transition-all transform hover:-translate-y-0.5" href="#">
+<span class="material-symbols-outlined text-[18px]">explore</span>
+<span>Esplora Dettaglio Vettoriale</span>
+</a>
+<a class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#0c2035] hover:bg-[#122b46] border border-cyan-500/30 hover:border-cyan-400 text-cyan-300 font-semibold text-sm transition-all shadow-md" href="https://www.max.com" rel="noopener noreferrer" target="_blank">
+<span class="material-symbols-outlined text-[18px] text-cyan-400">open_in_new</span>
+<span>Guarda su Piattaforma (Max)</span>
+</a>
+<div class="flex items-center gap-1.5 bg-[#0a1b2d]/80 border border-slate-700/70 p-1 rounded-xl backdrop-blur-md">
+<button aria-label="Aggiungi ai preferiti" class="p-2 rounded-lg text-slate-300 hover:text-cyan-300 hover:bg-[#132840] transition-colors" title="Salva nei preferiti">
+<span class="material-symbols-outlined text-[20px]">bookmark</span>
+</button>
+<button aria-label="Condividi film" class="p-2 rounded-lg text-slate-300 hover:text-cyan-300 hover:bg-[#132840] transition-colors" title="Condividi">
+<span class="material-symbols-outlined text-[20px]">share</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- QUICK NATURAL LANGUAGE QUERY CHIPS (Spec 22) -->
+<section class="bg-[#091829] border border-cyan-500/20 rounded-2xl p-5 shadow-lg flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div class="flex items-center gap-2.5 shrink-0 text-cyan-300">
+<span class="material-symbols-outlined text-[20px] text-cyan-400">auto_awesome</span>
+<span class="text-xs font-mono font-bold uppercase tracking-wider">Prompt Semantici Rapidi:</span>
+</div>
+<div class="flex flex-wrap items-center gap-2 flex-1">
+<button class="group flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#070B13] border border-white/10 hover:border-cyan-400/50 text-xs text-slate-300 hover:text-white transition-all shadow-sm" onclick="applyQuickPrompt('film di fantascienza dal 2020 al 2025')" type="button">
+<span class="material-symbols-outlined text-[14px] text-cyan-400">rocket_launch</span>
+<span>“film di fantascienza dal 2020 al 2025”</span>
+</button>
+<button class="group flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#070B13] border border-white/10 hover:border-blue-400/50 text-xs text-slate-300 hover:text-white transition-all shadow-sm" onclick="applyQuickPrompt('film con Tom Hanks ambientati in Italia')" type="button">
+<span class="material-symbols-outlined text-[14px] text-blue-400">person</span>
+<span>“film con Tom Hanks ambientati in Italia”</span>
+</button>
+<button class="group flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#070B13] border border-white/10 hover:border-amber-400/50 text-xs text-slate-300 hover:text-white transition-all shadow-sm" onclick="applyQuickPrompt('thriller psicologico sopra 7')" type="button">
+<span class="material-symbols-outlined text-[14px] text-amber-400">psychology</span>
+<span>“thriller psicologico sopra 7”</span>
+</button>
+<button class="group flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#070B13] border border-white/10 hover:border-emerald-400/50 text-xs text-slate-300 hover:text-white transition-all shadow-sm" onclick="applyQuickPrompt('mind-bending con colpo di scena e colonna sonora epica')" type="button">
+<span class="material-symbols-outlined text-[14px] text-emerald-400">cyclone</span>
+<span>“mind-bending con colpo di scena”</span>
+</button>
+</div>
+</section>
+<!-- CLUSTER & 3D SEMANTIC EXPLORATION / TOPOLOGIA VETTORIALE -->
+<section class="flex flex-col gap-4">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800/80 pb-3">
+<div class="flex items-center gap-2">
+<span class="h-2 w-2 rounded-full bg-cyan-400 animate-pulse"></span>
+<h2 class="font-display text-xl sm:text-2xl font-bold text-white tracking-tight">
+              Topologia Vettoriale &amp; Cluster AI
+            </h2>
+<span class="hidden md:inline-block text-xs font-mono text-slate-400 ml-2">(Proiezione UMAP 1536-D → 3D)</span>
+</div>
+<button class="inline-flex items-center gap-1.5 text-xs font-mono text-cyan-400 hover:text-cyan-300 bg-[#091829] border border-cyan-500/30 px-3 py-1.5 rounded-lg transition-colors">
+<span class="material-symbols-outlined text-[16px]">travel_explore</span>
+<span>Esplora Mappa Semantica 3D</span>
+</button>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<!-- Cluster 1: Cyberpunk -->
+<div class="bg-[#091829] border border-cyan-500/20 hover:border-cyan-400/40 rounded-2xl p-5 shadow-xl flex flex-col justify-between gap-4 transition-all group">
+<div class="flex flex-col gap-3">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2.5">
+<div class="w-9 h-9 rounded-xl bg-cyan-400/10 border border-cyan-400/30 flex items-center justify-center text-cyan-400">
+<span class="material-symbols-outlined text-[20px]">smart_toy</span>
+</div>
+<div>
+<span class="text-[10px] font-mono text-cyan-300 font-bold uppercase tracking-wider">Cluster #082</span>
+<h3 class="font-display text-base font-bold text-white group-hover:text-cyan-300 transition-colors">Cyberpunk &amp; Coscienza AI</h3>
+</div>
+</div>
+<span class="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-500/30 font-bold">0.94 Corr</span>
+</div>
+<!-- Mini Topology SVG -->
+<div class="w-full h-20 bg-[#050f1c] rounded-xl border border-slate-800 p-2 relative flex items-center justify-center overflow-hidden">
+<svg class="w-full h-full text-cyan-400" fill="none" viewbox="0 0 280 60" xmlns="http://www.w3.org/2000/svg">
+<line stroke="currentColor" stroke-opacity="0.2" stroke-width="1.5" x1="20" x2="90" y1="30" y2="18"></line>
+<line stroke="currentColor" stroke-opacity="0.3" stroke-width="1.5" x1="90" x2="150" y1="18" y2="42"></line>
+<line stroke="currentColor" stroke-opacity="0.25" stroke-width="1.5" x1="150" x2="210" y1="42" y2="20"></line>
+<line stroke="currentColor" stroke-opacity="0.35" stroke-width="1.5" x1="210" x2="260" y1="20" y2="35"></line>
+<circle cx="20" cy="30" fill="currentColor" fill-opacity="0.6" r="4"></circle>
+<circle cx="90" cy="18" fill="currentColor" fill-opacity="0.9" r="6"></circle>
+<circle cx="90" cy="18" r="12" stroke="currentColor" stroke-opacity="0.2" stroke-width="1"></circle>
+<circle cx="150" cy="42" fill="#38bdf8" fill-opacity="0.8" r="5"></circle>
+<circle cx="210" cy="20" fill="#f59e0b" fill-opacity="0.9" r="7"></circle>
+<circle cx="260" cy="35" fill="currentColor" fill-opacity="0.7" r="4"></circle>
+</svg>
+<span class="absolute bottom-1 right-2 text-[9px] font-mono text-slate-400">98 Film • 8 Sotto-trame</span>
+</div>
+<p class="text-xs text-slate-300 leading-relaxed font-sans">
+                Dicotomia anima-macchina, metropoli al neon e simulazione identitaria. Titoli cardine: <span class="text-cyan-300 font-medium">Blade Runner 2049</span>, <span class="text-cyan-300 font-medium">Ex Machina</span>, <span class="text-cyan-300 font-medium">Her</span>.
+              </p>
+</div>
+<div class="flex items-center justify-between pt-2 border-t border-slate-800/80">
+<div class="flex -space-x-2">
+<span class="inline-block h-6 w-6 rounded-full ring-2 ring-[#091829] bg-cyan-950 text-cyan-300 text-[10px] flex items-center justify-center font-bold">BR</span>
+<span class="inline-block h-6 w-6 rounded-full ring-2 ring-[#091829] bg-blue-950 text-blue-300 text-[10px] flex items-center justify-center font-bold">EX</span>
+<span class="inline-block h-6 w-6 rounded-full ring-2 ring-[#091829] bg-slate-800 text-slate-300 text-[10px] flex items-center justify-center font-bold">HR</span>
+</div>
+<button class="text-xs font-mono text-cyan-400 flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+<span>Naviga Cluster</span>
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+</button>
+</div>
+</div>
+<!-- Cluster 2: Cinema d'Autore -->
+<div class="bg-[#091829] border border-cyan-500/20 hover:border-cyan-400/40 rounded-2xl p-5 shadow-xl flex flex-col justify-between gap-4 transition-all group">
+<div class="flex flex-col gap-3">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2.5">
+<div class="w-9 h-9 rounded-xl bg-amber-400/10 border border-amber-400/30 flex items-center justify-center text-amber-400">
+<span class="material-symbols-outlined text-[20px]">theater_comedy</span>
+</div>
+<div>
+<span class="text-[10px] font-mono text-amber-300 font-bold uppercase tracking-wider">Cluster #019</span>
+<h3 class="font-display text-base font-bold text-white group-hover:text-amber-300 transition-colors">Cinema d'Autore &amp; Magico</h3>
+</div>
+</div>
+<span class="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-950/60 text-amber-300 border border-amber-500/30 font-bold">0.91 Corr</span>
+</div>
+<!-- Mini Topology SVG -->
+<div class="w-full h-20 bg-[#050f1c] rounded-xl border border-slate-800 p-2 relative flex items-center justify-center overflow-hidden">
+<svg class="w-full h-full text-amber-400" fill="none" viewbox="0 0 280 60" xmlns="http://www.w3.org/2000/svg">
+<line stroke="currentColor" stroke-opacity="0.25" stroke-width="1.5" x1="30" x2="95" y1="25" y2="40"></line>
+<line stroke="currentColor" stroke-opacity="0.3" stroke-width="1.5" x1="95" x2="165" y1="40" y2="15"></line>
+<line stroke="currentColor" stroke-opacity="0.2" stroke-width="1.5" x1="165" x2="245" y1="15" y2="35"></line>
+<circle cx="30" cy="25" fill="currentColor" fill-opacity="0.7" r="5"></circle>
+<circle cx="95" cy="40" fill="currentColor" fill-opacity="0.95" r="7"></circle>
+<circle cx="95" cy="40" r="14" stroke="currentColor" stroke-opacity="0.2" stroke-width="1"></circle>
+<circle cx="165" cy="15" fill="#00d2ff" fill-opacity="0.85" r="6"></circle>
+<circle cx="245" cy="35" fill="currentColor" fill-opacity="0.7" r="5"></circle>
+</svg>
+<span class="absolute bottom-1 right-2 text-[9px] font-mono text-slate-400">142 Film • Sorrentino, Rohrwacher</span>
+</div>
+<p class="text-xs text-slate-300 leading-relaxed font-sans">
+                Realismo magico, decadenza urbana e introspezione provinciale. Connessioni forti: <span class="text-amber-300 font-medium">La Grande Bellezza</span>, <span class="text-amber-300 font-medium">Lazzaro Felice</span>, <span class="text-amber-300 font-medium">Io Capitano</span>.
+              </p>
+</div>
+<div class="flex items-center justify-between pt-2 border-t border-slate-800/80">
+<div class="flex -space-x-2">
+<span class="inline-block h-6 w-6 rounded-full ring-2 ring-[#091829] bg-amber-950 text-amber-300 text-[10px] flex items-center justify-center font-bold">GB</span>
+<span class="inline-block h-6 w-6 rounded-full ring-2 ring-[#091829] bg-cyan-950 text-cyan-300 text-[10px] flex items-center justify-center font-bold">LF</span>
+<span class="inline-block h-6 w-6 rounded-full ring-2 ring-[#091829] bg-slate-800 text-slate-300 text-[10px] flex items-center justify-center font-bold">IC</span>
+</div>
+<button class="text-xs font-mono text-amber-400 flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+<span>Naviga Cluster</span>
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+</button>
+</div>
+</div>
+<!-- Cluster 3: Deep Space -->
+<div class="bg-[#091829] border border-cyan-500/20 hover:border-cyan-400/40 rounded-2xl p-5 shadow-xl flex flex-col justify-between gap-4 transition-all group">
+<div class="flex flex-col gap-3">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2.5">
+<div class="w-9 h-9 rounded-xl bg-emerald-400/10 border border-emerald-400/30 flex items-center justify-center text-emerald-400">
+<span class="material-symbols-outlined text-[20px]">public</span>
+</div>
+<div>
+<span class="text-[10px] font-mono text-emerald-300 font-bold uppercase tracking-wider">Cluster #114</span>
+<h3 class="font-display text-base font-bold text-white group-hover:text-emerald-300 transition-colors">Spazio Profondo &amp; Relatività</h3>
+</div>
+</div>
+<span class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-950/60 text-emerald-300 border border-emerald-500/30 font-bold">0.96 Corr</span>
+</div>
+<!-- Mini Topology SVG -->
+<div class="w-full h-20 bg-[#050f1c] rounded-xl border border-slate-800 p-2 relative flex items-center justify-center overflow-hidden">
+<svg class="w-full h-full text-emerald-400" fill="none" viewbox="0 0 280 60" xmlns="http://www.w3.org/2000/svg">
+<line stroke="currentColor" stroke-opacity="0.3" stroke-width="1.5" x1="35" x2="110" y1="35" y2="20"></line>
+<line stroke="currentColor" stroke-opacity="0.25" stroke-width="1.5" x1="110" x2="180" y1="20" y2="40"></line>
+<line stroke="currentColor" stroke-opacity="0.4" stroke-width="1.5" x1="180" x2="250" y1="40" y2="15"></line>
+<circle cx="35" cy="35" fill="currentColor" fill-opacity="0.7" r="5"></circle>
+<circle cx="110" cy="20" fill="currentColor" fill-opacity="0.9" r="8"></circle>
+<circle cx="110" cy="20" r="15" stroke="currentColor" stroke-opacity="0.2" stroke-width="1"></circle>
+<circle cx="180" cy="40" fill="#00d2ff" fill-opacity="0.8" r="5"></circle>
+<circle cx="250" cy="15" fill="currentColor" fill-opacity="0.85" r="6"></circle>
+</svg>
+<span class="absolute bottom-1 right-2 text-[9px] font-mono text-slate-400">164 Film • Dilatazione Temporale</span>
+</div>
+<p class="text-xs text-slate-300 leading-relaxed font-sans">
+                Singolarità gravitazionali, viaggi cosmici e isolamento narrativo. Prossimità con <span class="text-emerald-300 font-medium">Interstellar</span>, <span class="text-emerald-300 font-medium">2001: Odissea nello Spazio</span>, <span class="text-emerald-300 font-medium">Solaris</span>.
+              </p>
+</div>
+<div class="flex items-center justify-between pt-2 border-t border-slate-800/80">
+<div class="flex -space-x-2">
+<span class="inline-block h-6 w-6 rounded-full ring-2 ring-[#091829] bg-emerald-950 text-emerald-300 text-[10px] flex items-center justify-center font-bold">IN</span>
+<span class="inline-block h-6 w-6 rounded-full ring-2 ring-[#091829] bg-cyan-950 text-cyan-300 text-[10px] flex items-center justify-center font-bold">SO</span>
+<span class="inline-block h-6 w-6 rounded-full ring-2 ring-[#091829] bg-slate-800 text-slate-300 text-[10px] flex items-center justify-center font-bold">01</span>
+</div>
+<button class="text-xs font-mono text-emerald-400 flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+<span>Naviga Cluster</span>
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- TREND DEL MOMENTO & TITOLI IN RAPIDA ASCESA (Movie Cards Grid Preview) -->
+<section class="flex flex-col gap-4">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800/80 pb-3">
+<div class="flex items-center gap-2">
+<span class="h-2 w-2 rounded-full bg-cyan-400 animate-pulse"></span>
+<h2 class="font-display text-xl sm:text-2xl font-bold text-white tracking-tight">
+              Trend del Momento &amp; Titoli in Rapida Ascesa
+            </h2>
+</div>
+<span class="text-xs font-mono text-slate-400">Ordinamento per gradiente di similarità latente</span>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+<!-- Trend Card 1: Blade Runner 2049 -->
+<article class="group rounded-2xl bg-[#0D1527] hover:bg-[#131E35] border border-white/5 hover:border-cyan-400/40 p-3.5 flex flex-col justify-between transition-all duration-300 hover:shadow-[0_10px_30px_-10px_rgba(0,210,255,0.25)] hover:-translate-y-1">
+<div class="flex flex-col gap-3">
+<div class="relative w-full aspect-[2/3] rounded-xl overflow-hidden bg-[#070B13] border border-white/5">
+<img alt="Blade Runner 2049" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD1l7oqidnxDLGzW0Pf5FOYmrnRv-LpS4eTGYVq3LHmKKEYXVdSQ1sCPRWrK2KaSng98g1C3piIUC91YdWNf5mZbNtaaBVJ-ZZCRxQnVxX1r2pNrdLPy6F1t49QxvZ1dJ49Kwh3qB66R0qV-5swfC0sM6VHUYhnJ8eFv-5EJC0sgal9Ojz8J2bTq3Gx8U2HLgT1NCI0hdnhpb_Qo_ccB-n64LQUvq_W1XFCiWnRmsjJdC2Uq6fr29se"/>
+<div class="absolute top-2.5 left-2.5">
+<span class="px-2.5 py-1 rounded-md bg-[#070B13]/90 backdrop-blur-md border border-cyan-400/40 text-cyan-300 font-mono text-[11px] font-bold shadow-md">
+                    98% Match
+                  </span>
+</div>
+<div class="absolute top-2.5 right-2.5 flex items-center gap-1 px-2.5 py-1 rounded-md bg-[#070B13]/90 backdrop-blur-md border border-amber-400/40 text-amber-400 font-mono text-[11px] font-bold shadow-md">
+<span class="material-symbols-outlined text-[13px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span>8.0</span>
+</div>
+<div class="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#0D1527] to-transparent opacity-80"></div>
+</div>
+<div class="flex flex-col gap-1 pt-1">
+<div class="flex items-baseline justify-between gap-2">
+<h3 class="text-sm font-display font-bold text-white group-hover:text-cyan-300 transition-colors truncate">Blade Runner 2049</h3>
+<span class="text-xs font-mono text-slate-400 shrink-0">2017</span>
+</div>
+<div class="flex items-center justify-between text-xs text-slate-400">
+<span>Denis Villeneuve</span>
+<span class="font-mono">164 min</span>
+</div>
+<div class="flex flex-wrap gap-1.5 my-1">
+<span class="px-2 py-0.5 rounded bg-[#070B13] border border-white/5 text-cyan-300 text-[10px] font-medium">Cyberpunk</span>
+<span class="px-2 py-0.5 rounded bg-[#070B13] border border-white/5 text-slate-300 text-[10px]">Neo-Noir</span>
+</div>
+<p class="text-xs text-slate-400 line-clamp-2 leading-relaxed">
+                  L'agente K dissotterra un segreto che potrebbe far precipitare ciò che resta della società nel caos.
+                </p>
+</div>
+</div>
+<div class="flex items-center gap-2 pt-3 mt-3 border-t border-white/5">
+<button class="flex-1 py-1.5 px-3 rounded-lg bg-[#070B13] hover:bg-white/10 text-center text-xs font-medium text-slate-200 transition-colors" type="button">
+                Dettagli
+              </button>
+<button class="flex-1 py-1.5 px-3 rounded-lg bg-cyan-400/10 hover:bg-cyan-400/20 text-cyan-300 border border-cyan-400/30 text-center text-xs font-medium transition-colors" type="button">
+                Simili
+              </button>
+</div>
+</article>
+<!-- Trend Card 2: Oppenheimer -->
+<article class="group rounded-2xl bg-[#0D1527] hover:bg-[#131E35] border border-white/5 hover:border-cyan-400/40 p-3.5 flex flex-col justify-between transition-all duration-300 hover:shadow-[0_10px_30px_-10px_rgba(0,210,255,0.25)] hover:-translate-y-1">
+<div class="flex flex-col gap-3">
+<div class="relative w-full aspect-[2/3] rounded-xl overflow-hidden bg-[#070B13] border border-white/5">
+<img alt="Oppenheimer" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAjNexjSit0KzD9Hweicj8goQnpbejD1i0TDKzUxPOm-kgaBVezupFeeAPK0fC8k66WRYczZrgYeY8Y77LdBZYuHHS2EbDx4gqimx9TSO-a7RDyefIsIUkfb8Pw94ToCoZFyVMfcWhcagO4LVIq7IXE4C753U-Z0rhxKww4TrI8-7ZKPUeVUw4GaJ2jpxF7gAoNldoFDS_N-UW1P58xQKrgccPS4Dwj8oxxvZ7bBGXIptF_ujERtgjO"/>
+<div class="absolute top-2.5 left-2.5">
+<span class="px-2.5 py-1 rounded-md bg-[#070B13]/90 backdrop-blur-md border border-cyan-400/40 text-cyan-300 font-mono text-[11px] font-bold shadow-md">
+                    97% Match
+                  </span>
+</div>
+<div class="absolute top-2.5 right-2.5 flex items-center gap-1 px-2.5 py-1 rounded-md bg-[#070B13]/90 backdrop-blur-md border border-amber-400/40 text-amber-400 font-mono text-[11px] font-bold shadow-md">
+<span class="material-symbols-outlined text-[13px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span>8.9</span>
+</div>
+<div class="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#0D1527] to-transparent opacity-80"></div>
+</div>
+<div class="flex flex-col gap-1 pt-1">
+<div class="flex items-baseline justify-between gap-2">
+<h3 class="text-sm font-display font-bold text-white group-hover:text-cyan-300 transition-colors truncate">Oppenheimer</h3>
+<span class="text-xs font-mono text-slate-400 shrink-0">2023</span>
+</div>
+<div class="flex items-center justify-between text-xs text-slate-400">
+<span>Christopher Nolan</span>
+<span class="font-mono">180 min</span>
+</div>
+<div class="flex flex-wrap gap-1.5 my-1">
+<span class="px-2 py-0.5 rounded bg-[#070B13] border border-white/5 text-amber-300 text-[10px] font-medium">Biografico</span>
+<span class="px-2 py-0.5 rounded bg-[#070B13] border border-white/5 text-slate-300 text-[10px]">Drammatico</span>
+</div>
+<p class="text-xs text-slate-400 line-clamp-2 leading-relaxed">
+                  La genesi del Progetto Manhattan e il dilemma morale dello scienziato che cambiò per sempre la storia globale.
+                </p>
+</div>
+</div>
+<div class="flex items-center gap-2 pt-3 mt-3 border-t border-white/5">
+<button class="flex-1 py-1.5 px-3 rounded-lg bg-[#070B13] hover:bg-white/10 text-center text-xs font-medium text-slate-200 transition-colors" type="button">
+                Dettagli
+              </button>
+<button class="flex-1 py-1.5 px-3 rounded-lg bg-cyan-400/10 hover:bg-cyan-400/20 text-cyan-300 border border-cyan-400/30 text-center text-xs font-medium transition-colors" type="button">
+                Simili
+              </button>
+</div>
+</article>
+<!-- Trend Card 3: Interstellar -->
+<article class="group rounded-2xl bg-[#0D1527] hover:bg-[#131E35] border border-white/5 hover:border-cyan-400/40 p-3.5 flex flex-col justify-between transition-all duration-300 hover:shadow-[0_10px_30px_-10px_rgba(0,210,255,0.25)] hover:-translate-y-1">
+<div class="flex flex-col gap-3">
+<div class="relative w-full aspect-[2/3] rounded-xl overflow-hidden bg-[#070B13] border border-white/5">
+<img alt="Interstellar" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB7H4nMjzc_kmwQwuvqVIflC0nWPeG6dSMJiFz_j9ONjLArRloiDdPs2gV9aAC2olSjECsVOyOK9cqjYYDjRdQ975iX0H8DHXD7g0DeSUKHuXXls3HVfoIJmWZPbkVVxPQU-5dcqnaht6Ehhon0e07h0wTEE6nHyPKVbR5-9G0XAy6HtNj_CTxmCg1dAyMcBEZzM4uY6kxoipZcDz_lblBg2V4B1UGej9fU1Y_nNJFH7hi6NBfGLkk2"/>
+<div class="absolute top-2.5 left-2.5">
+<span class="px-2.5 py-1 rounded-md bg-[#070B13]/90 backdrop-blur-md border border-cyan-400/40 text-cyan-300 font-mono text-[11px] font-bold shadow-md">
+                    99% Match
+                  </span>
+</div>
+<div class="absolute top-2.5 right-2.5 flex items-center gap-1 px-2.5 py-1 rounded-md bg-[#070B13]/90 backdrop-blur-md border border-amber-400/40 text-amber-400 font-mono text-[11px] font-bold shadow-md">
+<span class="material-symbols-outlined text-[13px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span>8.7</span>
+</div>
+<div class="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#0D1527] to-transparent opacity-80"></div>
+</div>
+<div class="flex flex-col gap-1 pt-1">
+<div class="flex items-baseline justify-between gap-2">
+<h3 class="text-sm font-display font-bold text-white group-hover:text-cyan-300 transition-colors truncate">Interstellar</h3>
+<span class="text-xs font-mono text-slate-400 shrink-0">2014</span>
+</div>
+<div class="flex items-center justify-between text-xs text-slate-400">
+<span>Christopher Nolan</span>
+<span class="font-mono">169 min</span>
+</div>
+<div class="flex flex-wrap gap-1.5 my-1">
+<span class="px-2 py-0.5 rounded bg-[#070B13] border border-white/5 text-cyan-300 text-[10px] font-medium">Cosmo</span>
+<span class="px-2 py-0.5 rounded bg-[#070B13] border border-white/5 text-slate-300 text-[10px]">Sci-Fi</span>
+</div>
+<p class="text-xs text-slate-400 line-clamp-2 leading-relaxed">
+                  Con la Terra al collasso, un gruppo di esploratori viaggia oltre i confini galattici alla ricerca di una nuova casa.
+                </p>
+</div>
+</div>
+<div class="flex items-center gap-2 pt-3 mt-3 border-t border-white/5">
+<button class="flex-1 py-1.5 px-3 rounded-lg bg-[#070B13] hover:bg-white/10 text-center text-xs font-medium text-slate-200 transition-colors" type="button">
+                Dettagli
+              </button>
+<button class="flex-1 py-1.5 px-3 rounded-lg bg-cyan-400/10 hover:bg-cyan-400/20 text-cyan-300 border border-cyan-400/30 text-center text-xs font-medium transition-colors" type="button">
+                Simili
+              </button>
+</div>
+</article>
+<!-- Trend Card 4: Arrival -->
+<article class="group rounded-2xl bg-[#0D1527] hover:bg-[#131E35] border border-white/5 hover:border-cyan-400/40 p-3.5 flex flex-col justify-between transition-all duration-300 hover:shadow-[0_10px_30px_-10px_rgba(0,210,255,0.25)] hover:-translate-y-1">
+<div class="flex flex-col gap-3">
+<div class="relative w-full aspect-[2/3] rounded-xl overflow-hidden bg-[#070B13] border border-white/5">
+<img alt="Arrival" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCIxmws9wQJ1yYZkoN_P5VAF40CvoHfKyhJuIPTKe9Lb2eNP9nEyeCfufKDwuEV5BRCw6ea3ayHy3_Kk26GoLwaztH6Pt9BmkCVIWYOF-03hai8NB1mH-JAnQpjdTJXJjYNzIFcqnQuHxJVVSEJrPP703FRPQw11wog6W2CLlpNOciT5b4oGkNszut2E6gZBEgpcR2gnLCn54-XC2ndvZBEt0ueEyKaA9XandRc91kF5-BoRbuUgVEq"/>
+<div class="absolute top-2.5 left-2.5">
+<span class="px-2.5 py-1 rounded-md bg-[#070B13]/90 backdrop-blur-md border border-cyan-400/40 text-cyan-300 font-mono text-[11px] font-bold shadow-md">
+                    95% Match
+                  </span>
+</div>
+<div class="absolute top-2.5 right-2.5 flex items-center gap-1 px-2.5 py-1 rounded-md bg-[#070B13]/90 backdrop-blur-md border border-amber-400/40 text-amber-400 font-mono text-[11px] font-bold shadow-md">
+<span class="material-symbols-outlined text-[13px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span>8.0</span>
+</div>
+<div class="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#0D1527] to-transparent opacity-80"></div>
+</div>
+<div class="flex flex-col gap-1 pt-1">
+<div class="flex items-baseline justify-between gap-2">
+<h3 class="text-sm font-display font-bold text-white group-hover:text-cyan-300 transition-colors truncate">Arrival</h3>
+<span class="text-xs font-mono text-slate-400 shrink-0">2016</span>
+</div>
+<div class="flex items-center justify-between text-xs text-slate-400">
+<span>Denis Villeneuve</span>
+<span class="font-mono">116 min</span>
+</div>
+<div class="flex flex-wrap gap-1.5 my-1">
+<span class="px-2 py-0.5 rounded bg-[#070B13] border border-white/5 text-cyan-300 text-[10px] font-medium">Linguistica</span>
+<span class="px-2 py-0.5 rounded bg-[#070B13] border border-white/5 text-slate-300 text-[10px]">First Contact</span>
+</div>
+<p class="text-xs text-slate-400 line-clamp-2 leading-relaxed">
+                  Una linguista viene reclutata per stabilire un ponte comunicativo con misteriosi visitatori extraterrestri.
+                </p>
+</div>
+</div>
+<div class="flex items-center gap-2 pt-3 mt-3 border-t border-white/5">
+<button class="flex-1 py-1.5 px-3 rounded-lg bg-[#070B13] hover:bg-white/10 text-center text-xs font-medium text-slate-200 transition-colors" type="button">
+                Dettagli
+              </button>
+<button class="flex-1 py-1.5 px-3 rounded-lg bg-cyan-400/10 hover:bg-cyan-400/20 text-cyan-300 border border-cyan-400/30 text-center text-xs font-medium transition-colors" type="button">
+                Simili
+              </button>
+</div>
+</article>
+</div>
+</section>
+<!-- CRAWLER TELEMETRY & LIVE INGESTION FEED (Spec 25 preview) -->
+<section class="bg-[#091829] border border-cyan-500/20 rounded-2xl p-6 shadow-xl flex flex-col gap-4 mb-4">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800/80 pb-3">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-cyan-400 text-[20px]">sensors</span>
+<h2 class="font-display text-lg font-bold text-white tracking-tight">
+              Ultime Aggiunte dal Crawler &amp; Live Ingestion Feed
+            </h2>
+</div>
+<div class="flex items-center gap-2">
+<span class="flex items-center gap-1.5 text-xs font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-full">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              Ingestion Worker: Active #3
+            </span>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left text-xs font-sans">
+<thead>
+<tr class="border-b border-slate-800 text-slate-400 font-mono uppercase text-[10px] tracking-wider">
+<th class="py-2.5 px-3">Sorgente</th>
+<th class="py-2.5 px-3">Titolo &amp; Anno</th>
+<th class="py-2.5 px-3">Metadati Estratti</th>
+<th class="py-2.5 px-3">Vettorizzazione</th>
+<th class="py-2.5 px-3">Stato Ingestion</th>
+<th class="py-2.5 px-3 text-right">Timestamp</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-800/60 font-medium">
+<!-- Row 1: TMDB -->
+<tr class="hover:bg-[#0e2034]/60 transition-colors">
+<td class="py-3 px-3">
+<span class="px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-300 font-mono font-semibold border border-cyan-500/20">TMDB API v3</span>
+</td>
+<td class="py-3 px-3">
+<div class="flex flex-col">
+<span class="text-white font-semibold">Civil War</span>
+<span class="text-slate-400 font-mono text-[11px]">Alex Garland • 2024</span>
+</div>
+</td>
+<td class="py-3 px-3">
+<div class="flex items-center gap-1 text-[10px] font-mono text-slate-400">
+<span class="px-1.5 py-0.5 rounded bg-[#070B13] border border-slate-800">Cast (18)</span>
+<span class="px-1.5 py-0.5 rounded bg-[#070B13] border border-slate-800">Keyframe (32)</span>
+<span class="px-1.5 py-0.5 rounded bg-[#070B13] border border-slate-800">Sinossi IT</span>
+</div>
+</td>
+<td class="py-3 px-3">
+<span class="text-cyan-300 font-mono text-[11px]">1,536 dim • cosine ok</span>
+</td>
+<td class="py-3 px-3">
+<span class="inline-flex items-center gap-1 text-emerald-400 font-mono text-[11px]">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                    Indicizzato
+                  </span>
+</td>
+<td class="py-3 px-3 text-right text-slate-400 font-mono">2m fa</td>
+</tr>
+<!-- Row 2: Letterboxd -->
+<tr class="hover:bg-[#0e2034]/60 transition-colors">
+<td class="py-3 px-3">
+<span class="px-2 py-0.5 rounded bg-amber-500/10 text-amber-300 font-mono font-semibold border border-amber-500/20">Letterboxd Scraper</span>
+</td>
+<td class="py-3 px-3">
+<div class="flex flex-col">
+<span class="text-white font-semibold">La Chimera</span>
+<span class="text-slate-400 font-mono text-[11px]">Alice Rohrwacher • 2023</span>
+</div>
+</td>
+<td class="py-3 px-3">
+<div class="flex items-center gap-1 text-[10px] font-mono text-slate-400">
+<span class="px-1.5 py-0.5 rounded bg-[#070B13] border border-slate-800">Recensioni (1.4k)</span>
+<span class="px-1.5 py-0.5 rounded bg-[#070B13] border border-slate-800">User Tags (45)</span>
+</div>
+</td>
+<td class="py-3 px-3">
+<span class="text-cyan-300 font-mono text-[11px]">1,536 dim • cosine ok</span>
+</td>
+<td class="py-3 px-3">
+<span class="inline-flex items-center gap-1 text-emerald-400 font-mono text-[11px]">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                    Indicizzato
+                  </span>
+</td>
+<td class="py-3 px-3 text-right text-slate-400 font-mono">6m fa</td>
+</tr>
+<!-- Row 3: IMDb -->
+<tr class="hover:bg-[#0e2034]/60 transition-colors">
+<td class="py-3 px-3">
+<span class="px-2 py-0.5 rounded bg-blue-500/10 text-blue-300 font-mono font-semibold border border-blue-500/20">IMDb Datasets</span>
+</td>
+<td class="py-3 px-3">
+<div class="flex flex-col">
+<span class="text-white font-semibold">Furiosa: A Mad Max Saga</span>
+<span class="text-slate-400 font-mono text-[11px]">George Miller • 2024</span>
+</div>
+</td>
+<td class="py-3 px-3">
+<div class="flex items-center gap-1 text-[10px] font-mono text-slate-400">
+<span class="px-1.5 py-0.5 rounded bg-[#070B13] border border-slate-800">Box Office</span>
+<span class="px-1.5 py-0.5 rounded bg-[#070B13] border border-slate-800">Crew specs</span>
+</div>
+</td>
+<td class="py-3 px-3">
+<div class="flex items-center gap-2">
+<div class="w-16 bg-slate-800 rounded-full h-1.5 overflow-hidden">
+<div class="bg-cyan-400 h-full rounded-full animate-pulse" style="width: 72%"></div>
+</div>
+<span class="text-cyan-400 font-mono text-[10px]">72%</span>
+</div>
+</td>
+<td class="py-3 px-3">
+<span class="inline-flex items-center gap-1 text-cyan-400 font-mono text-[11px]">
+<span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping"></span>
+                    Calcolo Vettoriale...
+                  </span>
+</td>
+<td class="py-3 px-3 text-right text-slate-400 font-mono">11m fa</td>
+</tr>
+<!-- Row 4: Cineteca -->
+<tr class="hover:bg-[#0e2034]/60 transition-colors">
+<td class="py-3 px-3">
+<span class="px-2 py-0.5 rounded bg-purple-500/10 text-purple-300 font-mono font-semibold border border-purple-500/20">Cineteca OAI-PMH</span>
+</td>
+<td class="py-3 px-3">
+<div class="flex flex-col">
+<span class="text-white font-semibold">L'Avventura</span>
+<span class="text-slate-400 font-mono text-[11px]">Michelangelo Antonioni • 1960</span>
+</div>
+</td>
+<td class="py-3 px-3">
+<div class="flex items-center gap-1 text-[10px] font-mono text-slate-400">
+<span class="px-1.5 py-0.5 rounded bg-[#070B13] border border-slate-800">Restauro 4K</span>
+<span class="px-1.5 py-0.5 rounded bg-[#070B13] border border-slate-800">Critica Storica</span>
+</div>
+</td>
+<td class="py-3 px-3">
+<span class="text-cyan-300 font-mono text-[11px]">1,536 dim • cosine ok</span>
+</td>
+<td class="py-3 px-3">
+<span class="inline-flex items-center gap-1 text-emerald-400 font-mono text-[11px]">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                    Archiviato
+                  </span>
+</td>
+<td class="py-3 px-3 text-right text-slate-400 font-mono">19m fa</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="flex items-center justify-between pt-2 border-t border-slate-800/80 text-xs">
+<span class="text-slate-400 font-mono">Mostrando 4 pipeline recenti • Coda di attesa: 28 elementi</span>
+<a class="text-cyan-400 hover:text-cyan-300 font-mono flex items-center gap-1 font-semibold transition-colors" href="#">
+<span>Apri Console Crawler Completa</span>
+<span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</a>
+</div>
+</section>
+</main>
+</div>
+<!-- Interactive Search Prompt Helper -->
+<script>
+    function applyQuickPrompt(text) {
+      const input = document.getElementById('headerSearchInput');
+      if (input) {
+        input.value = text;
+        input.focus();
+      }
+    }
+  </script>
+</body></html>

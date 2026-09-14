@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="it"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CineVector - Movie Details: Dune - Parte Due</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;family=Plus+Jakarta+Sans:wght@500;600;700;800&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "surface-container-lowest": "#010f1f",
+            "surface-container-low": "#091728",
+            "surface-container": "#0e2034",
+            "surface-container-high": "#162b42",
+            "surface-container-highest": "#203752",
+            "background": "#051424",
+            "surface": "#051424",
+            "primary": "#a5e7ff",
+            "primary-container": "#00d2ff",
+            "on-primary-container": "#003543",
+            "secondary": "#adc6ff",
+            "secondary-container": "#0566d9",
+            "tertiary": "#69f6b9",
+            "tertiary-container": "#48d99e",
+            "outline": "#859399",
+            "outline-variant": "#233748",
+            "on-surface": "#d4e4fa",
+            "on-surface-variant": "#94a9be",
+            "amber-rating": "#f59e0b",
+            "emerald-online": "#10b981"
+          },
+          fontFamily: {
+            sans: ["Inter", "sans-serif"],
+            display: ["Plus Jakarta Sans", "Inter", "sans-serif"],
+            mono: ["JetBrains Mono", "monospace"]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    @layer base {
+      html, body {
+        margin: 0;
+        padding: 0;
+        background-color: #051424;
+      }
+    }
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #051424;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1e354f;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #00d2ff;
+    }
+  </style>
+</head>
+<body class="bg-background text-on-surface font-sans antialiased min-h-screen flex overflow-x-hidden selection:bg-primary-container selection:text-on-primary-container">
+<!-- SIDEBAR DI SINISTRA (CineVector Studio Lead Console) -->
+<aside class="fixed left-0 top-0 h-screen w-64 bg-[#071322] border-r border-[#15273b] z-50 flex flex-col justify-between shadow-2xl">
+<div class="flex flex-col">
+<!-- Logo Header -->
+<div class="h-16 px-5 flex items-center justify-between border-b border-[#15273b] bg-[#050f1c]">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center text-[#051424] shadow-md shadow-cyan-500/20">
+<span class="material-symbols-outlined text-[20px] font-bold">hub</span>
+</div>
+<div class="flex flex-col">
+<span class="font-display font-bold text-base tracking-tight text-white flex items-center gap-1.5">
+              CineVector
+              <span class="text-[9px] px-1.5 py-0.2 rounded bg-cyan-500/20 text-cyan-300 font-mono font-medium">v2.4</span>
+</span>
+<span class="text-[10px] text-slate-400 font-mono tracking-wider uppercase">Semantic Engine</span>
+</div>
+</div>
+</div>
+<!-- Section Label -->
+<div class="px-5 pt-4 pb-2">
+<span class="text-[11px] font-semibold uppercase tracking-widest text-slate-400 font-mono">Engine Console</span>
+</div>
+<!-- Navigation Links -->
+<nav class="flex flex-col gap-1 px-3">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-[#102237] transition-all text-sm font-medium" href="#">
+<span class="material-symbols-outlined text-[20px] text-slate-400">space_dashboard</span>
+<span>Dashboard</span>
+</a>
+<a class="flex items-center justify-between px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-[#102237] transition-all text-sm font-medium" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[20px] text-slate-400">movie</span>
+<span>Movies</span>
+</div>
+<span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-800 text-slate-400">12.4k</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-[#102237] transition-all text-sm font-medium" href="#">
+<span class="material-symbols-outlined text-[20px] text-slate-400">travel_explore</span>
+<span>Advanced Search</span>
+</a>
+<!-- Active Nav Item: Movie Details -->
+<a aria-current="page" class="flex items-center justify-between px-3 py-2 rounded-lg bg-gradient-to-r from-cyan-500/20 to-transparent border-l-4 border-cyan-400 text-cyan-300 font-semibold text-sm transition-all" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[20px] text-cyan-400">auto_stories</span>
+<span>Movie Details</span>
+</div>
+<span class="text-[9px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded bg-cyan-400/20 text-cyan-300 border border-cyan-400/30 font-bold">Attivo</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-[#102237] transition-all text-sm font-medium" href="#">
+<span class="material-symbols-outlined text-[20px] text-slate-400">account_tree</span>
+<span>Sources</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-[#102237] transition-all text-sm font-medium" href="#">
+<span class="material-symbols-outlined text-[20px] text-slate-400">polyline</span>
+<span>Crawler &amp; Sync</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-[#102237] transition-all text-sm font-medium" href="#">
+<span class="material-symbols-outlined text-[20px] text-slate-400">analytics</span>
+<span>Statistics</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-[#102237] transition-all text-sm font-medium" href="#">
+<span class="material-symbols-outlined text-[20px] text-slate-400">settings</span>
+<span>Settings</span>
+</a>
+</nav>
+</div>
+<!-- Vector DB Telemetry & User Profile Bottom Section -->
+<div class="p-3 border-t border-[#15273b] bg-[#050f1c] flex flex-col gap-3">
+<!-- Telemetry Box -->
+<div class="p-3 rounded-lg bg-[#0c1c2e] border border-cyan-500/20 flex flex-col gap-1.5">
+<div class="flex items-center justify-between">
+<span class="text-[10px] font-mono font-bold tracking-wider text-cyan-300 uppercase">Vector State</span>
+<span class="flex items-center gap-1 text-[10px] font-mono text-emerald-400">
+<span class="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            Online
+          </span>
+</div>
+<p class="text-[12px] font-mono text-slate-200 font-semibold leading-tight">100k+ embeddings</p>
+<div class="flex items-center justify-between text-[11px] font-mono text-slate-400">
+<span>1536 cosine index</span>
+<span class="text-cyan-400">0.9984 top</span>
+</div>
+</div>
+<!-- Studio Lead User -->
+<div class="flex items-center justify-between px-1 py-0.5">
+<div class="flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-full bg-gradient-to-tr from-cyan-600 to-blue-500 flex items-center justify-center text-white ring-1 ring-cyan-400/40 font-semibold text-xs">
+            SL
+          </div>
+<div class="flex flex-col">
+<span class="text-xs font-semibold text-slate-200 leading-tight">Studio Lead</span>
+<span class="text-[10px] text-slate-400 font-mono leading-tight">Production Console</span>
+</div>
+</div>
+<button aria-label="Impostazioni profilo" class="p-1 rounded text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</div>
+</aside>
+<!-- MAIN WRAPPER (Left padding for fixed sidebar) -->
+<div class="pl-64 w-full flex flex-col min-h-screen">
+<!-- HEADER SUPERIORE (Refined UX: Breadcrumb, Status, Cluster, Quick Actions) -->
+<header class="sticky top-0 z-40 h-16 bg-[#071322]/90 backdrop-blur-md border-b border-[#15273b] px-8 flex items-center justify-between gap-4">
+<!-- Breadcrumbs & Quick Search -->
+<div class="flex items-center gap-4 flex-1 max-w-2xl">
+<nav class="hidden md:flex items-center gap-1.5 text-xs text-slate-400 font-medium whitespace-nowrap">
+<a class="hover:text-cyan-300 transition-colors" href="#">Movies</a>
+<span class="material-symbols-outlined text-[14px] text-slate-600">chevron_right</span>
+<span class="text-cyan-400 font-semibold">Dune - Parte Due</span>
+</nav>
+<div class="w-px h-4 bg-slate-700 hidden md:block"></div>
+<div class="flex items-center gap-2 bg-[#0c1a29] border border-slate-700/60 focus-within:border-cyan-400/80 px-3 py-1.5 rounded-lg w-full transition-all">
+<span class="material-symbols-outlined text-[18px] text-cyan-400">search</span>
+<input class="bg-transparent text-xs text-slate-100 placeholder-slate-400 focus:outline-none w-full font-sans" placeholder="Cerca embedding semantici o titolo..." type="text"/>
+<span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-400">⌘K</span>
+</div>
+</div>
+<!-- Right Telemetry & Notification Elements -->
+<div class="flex items-center gap-3">
+<div class="hidden lg:flex items-center gap-2 px-2.5 py-1 rounded-full bg-[#0d1d2e] border border-emerald-500/30">
+<span class="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
+<span class="text-[11px] font-mono font-medium text-emerald-400">DB Online • 1536-dim</span>
+</div>
+<div class="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#0d1d2e] border border-slate-800 text-slate-300 text-xs font-mono">
+<span class="material-symbols-outlined text-[15px] text-cyan-400">cloud_done</span>
+<span>US-East Cluster</span>
+</div>
+<div class="w-px h-4 bg-slate-700 hidden sm:block"></div>
+<button aria-label="Notifiche" class="relative p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">
+<span class="material-symbols-outlined text-[20px]">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-cyan-400"></span>
+</button>
+<button aria-label="Parametri vettoriali" class="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">
+<span class="material-symbols-outlined text-[20px]">tune</span>
+</button>
+</div>
+</header>
+<!-- MAIN CONTENT CONTAINER -->
+<main class="flex-1 px-8 py-6 max-w-7xl w-full mx-auto flex flex-col gap-8">
+<!-- HERO CINEMATOGRAFICO BACKDROP CON GRADIENTE E TESTI NITIDI -->
+<section class="relative w-full rounded-2xl overflow-hidden border border-cyan-500/20 bg-[#071322] shadow-2xl">
+<!-- Backdrop Banner Container -->
+<div class="relative w-full min-h-[440px] flex flex-col justify-end p-8 md:p-10">
+<!-- Background Image -->
+<img alt="Dune Parte Due Cinematic Landscape" class="absolute inset-0 w-full h-full object-cover object-center pointer-events-none" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAST1Z92HAI_57MXFlY9aH0g4FOlg-Yoi23tSxefa666-6BYJir94_A2GIKR-_Qk9E8S4PiRCoJk_ZIkLtJArQDqjKppW5AvbACgvxb0msTC-fGhntNbRFhqHeOjQxkVKuNPHzUJLfBcAkL8V7xf1ogmpyy101w6wPraHD8IAnRAXK3qP3NEVYCIhbRLMeBD0PHM1Da-_tMvora01isAyYB4MFRmDVjtr914RsQ_IWH7g6IV_NrywEo"/>
+<!-- Dark Scrim Gradient per garantire contrasto e leggibilità perfetta -->
+<div class="absolute inset-0 bg-gradient-to-t from-[#071322] via-[#071322]/85 to-transparent"></div>
+<div class="absolute inset-0 bg-gradient-to-r from-[#071322] via-[#071322]/90 to-transparent max-w-4xl"></div>
+<!-- Hero Content Layer -->
+<div class="relative z-10 flex flex-col gap-4 max-w-3xl">
+<!-- Top Metadata Badges -->
+<div class="flex flex-wrap items-center gap-2">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-950/80 border border-cyan-500/40 text-cyan-300 text-xs font-mono font-semibold backdrop-blur-md">
+<span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+                Cluster: Epic Sci-Fi Space Opera • Cosine Match 98.4%
+              </span>
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#0a1829]/80 border border-slate-700 text-slate-300 text-xs font-mono backdrop-blur-md">
+<span class="material-symbols-outlined text-[14px] text-cyan-400">verified</span>
+                Verified Metadata
+              </span>
+</div>
+<!-- Title & Original Title -->
+<div class="flex flex-col">
+<h1 class="font-display text-4xl sm:text-5xl font-extrabold tracking-tight text-white leading-tight drop-shadow-md">
+                Dune - Parte Due
+              </h1>
+<p class="text-base text-slate-300 font-medium mt-1">
+                Titolo originale: <span class="text-white italic">Dune: Part Two</span> <span class="text-cyan-400 font-mono">(2024)</span>
+</p>
+</div>
+<!-- Tags, Specs & Ratings Rail -->
+<div class="flex flex-wrap items-center gap-3 pt-1">
+<!-- Genres -->
+<div class="flex items-center gap-1.5">
+<span class="px-2.5 py-0.5 rounded bg-cyan-500/15 border border-cyan-500/30 text-cyan-300 text-xs font-semibold uppercase tracking-wider">Fantascienza</span>
+<span class="px-2.5 py-0.5 rounded bg-cyan-500/15 border border-cyan-500/30 text-cyan-300 text-xs font-semibold uppercase tracking-wider">Avventura</span>
+<span class="px-2.5 py-0.5 rounded bg-cyan-500/15 border border-cyan-500/30 text-cyan-300 text-xs font-semibold uppercase tracking-wider">Epico</span>
+</div>
+<span class="text-slate-600">•</span>
+<!-- Global Rating Card -->
+<div class="flex items-center gap-2 bg-[#091829]/90 border border-amber-500/30 px-3 py-1 rounded-lg backdrop-blur-md">
+<span class="material-symbols-outlined text-amber-400 text-[18px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-display font-bold text-amber-400 text-sm">8.6</span>
+<span class="text-slate-400 text-xs font-mono">/10</span>
+<span class="text-[11px] text-slate-400 pl-1 border-l border-slate-700">(420k+ voti)</span>
+</div>
+<!-- Runtime & Format -->
+<div class="flex items-center gap-2 text-xs font-mono text-slate-300 bg-[#091829]/80 border border-slate-700/60 px-2.5 py-1 rounded-lg backdrop-blur-md">
+<span class="material-symbols-outlined text-[15px] text-cyan-400">schedule</span>
+<span>166 min (2h 46m)</span>
+<span class="text-slate-600">|</span>
+<span class="text-cyan-300">4K UHD HDR10+</span>
+</div>
+</div>
+<!-- Call to Actions Bar -->
+<div class="flex flex-wrap items-center gap-3 pt-3">
+<!-- Primary Action: Open on platform -->
+<a class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-[#051424] font-bold text-sm shadow-lg shadow-cyan-400/25 transition-all transform hover:-translate-y-0.5" href="https://www.warnerbros.com/movies/dune-part-two" rel="noopener noreferrer" target="_blank">
+<span class="material-symbols-outlined text-[18px]">open_in_new</span>
+<span>Apri su piattaforma (Max)</span>
+</a>
+<!-- Secondary Action: Similar vector movies scroll -->
+<button class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#0c2035] hover:bg-[#122b46] border border-cyan-500/30 hover:border-cyan-400 text-cyan-300 font-semibold text-sm transition-all shadow-md" onclick="document.getElementById('similar-vector-section').scrollIntoView({behavior: 'smooth'})">
+<span class="material-symbols-outlined text-[18px] text-cyan-400">scatter_plot</span>
+<span>Trova film simili vettoriali</span>
+</button>
+<!-- Bookmark & Share Action Buttons -->
+<div class="flex items-center gap-1.5 bg-[#0a1b2d]/80 border border-slate-700/70 p-1 rounded-xl backdrop-blur-md">
+<button class="p-2 rounded-lg text-slate-300 hover:text-cyan-300 hover:bg-[#132840] transition-colors" id="bookmarkBtn" title="Salva nei preferiti">
+<span class="material-symbols-outlined text-[20px]">bookmark</span>
+</button>
+<button class="p-2 rounded-lg text-slate-300 hover:text-amber-400 hover:bg-[#132840] transition-colors" id="likeBtn" title="Consiglia titolo">
+<span class="material-symbols-outlined text-[20px]">thumb_up</span>
+</button>
+<button class="p-2 rounded-lg text-slate-300 hover:text-cyan-300 hover:bg-[#132840] transition-colors" id="shareBtn" title="Copia link embedding">
+<span class="material-symbols-outlined text-[20px]">share</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- CORPO PRINCIPALE A 2 COLONNE (Specifica 24) -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+<!-- COLONNA SINISTRA: Poster & Metadati Tecnici (4 cols) -->
+<div class="lg:col-span-4 flex flex-col gap-6">
+<!-- Poster HD Framed Card -->
+<div class="bg-[#091829] border border-cyan-500/20 rounded-2xl p-4 shadow-xl flex flex-col gap-4">
+<div class="relative w-full aspect-[2/3] rounded-xl overflow-hidden bg-[#050f1c] shadow-inner group">
+<img alt="Dune Parte Due Locandina Ufficiale" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDPn3d35jeU7ZJtznAfulMNDGxiYQaVITGD_7-slxO_08givaFG5dIoMT1zeKq2enAh2vHn56VDK5eqn_s92fIY2ZhLlYXfPWRj6H3MACFuYnAphYIApK1vRaXwX4W-YvmopdZl3ZbcoCAI-dlF9VqHUQ0wpJ2MEtSQ-A5C4997kcAg6FHdRZQe34fbd_wVKh199xuBCTBr9mD_Ppc7I7GarRm_HQi2nZ1_9CfT8Em0tmDb7MluVGBG"/>
+<!-- Badge in sovrimpressione fondo poster -->
+<div class="absolute bottom-3 left-3 right-3 flex items-center justify-between p-2.5 rounded-lg bg-[#071322]/90 backdrop-blur-md border border-slate-700/80">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-cyan-400 text-[18px]">graphic_eq</span>
+<span class="text-xs font-mono text-slate-200">Dolby Atmos • Vision</span>
+</div>
+<span class="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-400/20 text-cyan-300 font-bold uppercase">Master HD</span>
+</div>
+</div>
+<!-- Punteggi Ratings Breakdown da Fonti Esterne -->
+<div class="grid grid-cols-3 gap-2">
+<div class="p-2.5 rounded-xl bg-[#0e2034] border border-slate-800 flex flex-col items-center">
+<span class="text-[11px] font-mono text-amber-400 font-bold">IMDb</span>
+<span class="text-base font-bold text-white font-display">8.6</span>
+<span class="text-[9px] text-slate-400 font-mono">420k voti</span>
+</div>
+<div class="p-2.5 rounded-xl bg-[#0e2034] border border-slate-800 flex flex-col items-center">
+<span class="text-[11px] font-mono text-cyan-400 font-bold">TMDB</span>
+<span class="text-base font-bold text-white font-display">83%</span>
+<span class="text-[9px] text-slate-400 font-mono">Top Pick</span>
+</div>
+<div class="p-2.5 rounded-xl bg-[#0e2034] border border-slate-800 flex flex-col items-center">
+<span class="text-[11px] font-mono text-emerald-400 font-bold">Letterboxd</span>
+<span class="text-base font-bold text-white font-display">4.4</span>
+<span class="text-[9px] text-slate-400 font-mono">5.0 scale</span>
+</div>
+</div>
+</div>
+<!-- Box: Sorgente & Crawler Telemetry -->
+<div class="bg-[#091829] border border-cyan-500/20 rounded-2xl p-5 shadow-lg flex flex-col gap-3">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-cyan-400 text-[18px]">sensors</span>
+<h3 class="text-xs font-mono uppercase tracking-wider font-bold text-cyan-300">Sorgente &amp; Crawler Telemetry</h3>
+</div>
+<span class="flex items-center gap-1 text-[11px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                Live Sync
+              </span>
+</div>
+<div class="flex flex-col gap-2 pt-1 text-xs">
+<div class="flex justify-between items-center py-1 border-b border-slate-800/80">
+<span class="text-slate-400 font-mono">TMDB Unique Ref:</span>
+<span class="font-mono text-slate-200 font-semibold">#693134</span>
+</div>
+<div class="flex justify-between items-center py-1 border-b border-slate-800/80">
+<span class="text-slate-400 font-mono">Scraper Pipeline:</span>
+<span class="font-medium text-slate-200">Letterboxd &amp; TMDB API v3</span>
+</div>
+<div class="flex justify-between items-center py-1">
+<span class="text-slate-400 font-mono">Ultimo Sync:</span>
+<span class="text-slate-300 font-mono text-[11px]">4 ore fa <span class="text-cyan-400 font-mono">(#78a5ff-d2)</span></span>
+</div>
+</div>
+</div>
+<!-- Box: Specifiche Audio & Video -->
+<div class="bg-[#091829] border border-cyan-500/20 rounded-2xl p-5 shadow-lg flex flex-col gap-3.5">
+<div class="flex items-center gap-2 text-cyan-300">
+<span class="material-symbols-outlined text-[20px] text-cyan-400">translate</span>
+<h3 class="text-xs font-mono uppercase tracking-wider font-bold">Specifiche Audio &amp; Video</h3>
+</div>
+<!-- Audio Streams -->
+<div class="flex flex-col gap-1.5">
+<span class="text-[11px] font-mono uppercase tracking-wider text-slate-400">Tracce Audio Disponibili:</span>
+<div class="flex flex-col gap-1.5">
+<div class="flex items-center justify-between px-3 py-1.5 rounded-lg bg-[#0e2034] border border-slate-800 text-xs">
+<span class="flex items-center gap-2 text-slate-200">
+<span class="material-symbols-outlined text-cyan-400 text-[16px]">volume_up</span>
+                    Italiano [Dolby Atmos]
+                  </span>
+<span class="text-[10px] font-mono text-cyan-300 px-1.5 py-0.5 rounded bg-cyan-950">Lossless</span>
+</div>
+<div class="flex items-center justify-between px-3 py-1.5 rounded-lg bg-[#0e2034] border border-slate-800 text-xs">
+<span class="flex items-center gap-2 text-slate-200">
+<span class="material-symbols-outlined text-slate-400 text-[16px]">volume_up</span>
+                    Inglese [Originale 7.1]
+                  </span>
+<span class="text-[10px] font-mono text-slate-400 px-1.5 py-0.5 rounded bg-slate-800">Orig</span>
+</div>
+</div>
+</div>
+<!-- Subtitles -->
+<div class="flex flex-col gap-1.5 pt-1">
+<span class="text-[11px] font-mono uppercase tracking-wider text-slate-400">Sottotitoli Integrati:</span>
+<div class="flex flex-wrap gap-1.5">
+<span class="px-2 py-0.5 rounded bg-[#0e2034] border border-slate-700 text-xs text-slate-300">Italiano</span>
+<span class="px-2 py-0.5 rounded bg-[#0e2034] border border-slate-700 text-xs text-slate-300">Inglese [CC]</span>
+<span class="px-2 py-0.5 rounded bg-[#0e2034] border border-slate-700 text-xs text-slate-300">Francese</span>
+<span class="px-2 py-0.5 rounded bg-[#0e2034] border border-slate-700 text-xs text-slate-300">Spagnolo</span>
+<span class="px-2 py-0.5 rounded bg-cyan-950 border border-cyan-500/30 text-xs text-cyan-300 font-medium">Non udenti (SDH)</span>
+</div>
+</div>
+</div>
+<!-- Box: Economia & Formato -->
+<div class="bg-[#091829] border border-cyan-500/20 rounded-2xl p-5 shadow-lg flex flex-col gap-3">
+<div class="flex items-center gap-2 text-cyan-300">
+<span class="material-symbols-outlined text-[20px] text-cyan-400">aspect_ratio</span>
+<h3 class="text-xs font-mono uppercase tracking-wider font-bold">Economia &amp; Formato</h3>
+</div>
+<div class="grid grid-cols-2 gap-3">
+<div class="p-3 rounded-xl bg-[#0e2034] border border-slate-800 flex flex-col">
+<span class="text-[10px] font-mono text-slate-400 uppercase">Budget Stimato</span>
+<span class="text-sm font-mono font-bold text-slate-100 mt-0.5">$190,000,000</span>
+</div>
+<div class="p-3 rounded-xl bg-[#0e2034] border border-slate-800 flex flex-col">
+<span class="text-[10px] font-mono text-slate-400 uppercase">Box Office Globale</span>
+<span class="text-sm font-mono font-bold text-amber-400 mt-0.5">$714,400,000</span>
+</div>
+</div>
+<div class="p-3 rounded-xl bg-[#0e2034] border border-slate-800 flex items-center justify-between">
+<div class="flex flex-col">
+<span class="text-[10px] font-mono text-slate-400 uppercase">Aspect Ratio Master</span>
+<span class="text-xs font-semibold text-slate-200">IMAX 1.43:1 &amp; 1.90:1 Expand</span>
+</div>
+<span class="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 font-semibold">Arri Alexa 65</span>
+</div>
+</div>
+<!-- Box: Coordinate Vettoriali (1536-dim PCA) -->
+<div class="bg-[#091829] border border-cyan-500/20 rounded-2xl p-5 shadow-lg flex flex-col gap-3">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2 text-cyan-300">
+<span class="material-symbols-outlined text-[20px] text-cyan-400">hub</span>
+<h3 class="text-xs font-mono uppercase tracking-wider font-bold">Coordinate Vettoriali</h3>
+</div>
+<span class="text-[10px] font-mono text-slate-400">OpenAI 3-Large</span>
+</div>
+<div class="flex flex-col gap-2 bg-[#050f1c] p-3 rounded-xl border border-slate-800/80 font-mono text-xs">
+<div class="flex items-center justify-between text-slate-400">
+<span>PCA 3D Coordinates:</span>
+<span class="text-cyan-400 font-semibold">Normalized</span>
+</div>
+<p class="text-slate-200 tracking-wider text-[11px]">
+                X: <span class="text-cyan-300 font-bold">+0.4418</span> | 
+                Y: <span class="text-cyan-300 font-bold">-0.7182</span> | 
+                Z: <span class="text-cyan-300 font-bold">+0.2201</span>
+</p>
+<!-- Small visual vector graph indicator -->
+<div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden mt-1">
+<div class="h-full bg-gradient-to-r from-cyan-400 via-blue-500 to-emerald-400 rounded-full" style="width: 88%"></div>
+</div>
+</div>
+<div class="flex flex-col gap-1 text-xs">
+<span class="text-[11px] font-mono text-slate-400">Tone Vector (Atmosfera Semantica):</span>
+<p class="text-xs font-semibold text-slate-200">Messianico • Cupo • Brutalista</p>
+</div>
+</div>
+</div>
+<!-- COLONNA DESTRA: Narrazione, Regia, Cast Principale (8 cols) -->
+<div class="lg:col-span-8 flex flex-col gap-6">
+<!-- Sezione: Sinossi Ufficiale -->
+<article class="bg-[#091829] border border-cyan-500/20 rounded-2xl p-6 shadow-xl flex flex-col gap-4">
+<div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+<div class="flex items-center gap-2 text-cyan-300">
+<span class="material-symbols-outlined text-[22px] text-cyan-400">subject</span>
+<h2 class="font-display text-lg font-bold text-white tracking-tight">Sinossi Ufficiale</h2>
+</div>
+<span class="text-xs font-mono text-slate-400">TMDB Ref: #693134</span>
+</div>
+<p class="text-slate-200 text-base leading-relaxed font-sans font-normal">
+              Il duca Paul Atreides si unisce a Chani e ai Fremen mentre trama la sua vendetta contro i cospiratori che hanno distrutto la sua nobile casata. Davanti alla scelta cruciale tra l'amore della sua vita e il destino supremo dell'universo conosciuto, Paul si sforza di prevenire un futuro oscuro e sanguinoso che solo la sua visione profetica può scorgere. Un'epopea magistrale di potere, ecologia e fede messianica sui territori ostili di Arrakis.
+            </p>
+</article>
+<!-- Sezione: Regia & Sceneggiatura -->
+<article class="bg-[#091829] border border-cyan-500/20 rounded-2xl p-6 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+<div class="flex items-center gap-4">
+<div class="relative w-16 h-16 rounded-2xl overflow-hidden bg-[#0e2034] ring-2 ring-cyan-500/30 flex-shrink-0">
+<img alt="Denis Villeneuve" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA5QvmuSsPoq3qhEN2wm2jH4F3nkn6Va8xwGbH-PkzF8Vpxvklxqus3LpXWz-akRN_fZh7zYeSVp1Ta5lgpYcwV6Qf2T5SfSXLs3IA8BpZw8oArfLivh2QkgA5oEsnJCXMbzkpd9gZSr5MFm-Inqi8mbA3N4gHz-AXizssO59dW-jqmFtiLyGwIv-taMTtgFkBhU0hjH3-6wciibz8_UPX4CptNFYb13i7XLTDPyMvV-K3pNO5EdT1C"/>
+</div>
+<div class="flex flex-col">
+<span class="text-xs font-mono text-cyan-400 font-bold uppercase tracking-wider">Regia &amp; Sceneggiatura</span>
+<h3 class="font-display text-xl font-bold text-white tracking-tight">Denis Villeneuve</h3>
+<p class="text-xs text-slate-400 mt-0.5">Autore di Blade Runner 2049, Arrival, Sicario</p>
+</div>
+</div>
+<!-- Additional Key Credits -->
+<div class="flex items-center gap-3 w-full md:w-auto">
+<div class="px-4 py-2 rounded-xl bg-[#0e2034] border border-slate-800 flex-1 md:flex-initial flex flex-col items-center text-center">
+<span class="text-[10px] font-mono text-slate-400 uppercase">Fotografia</span>
+<span class="text-xs font-semibold text-slate-100 font-sans mt-0.5">Greig Fraser</span>
+</div>
+<div class="px-4 py-2 rounded-xl bg-[#0e2034] border border-slate-800 flex-1 md:flex-initial flex flex-col items-center text-center">
+<span class="text-[10px] font-mono text-slate-400 uppercase">Colonna Sonora</span>
+<span class="text-xs font-semibold text-cyan-300 font-sans mt-0.5">Hans Zimmer</span>
+</div>
+</div>
+</article>
+<!-- Sezione: Cast Principale (5 ruoli primari accreditati) -->
+<article class="bg-[#091829] border border-cyan-500/20 rounded-2xl p-6 shadow-xl flex flex-col gap-4">
+<div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+<div class="flex items-center gap-2 text-cyan-300">
+<span class="material-symbols-outlined text-[22px] text-cyan-400">groups</span>
+<h2 class="font-display text-lg font-bold text-white tracking-tight">Cast Principale</h2>
+</div>
+<span class="text-xs font-mono text-slate-400">5 ruoli primari accreditati</span>
+</div>
+<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+<!-- Cast 1: Timothée Chalamet -->
+<div class="flex flex-col items-center text-center p-3 rounded-xl bg-[#0e2034] border border-slate-800/80 hover:border-cyan-500/40 hover:bg-[#122840] transition-all">
+<div class="w-14 h-14 rounded-full overflow-hidden ring-2 ring-cyan-400/40 mb-2 bg-[#050f1c]">
+<img alt="Timothée Chalamet" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDandy6RGlHVrG4munGF8juZzuE-qVnFQRH3TOvsQMcRGWBKbbwsWcefOGO8Zb93alu0o4_-hdtDSt7NYRGMSMSuaVFCsPYOzi9fBa2qWEGQpKcrx329TcjNYA8hbdpKfG0S47ffdF6Q8tgTWLBCUnvgumFk3OolrsjLZ5KO3qlXyddqTDxNiG1dFKL3O613vtt4zcNWDC82A_kXajaaRBrBiGE0e02m1QedgtHi17eMP7Elm-zwn3D"/>
+</div>
+<span class="text-xs font-bold text-white line-clamp-1">Timothée Chalamet</span>
+<span class="text-[11px] text-cyan-300 line-clamp-1">Paul Atreides</span>
+</div>
+<!-- Cast 2: Zendaya -->
+<div class="flex flex-col items-center text-center p-3 rounded-xl bg-[#0e2034] border border-slate-800/80 hover:border-cyan-500/40 hover:bg-[#122840] transition-all">
+<div class="w-14 h-14 rounded-full overflow-hidden ring-2 ring-cyan-400/40 mb-2 bg-[#050f1c]">
+<img alt="Zendaya" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDuFLHcj0iwUfznnA-YJpV61HUkswoahCZ2psap2Jc381ourm8o3NVEOQ40ar3YWYhKIYP-8EDQoCwIzAMES-xFLrGzLnluzaBjrUdHkwZGkHVSlPozlLZVNaHTKDd0Vxfxrzn92YQ3DUJ6aREpx15o8ZWS7OMenOfN52_W4tx3FLCPB3kLNXW9iqvKIq_NO3K1oht0Z5hGPcyRniA_GSHoKoGKcQI1uJZnjBqgROXDtveFQvjGYXve"/>
+</div>
+<span class="text-xs font-bold text-white line-clamp-1">Zendaya</span>
+<span class="text-[11px] text-cyan-300 line-clamp-1">Chani</span>
+</div>
+<!-- Cast 3: Rebecca Ferguson -->
+<div class="flex flex-col items-center text-center p-3 rounded-xl bg-[#0e2034] border border-slate-800/80 hover:border-cyan-500/40 hover:bg-[#122840] transition-all">
+<div class="w-14 h-14 rounded-full overflow-hidden ring-2 ring-cyan-400/40 mb-2 bg-[#050f1c]">
+<img alt="Rebecca Ferguson" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBAQ6ntrG9hko409UJPs-OVSsly6vSc4QVJkkrEFPmogx9XC3MV5hR_dteApONIawFT8ZtUM-h5eF9HpqbU3jpwfK_qPuc2hw0qrb5hu0G9WjY8tV1BpD2YAiL6B81l9AYouIkr5UobvVpmgchGCQ3ERKcyrjHRxyefy_axf2pgoKIwpsTfMLpfId_3FTLkWuUXK7EyCMmLesQ0mx7JzSZxbAlfYHJol6Ma2j90tf-ojj8zl8WDEdex"/>
+</div>
+<span class="text-xs font-bold text-white line-clamp-1">Rebecca Ferguson</span>
+<span class="text-[11px] text-cyan-300 line-clamp-1">Lady Jessica</span>
+</div>
+<!-- Cast 4: Javier Bardem -->
+<div class="flex flex-col items-center text-center p-3 rounded-xl bg-[#0e2034] border border-slate-800/80 hover:border-cyan-500/40 hover:bg-[#122840] transition-all">
+<div class="w-14 h-14 rounded-full overflow-hidden ring-2 ring-cyan-400/40 mb-2 bg-[#050f1c]">
+<img alt="Javier Bardem" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDgwiki1xqiYr_XIi6eDHHOdCeWCT7pCIkW0ZGFihoVuwExaG3j6rQgzPDWnEQUU7Y8IS8Y-8G6Kf9yy7gVNoJbtifYmOsm79tCJ6d_S69LcB4tZ5X1ujv5xipOTFSI9qT7kU4tNf0LBn_SY0A0ndoEvW_dlVqXetW7N5OOe8K1HsGlkZMHNMNuEhadmz4JgRQ5yMxKPoiKRrBaUDf_sMQonWCgxtwCK4VFWgJbGlFjB5XspADbqK27"/>
+</div>
+<span class="text-xs font-bold text-white line-clamp-1">Javier Bardem</span>
+<span class="text-[11px] text-cyan-300 line-clamp-1">Stilgar</span>
+</div>
+<!-- Cast 5: Austin Butler -->
+<div class="flex flex-col items-center text-center p-3 rounded-xl bg-[#0e2034] border border-slate-800/80 hover:border-cyan-500/40 hover:bg-[#122840] transition-all">
+<div class="w-14 h-14 rounded-full overflow-hidden ring-2 ring-cyan-400/40 mb-2 bg-[#050f1c]">
+<img alt="Austin Butler" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAmwA5KSZ50eqCwqwcJANORkhTdaMf1W-dWabb40hhulmzp3tKY4jQJzfydSTxcmXI1-gSqzaoWJKMExUpugCInnuEXY0vGrBU3kakcSh74HpQ60NM3ViBm2Q9K1dy36NrbZbOQyA_A2VEtcvwCYzCGsjBm2XH-WvizAwjMq6NhTVYlXzHBML_4Vpx-KWBgFj_2KGLFbZAbNWFXUox_tnvoBwcIbp4r-JqpXfG9rPZWpc8tWMJRNcSd"/>
+</div>
+<span class="text-xs font-bold text-white line-clamp-1">Austin Butler</span>
+<span class="text-[11px] text-cyan-300 line-clamp-1">Feyd-Rautha</span>
+</div>
+</div>
+</article>
+<!-- Sezione: Firma Vettoriale & Metric Clusters -->
+<article class="bg-[#091829] border border-cyan-500/20 rounded-2xl p-6 shadow-xl flex flex-col gap-4">
+<div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+<div class="flex items-center gap-2 text-cyan-300">
+<span class="material-symbols-outlined text-[22px] text-cyan-400">dataset</span>
+<h2 class="font-display text-lg font-bold text-white tracking-tight">Firma Vettoriale &amp; Spazio Semantico</h2>
+</div>
+<span class="text-xs font-mono px-2 py-0.5 rounded bg-cyan-950 border border-cyan-500/30 text-cyan-300">1536 Dimensioni</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+<div class="p-3 rounded-xl bg-[#0e2034] border border-slate-800 flex flex-col gap-1.5">
+<span class="text-[10px] font-mono text-slate-400 uppercase">Spazio Semantico</span>
+<span class="text-xs font-bold text-slate-100">Epic Sci-Fi Space Opera</span>
+<div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden mt-1">
+<div class="bg-cyan-400 h-full rounded-full" style="width: 94%"></div>
+</div>
+<span class="text-[10px] font-mono text-cyan-400">Top-1 Densità: 94%</span>
+</div>
+<div class="p-3 rounded-xl bg-[#0e2034] border border-slate-800 flex flex-col gap-1.5">
+<span class="text-[10px] font-mono text-slate-400 uppercase">Tone Vector</span>
+<span class="text-xs font-bold text-amber-400">Messianico • Cupo</span>
+<div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden mt-1">
+<div class="bg-amber-400 h-full rounded-full" style="width: 88%"></div>
+</div>
+<span class="text-[10px] font-mono text-amber-400">Indice Entropico: 0.12</span>
+</div>
+<div class="p-3 rounded-xl bg-[#0e2034] border border-slate-800 flex flex-col gap-1.5">
+<span class="text-[10px] font-mono text-slate-400 uppercase">Scale Cinematica</span>
+<span class="text-xs font-bold text-emerald-400">IMAX 1.43:1 Espanso</span>
+<div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden mt-1">
+<div class="bg-emerald-400 h-full rounded-full" style="width: 100%"></div>
+</div>
+<span class="text-[10px] font-mono text-emerald-400">Full Sensor Frame</span>
+</div>
+</div>
+</article>
+</div>
+</div>
+<!-- SEZIONE INFERIORE: FILM SIMILI & CORRELAZIONI SEMANTICHE (k-NN Latent Search) -->
+<section class="flex flex-col gap-5 pt-4 pb-12" id="similar-vector-section">
+<!-- Section Header with Filter Controls -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-800/80 pb-4">
+<div class="flex flex-col gap-1.5">
+<div class="flex items-center gap-2">
+<span class="h-2 w-2 rounded-full bg-cyan-400 animate-pulse"></span>
+<span class="text-xs font-mono uppercase tracking-widest text-cyan-400 font-bold">K-Nearest Neighbors Vector Search</span>
+</div>
+<h2 class="font-display text-2xl sm:text-3xl font-bold text-white tracking-tight">
+              Film Simili &amp; Correlazioni Semantiche (k-NN Latent Search)
+            </h2>
+<p class="text-xs sm:text-sm text-slate-400">
+              Affinità calcolate tramite cosine similarity su 1536 dimensioni sintattiche, registiche, tonali e narrative.
+            </p>
+</div>
+<!-- Controls -->
+<div class="flex items-center gap-1.5 bg-[#091829] border border-slate-800 p-1 rounded-xl">
+<button class="px-3 py-1.5 rounded-lg bg-cyan-500/20 text-cyan-300 border border-cyan-400/30 text-xs font-mono font-semibold">
+              Cosine: High-to-Low
+            </button>
+<button class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-[#0e2034] text-xs font-mono transition-colors">
+              Stesso Regista
+            </button>
+</div>
+</div>
+<!-- 4 Similar Movies Cards Grid -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+<!-- Card 1: Blade Runner 2049 -->
+<div class="bg-[#091829] hover:bg-[#0c1f34] border border-cyan-500/20 hover:border-cyan-400/50 rounded-2xl overflow-hidden p-4 flex flex-col justify-between gap-4 transition-all duration-300 shadow-xl group hover:-translate-y-1">
+<div class="flex flex-col gap-3">
+<!-- Poster Thumbnail -->
+<div class="relative w-full aspect-[16/10] rounded-xl overflow-hidden bg-[#050f1c]">
+<img alt="Blade Runner 2049" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCgzUu85eysTdtmQKKltYFF5mVnVwGo77FEeGf_38AQ5Ckk1VyVAygqNunI1aLRANH9fzPPzNgEHXwzRstcDZxi5HGA9Q9Au35ij998uC1nVJ7OKW9kj9ZIIPKuvKSiFzusEZbflVejuidQ6i8XWdX-bHmeD2ULk62wAbWhBGIEx7pU5j6dDMK4iWIKmnVXnDdUqzFX4W33WevIJes3Xm-L9_fjYNTZodyb8s8JCf8AG-iY_va4WGwl"/>
+<div class="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-[#071322]/90 backdrop-blur-md border border-cyan-400/40 text-cyan-300 text-[10px] font-mono font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]">auto_awesome</span>
+                  98% Match
+                </div>
+<div class="absolute bottom-2 left-2 px-2 py-0.5 rounded bg-[#071322]/90 backdrop-blur-md text-amber-400 text-[10px] font-mono font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]" style="font-variation-settings: 'FILL' 1;">star</span>
+                  8.0
+                </div>
+</div>
+<!-- Content Info -->
+<div class="flex flex-col">
+<h3 class="font-display text-base font-bold text-white group-hover:text-cyan-300 transition-colors line-clamp-1">Blade Runner 2049</h3>
+<span class="text-xs text-slate-400 font-sans">Denis Villeneuve • <span class="font-mono text-slate-300">2017</span></span>
+</div>
+<!-- Motivazione Semantica & Tags -->
+<p class="text-[11px] text-cyan-300/90 font-mono bg-cyan-950/60 border border-cyan-500/20 px-2 py-1 rounded-lg">
+                Tone Match: Cyberpunk • Filosofico • Roger Deakins
+              </p>
+<div class="flex flex-wrap gap-1">
+<span class="px-1.5 py-0.5 rounded bg-[#0e2034] text-[10px] font-mono text-slate-400">Stesso Regista</span>
+<span class="px-1.5 py-0.5 rounded bg-[#0e2034] text-[10px] font-mono text-slate-400">Sci-Fi Puro</span>
+</div>
+</div>
+<!-- Actions -->
+<div class="flex items-center gap-2 pt-2 border-t border-slate-800">
+<a class="flex-1 py-2 px-3 rounded-lg bg-[#0e2034] hover:bg-[#142c47] text-center text-xs font-semibold text-slate-200 transition-colors" href="#">
+                Dettagli
+              </a>
+<a class="p-2 rounded-lg bg-cyan-400 hover:bg-cyan-300 text-[#051424] transition-colors" href="https://www.warnerbros.com/movies/blade-runner-2049" rel="noopener noreferrer" target="_blank" title="Apri su piattaforma">
+<span class="material-symbols-outlined text-[16px] font-bold">open_in_new</span>
+</a>
+</div>
+</div>
+<!-- Card 2: Arrival -->
+<div class="bg-[#091829] hover:bg-[#0c1f34] border border-cyan-500/20 hover:border-cyan-400/50 rounded-2xl overflow-hidden p-4 flex flex-col justify-between gap-4 transition-all duration-300 shadow-xl group hover:-translate-y-1">
+<div class="flex flex-col gap-3">
+<!-- Poster Thumbnail -->
+<div class="relative w-full aspect-[16/10] rounded-xl overflow-hidden bg-[#050f1c]">
+<img alt="Arrival" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDFkY-vr0Fpfuy4KzBlYksN4pX9daAl2FV95L0Vcp-PZPwsqxgK85kWd6tuwFvBBw-DaKrhs9T3wGuYs1I3NV7H3vmGEARWHja1sqfpogfFv3NWacR6gu_w0Bh3vB7Y96NKzhyJGQ49WkbCOUt3Ga04XIMU5ptr_j5gVmPK48RlrB6qLYe1mBy42i3yh16Bvrbc9wnK3cEBEIowBq-2B-qfEuv0Cx8ts2HJpsYKeLw73gKteNj_wkIy"/>
+<div class="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-[#071322]/90 backdrop-blur-md border border-cyan-400/40 text-cyan-300 text-[10px] font-mono font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]">auto_awesome</span>
+                  94% Match
+                </div>
+<div class="absolute bottom-2 left-2 px-2 py-0.5 rounded bg-[#071322]/90 backdrop-blur-md text-amber-400 text-[10px] font-mono font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]" style="font-variation-settings: 'FILL' 1;">star</span>
+                  7.9
+                </div>
+</div>
+<!-- Content Info -->
+<div class="flex flex-col">
+<h3 class="font-display text-base font-bold text-white group-hover:text-cyan-300 transition-colors line-clamp-1">Arrival</h3>
+<span class="text-xs text-slate-400 font-sans">Denis Villeneuve • <span class="font-mono text-slate-300">2016</span></span>
+</div>
+<!-- Motivazione Semantica & Tags -->
+<p class="text-[11px] text-cyan-300/90 font-mono bg-cyan-950/60 border border-cyan-500/20 px-2 py-1 rounded-lg">
+                Concept Match: Linguistica Alien • Tempo Non-Lineare
+              </p>
+<div class="flex flex-wrap gap-1">
+<span class="px-1.5 py-0.5 rounded bg-[#0e2034] text-[10px] font-mono text-slate-400">Stesso Regista</span>
+<span class="px-1.5 py-0.5 rounded bg-[#0e2034] text-[10px] font-mono text-slate-400">First Contact</span>
+</div>
+</div>
+<!-- Actions -->
+<div class="flex items-center gap-2 pt-2 border-t border-slate-800">
+<a class="flex-1 py-2 px-3 rounded-lg bg-[#0e2034] hover:bg-[#142c47] text-center text-xs font-semibold text-slate-200 transition-colors" href="#">
+                Dettagli
+              </a>
+<a class="p-2 rounded-lg bg-cyan-400 hover:bg-cyan-300 text-[#051424] transition-colors" href="https://www.paramountpictures.com/movies/arrival" rel="noopener noreferrer" target="_blank" title="Apri su piattaforma">
+<span class="material-symbols-outlined text-[16px] font-bold">open_in_new</span>
+</a>
+</div>
+</div>
+<!-- Card 3: Interstellar -->
+<div class="bg-[#091829] hover:bg-[#0c1f34] border border-cyan-500/20 hover:border-cyan-400/50 rounded-2xl overflow-hidden p-4 flex flex-col justify-between gap-4 transition-all duration-300 shadow-xl group hover:-translate-y-1">
+<div class="flex flex-col gap-3">
+<!-- Poster Thumbnail -->
+<div class="relative w-full aspect-[16/10] rounded-xl overflow-hidden bg-[#050f1c]">
+<img alt="Interstellar" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDvw3FX0tm2GcMbnE_iLjoUT1LsX5HY1Wi7EjyQRhT3-AR2BQuJzy9Zs7dXk9CzARcIyhd7Eya9m9k7ufzaTJT7_YZuBup_M-_D9aWxuzQd6L8Q908AY2VCeZo5_-fpS9y6QRKL37lR72QZC0EHXkiKAtIiO06QCPlIiuTqz-ejMAVVA0_MtOnE5ZQGAt7QmJbOKVQR682-y8mrsEq3NRNOJFnoOme0EkF1sf_4qMf0HV1rxy1PtmjW"/>
+<div class="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-[#071322]/90 backdrop-blur-md border border-cyan-400/40 text-cyan-300 text-[10px] font-mono font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]">auto_awesome</span>
+                  91% Match
+                </div>
+<div class="absolute bottom-2 left-2 px-2 py-0.5 rounded bg-[#071322]/90 backdrop-blur-md text-amber-400 text-[10px] font-mono font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]" style="font-variation-settings: 'FILL' 1;">star</span>
+                  8.7
+                </div>
+</div>
+<!-- Content Info -->
+<div class="flex flex-col">
+<h3 class="font-display text-base font-bold text-white group-hover:text-cyan-300 transition-colors line-clamp-1">Interstellar</h3>
+<span class="text-xs text-slate-400 font-sans">Christopher Nolan • <span class="font-mono text-slate-300">2014</span></span>
+</div>
+<!-- Motivazione Semantica & Tags -->
+<p class="text-[11px] text-cyan-300/90 font-mono bg-cyan-950/60 border border-cyan-500/20 px-2 py-1 rounded-lg">
+                Scale Match: Sci-Fi Spaziale • Score Hans Zimmer
+              </p>
+<div class="flex flex-wrap gap-1">
+<span class="px-1.5 py-0.5 rounded bg-[#0e2034] text-[10px] font-mono text-slate-400">Cosmic Scale</span>
+<span class="px-1.5 py-0.5 rounded bg-[#0e2034] text-[10px] font-mono text-slate-400">Gravità &amp; Tempo</span>
+</div>
+</div>
+<!-- Actions -->
+<div class="flex items-center gap-2 pt-2 border-t border-slate-800">
+<a class="flex-1 py-2 px-3 rounded-lg bg-[#0e2034] hover:bg-[#142c47] text-center text-xs font-semibold text-slate-200 transition-colors" href="#">
+                Dettagli
+              </a>
+<a class="p-2 rounded-lg bg-cyan-400 hover:bg-cyan-300 text-[#051424] transition-colors" href="https://www.paramountmovies.com/movies/interstellar" rel="noopener noreferrer" target="_blank" title="Apri su piattaforma">
+<span class="material-symbols-outlined text-[16px] font-bold">open_in_new</span>
+</a>
+</div>
+</div>
+<!-- Card 4: Lawrence d'Arabia -->
+<div class="bg-[#091829] hover:bg-[#0c1f34] border border-cyan-500/20 hover:border-cyan-400/50 rounded-2xl overflow-hidden p-4 flex flex-col justify-between gap-4 transition-all duration-300 shadow-xl group hover:-translate-y-1">
+<div class="flex flex-col gap-3">
+<!-- Poster Thumbnail -->
+<div class="relative w-full aspect-[16/10] rounded-xl overflow-hidden bg-[#050f1c]">
+<img alt="Lawrence d'Arabia" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDHMNiwsOPwl2QrWGf5ljaIWL3naJCY-vLDfjRVh_-CLYfQwBONI05g9dB4-hj92ZD4okCdC38m-jdaB0PIl_WKezz04ykp4vN51FAP7yEzvZliev2KkQOT33aaTva1JheTWngFCvOdCCQqigkDWX61PgjSf-42rMtpPubN1nMAe00t53bLpdaNnAMVOjM_5rCCUVuwkZY3zQM0wXorWAWIZFvWHlQWkF-Xp2tSXjmDAniOvDWRuQBo"/>
+<div class="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-[#071322]/90 backdrop-blur-md border border-amber-400/40 text-amber-300 text-[10px] font-mono font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]">psychology</span>
+                  88% Narrativo
+                </div>
+<div class="absolute bottom-2 left-2 px-2 py-0.5 rounded bg-[#071322]/90 backdrop-blur-md text-amber-400 text-[10px] font-mono font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]" style="font-variation-settings: 'FILL' 1;">star</span>
+                  8.3
+                </div>
+</div>
+<!-- Content Info -->
+<div class="flex flex-col">
+<h3 class="font-display text-base font-bold text-white group-hover:text-cyan-300 transition-colors line-clamp-1">Lawrence d'Arabia</h3>
+<span class="text-xs text-slate-400 font-sans">David Lean • <span class="font-mono text-slate-300">1962</span></span>
+</div>
+<!-- Motivazione Semantica & Tags -->
+<p class="text-[11px] text-amber-300/90 font-mono bg-amber-950/40 border border-amber-500/20 px-2 py-1 rounded-lg">
+                Narrative Anchor: Epica nel Deserto • Archetipo Messia
+              </p>
+<div class="flex flex-wrap gap-1">
+<span class="px-1.5 py-0.5 rounded bg-[#0e2034] text-[10px] font-mono text-slate-400">70mm Super Panavision</span>
+<span class="px-1.5 py-0.5 rounded bg-[#0e2034] text-[10px] font-mono text-slate-400">Classico Storico</span>
+</div>
+</div>
+<!-- Actions -->
+<div class="flex items-center gap-2 pt-2 border-t border-slate-800">
+<a class="flex-1 py-2 px-3 rounded-lg bg-[#0e2034] hover:bg-[#142c47] text-center text-xs font-semibold text-slate-200 transition-colors" href="#">
+                Dettagli
+              </a>
+<a class="p-2 rounded-lg bg-cyan-400 hover:bg-cyan-300 text-[#051424] transition-colors" href="https://www.sonypictures.com/movies/lawrenceofarabia" rel="noopener noreferrer" target="_blank" title="Apri su piattaforma">
+<span class="material-symbols-outlined text-[16px] font-bold">open_in_new</span>
+</a>
+</div>
+</div>
+</div>
+</section>
+</main>
+</div>
+<!-- Interactive script for bookmark, rating, and share feedback -->
+<script>
+    (function initMovieDetailsInteractions() {
+      const bookmarkBtn = document.getElementById('bookmarkBtn');
+      const likeBtn = document.getElementById('likeBtn');
+      const shareBtn = document.getElementById('shareBtn');
+
+      if (bookmarkBtn) {
+        bookmarkBtn.addEventListener('click', function() {
+          const icon = this.querySelector('.material-symbols-outlined');
+          const isBookmarked = icon.style.fontVariationSettings && icon.style.fontVariationSettings.includes("'FILL' 1");
+          if (isBookmarked) {
+            icon.style.fontVariationSettings = "'FILL' 0";
+            this.classList.remove('text-cyan-300', 'bg-[#132840]');
+          } else {
+            icon.style.fontVariationSettings = "'FILL' 1";
+            this.classList.add('text-cyan-300', 'bg-[#132840]');
+          }
+        });
+      }
+
+      if (likeBtn) {
+        likeBtn.addEventListener('click', function() {
+          const icon = this.querySelector('.material-symbols-outlined');
+          const isFilled = icon.style.fontVariationSettings && icon.style.fontVariationSettings.includes("'FILL' 1");
+          if (isFilled) {
+            icon.style.fontVariationSettings = "'FILL' 0";
+            this.classList.remove('text-amber-400', 'bg-[#132840]');
+          } else {
+            icon.style.fontVariationSettings = "'FILL' 1";
+            this.classList.add('text-amber-400', 'bg-[#132840]');
+          }
+        });
+      }
+
+      if (shareBtn) {
+        shareBtn.addEventListener('click', function() {
+          if (navigator.clipboard) {
+            navigator.clipboard.writeText(window.location.href);
+            const originalHTML = this.innerHTML;
+            this.innerHTML = '<span class="material-symbols-outlined text-emerald-400 text-[20px]">check</span>';
+            setTimeout(() => {
+              this.innerHTML = originalHTML;
+            }, 1800);
+          }
+        });
+      }
+    })();
+  </script>
+</body></html>

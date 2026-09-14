@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="it"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CineVector - Console Semantica &amp; Vector DB</title>
+<!-- Fonts & Icons -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            // Semantic Nebula Dark Palette
+            "background": "#051424",
+            "surface": "#051424",
+            "surface-dim": "#010f1f",
+            "surface-container-lowest": "#010f1f",
+            "surface-container-low": "#0d1c2d",
+            "surface-container": "#13253b",
+            "surface-container-high": "#1c324e",
+            "surface-container-highest": "#273f60",
+            "surface-bright": "#223d60",
+            
+            "primary": "#00d2ff",
+            "primary-fixed": "#a5e7ff",
+            "on-primary": "#003543",
+            
+            "secondary": "#fbbf24",
+            "secondary-container": "#0566d9",
+            "on-secondary": "#001a42",
+            
+            "tertiary": "#10b981",
+            "tertiary-container": "#005b3d",
+            "on-tertiary": "#003824",
+            
+            "on-surface": "#d4e4fa",
+            "on-surface-variant": "#94a8c2",
+            "outline": "#476180",
+            "outline-variant": "#223854",
+            
+            "error": "#ffb4ab",
+            "error-container": "#93000a"
+          },
+          fontFamily: {
+            sans: ["Inter", "sans-serif"],
+            display: ["Plus Jakarta Sans", "Inter", "sans-serif"]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    @layer base {
+      html, body {
+        margin: 0;
+        padding: 0;
+        background-color: #051424;
+        color: #d4e4fa;
+        font-family: 'Inter', sans-serif;
+      }
+    }
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #010f1f;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1c324e;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #00d2ff;
+    }
+  </style>
+</head>
+<body class="bg-background text-on-surface antialiased flex min-h-screen overflow-x-hidden">
+<!-- Unified Sidebar Navigation -->
+<aside class="fixed left-0 top-0 h-screen w-64 bg-surface-container-low/95 border-r border-outline-variant/60 backdrop-blur-xl z-50 flex flex-col justify-between">
+<div class="flex flex-col">
+<!-- Logo Header -->
+<div class="h-16 px-5 flex items-center gap-3 border-b border-outline-variant/40 bg-surface-container-lowest/80">
+<div class="w-9 h-9 rounded-lg bg-gradient-to-tr from-primary/30 to-primary/10 border border-primary/40 flex items-center justify-center text-primary shadow-[0_0_12px_rgba(0,210,255,0.25)]">
+<span class="material-symbols-outlined text-[22px]">blur_on</span>
+</div>
+<div class="flex flex-col">
+<span class="font-display font-bold text-lg text-white tracking-tight leading-none">Cine<span class="text-primary">Vector</span></span>
+<span class="text-[10px] text-primary/80 uppercase font-mono tracking-wider mt-0.5">Semantic Core v2.4</span>
+</div>
+</div>
+<!-- Navigation Section Label -->
+<div class="px-5 pt-5 pb-2">
+<span class="text-[11px] uppercase font-bold tracking-wider text-on-surface-variant/70">Engine Console</span>
+</div>
+<!-- Nav Items -->
+<nav class="flex flex-col gap-1 px-3">
+<a aria-current="page" class="flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium text-sm transition-all bg-primary/15 text-primary border border-primary/30 shadow-[0_0_15px_rgba(0,210,255,0.15)]" href="#">
+<span class="material-symbols-outlined text-[20px]">space_dashboard</span>
+<span>Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium text-sm text-on-surface-variant hover:text-white hover:bg-surface-container transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]">movie</span>
+<span>Catalogo Film</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium text-sm text-on-surface-variant hover:text-white hover:bg-surface-container transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]">travel_explore</span>
+<span>Ricerca Semantica</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium text-sm text-on-surface-variant hover:text-white hover:bg-surface-container transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]">auto_stories</span>
+<span>Schede Vettoriali</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium text-sm text-on-surface-variant hover:text-white hover:bg-surface-container transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]">hub</span>
+<span>Cluster &amp; Sorgenti</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium text-sm text-on-surface-variant hover:text-white hover:bg-surface-container transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]">polyline</span>
+<span>Crawler Ingestion</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium text-sm text-on-surface-variant hover:text-white hover:bg-surface-container transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]">analytics</span>
+<span>Metriche &amp; Latency</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium text-sm text-on-surface-variant hover:text-white hover:bg-surface-container transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+<span>Impostazioni</span>
+</a>
+</nav>
+</div>
+<!-- Sidebar Footer / Cluster Status -->
+<div class="p-3 border-t border-outline-variant/40 bg-surface-container-lowest/60 flex flex-col gap-3">
+<div class="rounded-xl bg-surface-container/80 border border-outline-variant/50 p-3 flex flex-col gap-1.5">
+<div class="flex items-center justify-between">
+<span class="text-[10px] uppercase font-bold tracking-wider text-on-surface-variant">Vector DB Status</span>
+<span class="inline-flex items-center gap-1 text-[11px] font-mono text-tertiary">
+<span class="h-2 w-2 rounded-full bg-tertiary animate-pulse"></span>
+            Online
+          </span>
+</div>
+<p class="text-xs font-mono text-primary">cine-prod-eu01 • 1536-D</p>
+<p class="text-[11px] text-on-surface-variant">100k+ embedding residenti</p>
+</div>
+<!-- Studio Profile Pill -->
+<div class="flex items-center justify-between p-1.5 rounded-lg hover:bg-surface-container transition-colors">
+<div class="flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-full bg-gradient-to-tr from-primary to-secondary-container flex items-center justify-center text-on-primary font-bold text-xs shadow-sm">
+            SL
+          </div>
+<div class="flex flex-col">
+<span class="text-xs font-semibold text-white leading-tight">Studio Lead</span>
+<span class="text-[10px] text-on-surface-variant leading-tight">Admin Console</span>
+</div>
+</div>
+<button class="text-on-surface-variant hover:text-primary transition-colors p-1" title="Opzioni account">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<div class="pl-64 flex-1 flex flex-col min-w-0">
+<!-- Topbar with Omnibar & Cluster Selectors -->
+<header class="sticky top-0 z-40 h-16 bg-surface-container-lowest/85 backdrop-blur-md border-b border-outline-variant/50 px-6 flex items-center justify-between gap-4">
+<!-- Semantic Omnibar -->
+<div class="flex items-center gap-3 w-full max-w-xl">
+<div class="relative w-full flex items-center">
+<span class="material-symbols-outlined absolute left-3.5 text-primary text-[20px] pointer-events-none">search</span>
+<input class="w-full bg-surface-container-low border border-outline-variant/70 rounded-xl py-2 pl-10 pr-16 text-sm text-white placeholder:text-on-surface-variant/70 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-inner transition-all" id="omni-search-input" placeholder="Cerca per concetto semantico, trama, regista, atmosfera..." type="text"/>
+<kbd class="absolute right-3 px-1.5 py-0.5 rounded bg-surface-container-high border border-outline-variant text-[10px] font-mono text-on-surface-variant font-medium">⌘K</kbd>
+</div>
+</div>
+<!-- Quick Telemetry & Status Right Rail -->
+<div class="flex items-center gap-3">
+<!-- Node State Capsule -->
+<div class="hidden md:flex items-center gap-2 bg-surface-container-low border border-outline-variant/60 px-3 py-1.5 rounded-lg text-xs">
+<span class="h-2 w-2 rounded-full bg-tertiary shadow-[0_0_8px_rgba(16,185,129,0.6)]"></span>
+<span class="font-mono text-on-surface-variant">Cluster:</span>
+<span class="font-semibold text-white">US-East (AWS-EKS)</span>
+</div>
+<!-- Semantic Model Tag -->
+<div class="hidden lg:flex items-center gap-1.5 bg-primary/10 border border-primary/30 px-2.5 py-1 rounded-lg text-xs font-mono text-primary">
+<span class="material-symbols-outlined text-[15px]">model_training</span>
+<span>Vector v2.4 (1536-D)</span>
+</div>
+<!-- Notification Bell -->
+<button aria-label="Notifiche" class="relative p-2 rounded-lg bg-surface-container-low border border-outline-variant/50 text-on-surface-variant hover:text-white hover:border-primary/40 transition-colors">
+<span class="material-symbols-outlined text-[20px]">notifications</span>
+<span class="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-secondary ring-2 ring-background"></span>
+</button>
+<!-- Node Tuning -->
+<button aria-label="Parametri similarity" class="p-2 rounded-lg bg-surface-container-low border border-outline-variant/50 text-on-surface-variant hover:text-primary hover:border-primary/40 transition-colors">
+<span class="material-symbols-outlined text-[20px]">tune</span>
+</button>
+<!-- Mini Avatar -->
+<div class="w-8 h-8 rounded-lg bg-surface-container-high border border-primary/40 text-primary flex items-center justify-center font-bold text-xs">
+          CV
+        </div>
+</div>
+</header>
+<!-- Main Workspace Container -->
+<main class="flex-1 p-6 lg:p-8 space-y-8 max-w-[1600px] w-full mx-auto">
+<!-- KPI METRIC BAR & PROMPT QUICK-LAUNCHER -->
+<section class="bg-surface-container-low border border-outline-variant/60 rounded-2xl p-5 shadow-xl shadow-black/20">
+<!-- Live Metrics Grid -->
+<div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+<!-- Metric 1 -->
+<div class="bg-surface-container-lowest/80 border border-outline-variant/40 rounded-xl p-3.5 flex flex-col justify-between">
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="text-[11px] uppercase tracking-wider font-semibold">Film Censiti</span>
+<span class="material-symbols-outlined text-[18px] text-primary">movie_filter</span>
+</div>
+<div class="mt-2 flex items-baseline gap-2">
+<span class="text-2xl font-display font-bold text-white tracking-tight">48,290</span>
+<span class="text-xs font-mono text-tertiary font-medium bg-tertiary/10 px-1.5 py-0.5 rounded">+124 oggi</span>
+</div>
+</div>
+<!-- Metric 2 -->
+<div class="bg-surface-container-lowest/80 border border-outline-variant/40 rounded-xl p-3.5 flex flex-col justify-between">
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="text-[11px] uppercase tracking-wider font-semibold">Ultimo Sync</span>
+<span class="material-symbols-outlined text-[18px] text-secondary">sync_saved_locally</span>
+</div>
+<div class="mt-2 flex items-baseline gap-2">
+<span class="text-2xl font-display font-bold text-white tracking-tight">12m fa</span>
+<span class="text-[11px] font-mono text-on-surface-variant">Delta OK</span>
+</div>
+</div>
+<!-- Metric 3 -->
+<div class="bg-surface-container-lowest/80 border border-outline-variant/40 rounded-xl p-3.5 flex flex-col justify-between">
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="text-[11px] uppercase tracking-wider font-semibold">Vettori Attivi</span>
+<span class="material-symbols-outlined text-[18px] text-primary">hub</span>
+</div>
+<div class="mt-2 flex items-baseline gap-2">
+<span class="text-2xl font-display font-bold text-white tracking-tight">1,536-D</span>
+<span class="text-xs font-mono text-primary bg-primary/10 px-1.5 py-0.5 rounded">Sim ≥ 0.88</span>
+</div>
+</div>
+<!-- Metric 4 -->
+<div class="bg-surface-container-lowest/80 border border-outline-variant/40 rounded-xl p-3.5 flex flex-col justify-between">
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="text-[11px] uppercase tracking-wider font-semibold">Crawler Engine</span>
+<span class="material-symbols-outlined text-[18px] text-tertiary">stream</span>
+</div>
+<div class="mt-2 flex items-baseline gap-2">
+<span class="text-2xl font-display font-bold text-white tracking-tight">4 Attive</span>
+<span class="text-xs font-mono text-tertiary flex items-center gap-1">
+<span class="h-2 w-2 rounded-full bg-tertiary animate-ping"></span> Live
+              </span>
+</div>
+</div>
+<!-- Metric 5 / Space Node -->
+<div class="col-span-2 md:col-span-4 lg:col-span-1 bg-surface-container-lowest/80 border border-outline-variant/40 rounded-xl p-3.5 flex flex-col justify-between">
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="text-[11px] uppercase tracking-wider font-semibold">Spazio Semantico</span>
+<span class="material-symbols-outlined text-[18px] text-primary">memory</span>
+</div>
+<div class="mt-2 flex items-center justify-between">
+<span class="text-xs font-mono text-primary truncate max-w-[120px]">node-eu-01</span>
+<span class="text-xs font-mono font-bold bg-primary/15 text-primary border border-primary/30 px-2 py-0.5 rounded-full">99.98%</span>
+</div>
+</div>
+</div>
+<!-- Quick Semantic Prompts Pill Bar -->
+<div class="mt-4 pt-4 border-t border-outline-variant/40 flex flex-col md:flex-row md:items-center justify-between gap-3">
+<div class="flex items-center gap-2 text-primary font-medium text-xs shrink-0">
+<span class="material-symbols-outlined text-[18px]">auto_awesome</span>
+<span>Prompt Semantici Rapidi:</span>
+</div>
+<div class="flex flex-wrap items-center gap-2 flex-1" id="prompt-pills-container">
+<button class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-container border border-outline-variant/60 hover:border-primary hover:bg-surface-container-high text-xs text-on-surface hover:text-primary transition-all shadow-sm" onclick="applySemanticPrompt('film di fantascienza dal 2020 al 2025')" type="button">
+<span class="material-symbols-outlined text-[14px] text-primary">explore</span>
+<span>“film di fantascienza dal 2020 al 2025”</span>
+</button>
+<button class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-container border border-outline-variant/60 hover:border-primary hover:bg-surface-container-high text-xs text-on-surface hover:text-primary transition-all shadow-sm" onclick="applySemanticPrompt('film con Tom Hanks ambientati in Italia')" type="button">
+<span class="material-symbols-outlined text-[14px] text-secondary">person_search</span>
+<span>“film con Tom Hanks ambientati in Italia”</span>
+</button>
+<button class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-container border border-outline-variant/60 hover:border-primary hover:bg-surface-container-high text-xs text-on-surface hover:text-primary transition-all shadow-sm" onclick="applySemanticPrompt('thriller psicologico sopra 7')" type="button">
+<span class="material-symbols-outlined text-[14px] text-tertiary">psychology</span>
+<span>“thriller psicologico sopra 7”</span>
+</button>
+</div>
+<span class="text-xs font-mono text-tertiary opacity-0 transition-opacity duration-300" id="prompt-status-msg">Prompt caricato</span>
+</div>
+</section>
+<!-- 1. CINEMATIC HERO SPOTLIGHT SECTION (High Impact, Widescreen, No Text Overlap) -->
+<section class="relative w-full rounded-2xl overflow-hidden border border-outline-variant/70 bg-surface-container-lowest shadow-2xl">
+<!-- High-Res Background Image Container -->
+<div class="relative w-full min-h-[500px] lg:min-h-[560px] flex items-end">
+<div class="absolute inset-0 w-full h-full bg-cover bg-center" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBq2AVADWxEuYs9OxJ-bkgNy75yXSbhF9C2PcTLmXa2vu4NQePWeQGKeUuo4UjsrB_1jyMWHEPhnB5ERQLg5NHTOIt-i1eJY8B_4Mjn0N9he8yL94jPHzveUKKM_zmPsCivcjXrbdDNhuMoMZBIEtjM8Xy69m109mmYums3EBJYrI6NjXzHFsYP66wTzNsKO0vg2GthkaOTz69Chy46eZQ1oi1RETBNI3jKiNgICABSprIzw6LI4rAV');"></div>
+<!-- Deep Gradient Protection Overlays ensuring crystal-clear text readability -->
+<div class="absolute inset-0 bg-gradient-to-t from-[#051424] via-[#051424]/85 to-transparent"></div>
+<div class="absolute inset-0 bg-gradient-to-r from-[#051424] via-[#051424]/75 to-transparent/30"></div>
+<div class="absolute top-0 right-0 w-[450px] h-[450px] bg-primary/10 rounded-full blur-3xl pointer-events-none"></div>
+<!-- Content Layout -->
+<div class="relative z-10 p-6 md:p-10 lg:p-12 w-full max-w-4xl flex flex-col gap-4">
+<!-- Metadata & Badges Rail -->
+<div class="flex flex-wrap items-center gap-2.5">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/20 border border-primary/40 text-primary text-xs font-bold uppercase tracking-wider backdrop-blur-md">
+<span class="h-1.5 w-1.5 rounded-full bg-primary animate-pulse"></span>
+                Spotlight del Giorno
+              </span>
+<span class="px-2.5 py-1 rounded-md bg-surface-container-low/90 border border-outline-variant/60 text-white text-xs font-mono backdrop-blur-md">
+                4K HDR • Dolby Atmos
+              </span>
+<span class="px-2.5 py-1 rounded-md bg-surface-container-low/90 border border-outline-variant/60 text-white text-xs font-mono backdrop-blur-md">
+                2h 46min
+              </span>
+<!-- Star Rating Badge -->
+<div class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-secondary/20 border border-secondary/40 text-secondary text-xs font-bold backdrop-blur-md">
+<span class="material-symbols-outlined text-[16px] text-secondary" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="text-white text-sm">8.8</span>
+<span class="text-secondary/80 text-[11px]">/ 10</span>
+</div>
+<!-- Vector Similarity Score -->
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-tertiary/20 border border-tertiary/40 text-tertiary text-xs font-mono font-bold backdrop-blur-md">
+<span class="material-symbols-outlined text-[14px]">insights</span>
+                Embedding Match 99.4%
+              </span>
+</div>
+<!-- Title and Subhead -->
+<div class="flex flex-col gap-1">
+<span class="text-xs md:text-sm font-mono tracking-widest text-primary uppercase font-semibold">
+                Denis Villeneuve • 2024 • Warner Bros.
+              </span>
+<h1 class="text-3xl md:text-5xl lg:text-6xl font-display font-extrabold text-white tracking-tight leading-tight drop-shadow-md">
+                Dune: Part Two
+              </h1>
+</div>
+<!-- Legible Extended Synopsis -->
+<p class="text-sm md:text-base text-on-surface-variant max-w-3xl leading-relaxed">
+              Paul Atreides si unisce a Chani e ai Fremen mentre trama la vendetta contro i cospiratori che hanno distrutto la sua famiglia. Di fronte alla scelta tra l'amore della sua vita e il destino dell'universo, intraprende una guerra per prevenire un futuro terribile che solo lui può prevedere.
+            </p>
+<!-- Vector Cluster Tags -->
+<div class="flex flex-wrap items-center gap-2 pt-1">
+<span class="px-2.5 py-1 rounded-lg bg-surface-container border border-outline-variant/60 text-xs text-white font-medium flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-primary">local_fire_department</span>
+                Fantascienza Epica
+              </span>
+<span class="px-2.5 py-1 rounded-lg bg-surface-container border border-outline-variant/60 text-xs text-on-surface-variant font-mono">
+                #MessiahComplex
+              </span>
+<span class="px-2.5 py-1 rounded-lg bg-surface-container border border-outline-variant/60 text-xs text-on-surface-variant font-mono">
+                #GeopoliticaSpaziale
+              </span>
+<span class="px-2.5 py-1 rounded-lg bg-surface-container border border-outline-variant/60 text-xs text-on-surface-variant font-mono">
+                #ColonnaSonoraZimmer
+              </span>
+<span class="px-2.5 py-1 rounded-lg bg-primary/10 border border-primary/30 text-xs text-primary font-mono flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">device_hub</span>
+                Cluster Arrakis • 84 film correlati
+              </span>
+</div>
+<!-- CTA Action Group -->
+<div class="flex flex-wrap items-center gap-3 pt-2">
+<button class="px-5 py-2.5 rounded-xl bg-primary text-on-primary font-bold text-sm flex items-center gap-2 hover:bg-primary-fixed transition-all shadow-[0_0_20px_rgba(0,210,255,0.35)]" type="button">
+<span class="material-symbols-outlined text-[20px]">explore</span>
+<span>Esplora Dettaglio Vettoriale</span>
+</button>
+<a class="px-5 py-2.5 rounded-xl bg-surface-container border border-outline-variant/80 text-white hover:text-primary hover:border-primary/50 text-sm font-semibold flex items-center gap-2 transition-all" href="https://www.justwatch.com" rel="noopener noreferrer" target="_blank">
+<span class="material-symbols-outlined text-[18px] text-secondary">open_in_new</span>
+<span>Guarda su Piattaforma</span>
+</a>
+<button aria-label="Aggiungi ai preferiti semantici" class="p-2.5 rounded-xl bg-surface-container border border-outline-variant/80 text-on-surface-variant hover:text-primary hover:border-primary/40 transition-colors">
+<span class="material-symbols-outlined text-[20px]">bookmark_add</span>
+</button>
+<button aria-label="Visualizza grafo semantico" class="p-2.5 rounded-xl bg-surface-container border border-outline-variant/80 text-on-surface-variant hover:text-primary hover:border-primary/40 transition-colors">
+<span class="material-symbols-outlined text-[20px]">share</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- 2. TREND DEL MOMENTO (Grand Poster-Ratio Visual Cards with Actions) -->
+<section class="space-y-4">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-2.5 h-6 bg-primary rounded-full shadow-[0_0_10px_rgba(0,210,255,0.8)]"></div>
+<div>
+<h2 class="text-xl md:text-2xl font-display font-bold text-white tracking-tight">Trend del Momento</h2>
+<p class="text-xs text-on-surface-variant">Titoli in rapida ascesa nel grafo vettoriale per correlazione semantica</p>
+</div>
+</div>
+<!-- Rail Controls -->
+<div class="flex items-center gap-2">
+<button aria-label="Scorri sinistra" class="p-2 rounded-xl bg-surface-container-low border border-outline-variant/60 hover:border-primary/50 hover:bg-surface-container text-on-surface-variant hover:text-white transition-all" id="scroll-trend-left">
+<span class="material-symbols-outlined text-[20px]">chevron_left</span>
+</button>
+<button aria-label="Scorri destra" class="p-2 rounded-xl bg-surface-container-low border border-outline-variant/60 hover:border-primary/50 hover:bg-surface-container text-on-surface-variant hover:text-white transition-all" id="scroll-trend-right">
+<span class="material-symbols-outlined text-[20px]">chevron_right</span>
+</button>
+</div>
+</div>
+<!-- Cards Carousel / Horizontal Rail -->
+<div class="flex gap-5 overflow-x-auto pb-4 scroll-smooth" id="trend-cards-rail">
+<!-- Card 1: Oppenheimer -->
+<article class="flex-none w-80 bg-surface-container-low border border-outline-variant/60 hover:border-primary/50 rounded-2xl overflow-hidden group hover:-translate-y-1 transition-all duration-300 shadow-lg flex flex-col justify-between">
+<div class="relative aspect-[16/10] w-full overflow-hidden bg-surface-container-lowest">
+<div class="w-full h-full bg-cover bg-center group-hover:scale-105 transition-transform duration-500" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAjNexjSit0KzD9Hweicj8goQnpbejD1i0TDKzUxPOm-kgaBVezupFeeAPK0fC8k66WRYczZrgYeY8Y77LdBZYuHHS2EbDx4gqimx9TSO-a7RDyefIsIUkfb8Pw94ToCoZFyVMfcWhcagO4LVIq7IXE4C753U-Z0rhxKww4TrI8-7ZKPUeVUw4GaJ2jpxF7gAoNldoFDS_N-UW1P58xQKrgccPS4Dwj8oxxvZ7bBGXIptF_ujERtgjO');"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-low via-transparent to-transparent"></div>
+<!-- Floating Top Badges -->
+<div class="absolute top-2.5 left-2.5 flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-container-lowest/85 border border-outline-variant/60 backdrop-blur-md">
+<span class="material-symbols-outlined text-[15px] text-secondary" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="text-xs font-bold text-white">8.9</span>
+</div>
+<div class="absolute bottom-2.5 right-2.5 px-2.5 py-1 rounded-md bg-primary/20 border border-primary/40 text-primary font-mono text-xs font-bold backdrop-blur-md">
+                98.1% Match
+              </div>
+</div>
+<div class="p-4 flex flex-col gap-2.5">
+<div class="flex items-center justify-between text-xs">
+<span class="font-mono text-primary font-semibold uppercase">Biografico • Dramma</span>
+<span class="font-mono text-on-surface-variant">2023</span>
+</div>
+<h3 class="font-display font-bold text-lg text-white group-hover:text-primary transition-colors">Oppenheimer</h3>
+<p class="text-xs text-on-surface-variant line-clamp-2 leading-relaxed">
+                La genesi del Progetto Manhattan e il tormento morale dello scienziato che ha ridefinito gli equilibri globali della geopolitica bellica.
+              </p>
+<!-- Footer Action Buttons -->
+<div class="pt-3 border-t border-outline-variant/40 flex items-center justify-between gap-2">
+<button class="flex-1 py-1.5 px-3 rounded-lg bg-surface-container hover:bg-surface-container-high border border-outline-variant/50 text-xs font-semibold text-white hover:text-primary transition-colors flex items-center justify-center gap-1" type="button">
+<span class="material-symbols-outlined text-[16px]">visibility</span>
+<span>Dettagli</span>
+</button>
+<button class="flex-1 py-1.5 px-3 rounded-lg bg-primary/15 hover:bg-primary/25 border border-primary/30 text-xs font-semibold text-primary transition-colors flex items-center justify-center gap-1" type="button">
+<span class="material-symbols-outlined text-[16px]">hub</span>
+<span>Simili</span>
+</button>
+</div>
+</div>
+</article>
+<!-- Card 2: Blade Runner 2049 -->
+<article class="flex-none w-80 bg-surface-container-low border border-outline-variant/60 hover:border-primary/50 rounded-2xl overflow-hidden group hover:-translate-y-1 transition-all duration-300 shadow-lg flex flex-col justify-between">
+<div class="relative aspect-[16/10] w-full overflow-hidden bg-surface-container-lowest">
+<div class="w-full h-full bg-cover bg-center group-hover:scale-105 transition-transform duration-500" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCnWb1sC8ojb2VS-_EaD8ZXpXuU1j53BpquwlMBAx9WOCL4X1S-62JuTBsGTt7QPIPDIpWYcI5b7Im3LsMpiVBlX3hIpzc7z83D_YctaP0az5mTfFOWCY8A3uArLd6yusY-Vkc2EuZE7yMK2fhnLkA9KQIbEtV9G2K9LLLe8EQ1k-0WxhjVeN0ybWJyUSJVKmQzYimkDCLf6ieI51Fh0h4w5oyApmlmhA8C60IZo7IbMq_ZPOPUVZZ5');"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-low via-transparent to-transparent"></div>
+<div class="absolute top-2.5 left-2.5 flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-container-lowest/85 border border-outline-variant/60 backdrop-blur-md">
+<span class="material-symbols-outlined text-[15px] text-secondary" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="text-xs font-bold text-white">8.0</span>
+</div>
+<div class="absolute bottom-2.5 right-2.5 px-2.5 py-1 rounded-md bg-primary/20 border border-primary/40 text-primary font-mono text-xs font-bold backdrop-blur-md">
+                96.7% Match
+              </div>
+</div>
+<div class="p-4 flex flex-col gap-2.5">
+<div class="flex items-center justify-between text-xs">
+<span class="font-mono text-primary font-semibold uppercase">Cyberpunk • Sci-Fi</span>
+<span class="font-mono text-on-surface-variant">2017</span>
+</div>
+<h3 class="font-display font-bold text-lg text-white group-hover:text-primary transition-colors">Blade Runner 2049</h3>
+<p class="text-xs text-on-surface-variant line-clamp-2 leading-relaxed">
+                L'agente K dissotterra un segreto a lungo sepolto che ha il potenziale di far precipitare nel caos quel che rimane della società replicante.
+              </p>
+<div class="pt-3 border-t border-outline-variant/40 flex items-center justify-between gap-2">
+<button class="flex-1 py-1.5 px-3 rounded-lg bg-surface-container hover:bg-surface-container-high border border-outline-variant/50 text-xs font-semibold text-white hover:text-primary transition-colors flex items-center justify-center gap-1" type="button">
+<span class="material-symbols-outlined text-[16px]">visibility</span>
+<span>Dettagli</span>
+</button>
+<button class="flex-1 py-1.5 px-3 rounded-lg bg-primary/15 hover:bg-primary/25 border border-primary/30 text-xs font-semibold text-primary transition-colors flex items-center justify-center gap-1" type="button">
+<span class="material-symbols-outlined text-[16px]">hub</span>
+<span>Simili</span>
+</button>
+</div>
+</div>
+</article>
+<!-- Card 3: Killers of the Flower Moon -->
+<article class="flex-none w-80 bg-surface-container-low border border-outline-variant/60 hover:border-primary/50 rounded-2xl overflow-hidden group hover:-translate-y-1 transition-all duration-300 shadow-lg flex flex-col justify-between">
+<div class="relative aspect-[16/10] w-full overflow-hidden bg-surface-container-lowest">
+<div class="w-full h-full bg-cover bg-center group-hover:scale-105 transition-transform duration-500" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuARE1v-vZJTKgvNuokCjb2SH0GgYTvdGEI0F0Z79IrQwVaRG5U_fijdgekHDd8mOdeg-N1pBPaS9N9aLLW81teCxP37MrdK-mK7HYy1jsRpOfkI-z4eLjH6A0gmhVlU0bHmQH7JSKlyyj97DDpxAGNmqPmdsY9a5CQgpPYGVJM8310ZvV0kQZo3CzOFS9VPamn__v36eIXb5cX4EONvDQYvBC8cz2q8JQOyFLpUTWoRWeJBaZ54W0FE');"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-low via-transparent to-transparent"></div>
+<div class="absolute top-2.5 left-2.5 flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-container-lowest/85 border border-outline-variant/60 backdrop-blur-md">
+<span class="material-symbols-outlined text-[15px] text-secondary" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="text-xs font-bold text-white">7.6</span>
+</div>
+<div class="absolute bottom-2.5 right-2.5 px-2.5 py-1 rounded-md bg-primary/20 border border-primary/40 text-primary font-mono text-xs font-bold backdrop-blur-md">
+                93.4% Match
+              </div>
+</div>
+<div class="p-4 flex flex-col gap-2.5">
+<div class="flex items-center justify-between text-xs">
+<span class="font-mono text-primary font-semibold uppercase">Crime • Storico</span>
+<span class="font-mono text-on-surface-variant">2023</span>
+</div>
+<h3 class="font-display font-bold text-lg text-white group-hover:text-primary transition-colors">Killers of the Flower Moon</h3>
+<p class="text-xs text-on-surface-variant line-clamp-2 leading-relaxed">
+                Gli omicidi sistematici dei membri della ricca Nazione Osage nell'Oklahoma anni '20 aprono un'indagine cardine del nascente FBI.
+              </p>
+<div class="pt-3 border-t border-outline-variant/40 flex items-center justify-between gap-2">
+<button class="flex-1 py-1.5 px-3 rounded-lg bg-surface-container hover:bg-surface-container-high border border-outline-variant/50 text-xs font-semibold text-white hover:text-primary transition-colors flex items-center justify-center gap-1" type="button">
+<span class="material-symbols-outlined text-[16px]">visibility</span>
+<span>Dettagli</span>
+</button>
+<button class="flex-1 py-1.5 px-3 rounded-lg bg-primary/15 hover:bg-primary/25 border border-primary/30 text-xs font-semibold text-primary transition-colors flex items-center justify-center gap-1" type="button">
+<span class="material-symbols-outlined text-[16px]">hub</span>
+<span>Simili</span>
+</button>
+</div>
+</div>
+</article>
+<!-- Card 4: Poor Things -->
+<article class="flex-none w-80 bg-surface-container-low border border-outline-variant/60 hover:border-primary/50 rounded-2xl overflow-hidden group hover:-translate-y-1 transition-all duration-300 shadow-lg flex flex-col justify-between">
+<div class="relative aspect-[16/10] w-full overflow-hidden bg-surface-container-lowest">
+<div class="w-full h-full bg-cover bg-center group-hover:scale-105 transition-transform duration-500" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCVwUavGh6i9c21DIfBTKlvFOVB4ao4BZdIXolgEqs1R7z0vx8-KD6eRPzB-uE7Ym8i_65QUmKHZcRzEDL8u5eYgw06A5iqnIDWd0yEZ7a3N1Vk9opsQgyeZfEzubY4QoUfr7uXyy5LXB6JCUZvh_kwwqg699NhbItntalx7zPDG51xT47rOXmFHe9tDb7i-J14OBDyaTN6GEyKnFDhP6R2C_h4IkNd79T594RkZ4VVTyYTCemHe9sq');"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-low via-transparent to-transparent"></div>
+<div class="absolute top-2.5 left-2.5 flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-container-lowest/85 border border-outline-variant/60 backdrop-blur-md">
+<span class="material-symbols-outlined text-[15px] text-secondary" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="text-xs font-bold text-white">7.9</span>
+</div>
+<div class="absolute bottom-2.5 right-2.5 px-2.5 py-1 rounded-md bg-primary/20 border border-primary/40 text-primary font-mono text-xs font-bold backdrop-blur-md">
+                91.8% Match
+              </div>
+</div>
+<div class="p-4 flex flex-col gap-2.5">
+<div class="flex items-center justify-between text-xs">
+<span class="font-mono text-primary font-semibold uppercase">Commedia • Fantasy</span>
+<span class="font-mono text-on-surface-variant">2023</span>
+</div>
+<h3 class="font-display font-bold text-lg text-white group-hover:text-primary transition-colors">Povere Creature!</h3>
+<p class="text-xs text-on-surface-variant line-clamp-2 leading-relaxed">
+                L'incredibile emancipazione di Bella Baxter, risuscitata da un geniale chirurgo in un viaggio surreale attraverso l'Europa.
+              </p>
+<div class="pt-3 border-t border-outline-variant/40 flex items-center justify-between gap-2">
+<button class="flex-1 py-1.5 px-3 rounded-lg bg-surface-container hover:bg-surface-container-high border border-outline-variant/50 text-xs font-semibold text-white hover:text-primary transition-colors flex items-center justify-center gap-1" type="button">
+<span class="material-symbols-outlined text-[16px]">visibility</span>
+<span>Dettagli</span>
+</button>
+<button class="flex-1 py-1.5 px-3 rounded-lg bg-primary/15 hover:bg-primary/25 border border-primary/30 text-xs font-semibold text-primary transition-colors flex items-center justify-center gap-1" type="button">
+<span class="material-symbols-outlined text-[16px]">hub</span>
+<span>Simili</span>
+</button>
+</div>
+</div>
+</article>
+<!-- Card 5: Challengers -->
+<article class="flex-none w-80 bg-surface-container-low border border-outline-variant/60 hover:border-primary/50 rounded-2xl overflow-hidden group hover:-translate-y-1 transition-all duration-300 shadow-lg flex flex-col justify-between">
+<div class="relative aspect-[16/10] w-full overflow-hidden bg-surface-container-lowest">
+<div class="w-full h-full bg-cover bg-center group-hover:scale-105 transition-transform duration-500" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuB8w1ycTtZ7z9wxYEMGz9KbugxXDWurcjgj9THyafPYkqLpTRXKerHBFmHofgBuJm0qlmw88MnAHH0HmFqU7cBpqR_eBh-zurKVXAEo5xyDZ15G8ASMQIW-B7sXo-MmAF5qVqEKSEbyH6ssSACwPaWBrk6s_UHVuLVU9J8bNQCgE6WNG2HaZ2bnNM-gJaqmjJPG22IG0gUP8qF2e3cx3fIuHoCNgoTYDMOCYawBDYUjAKZldLFN3LvP');"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-low via-transparent to-transparent"></div>
+<div class="absolute top-2.5 left-2.5 flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-container-lowest/85 border border-outline-variant/60 backdrop-blur-md">
+<span class="material-symbols-outlined text-[15px] text-secondary" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="text-xs font-bold text-white">7.4</span>
+</div>
+<div class="absolute bottom-2.5 right-2.5 px-2.5 py-1 rounded-md bg-primary/20 border border-primary/40 text-primary font-mono text-xs font-bold backdrop-blur-md">
+                89.5% Match
+              </div>
+</div>
+<div class="p-4 flex flex-col gap-2.5">
+<div class="flex items-center justify-between text-xs">
+<span class="font-mono text-primary font-semibold uppercase">Dramma • Sportivo</span>
+<span class="font-mono text-on-surface-variant">2024</span>
+</div>
+<h3 class="font-display font-bold text-lg text-white group-hover:text-primary transition-colors">Challengers</h3>
+<p class="text-xs text-on-surface-variant line-clamp-2 leading-relaxed">
+                Tensioni intime e rivalità decennali tra ex compagni di gioco e la loro allenatrice travolgono il campo da tennis.
+              </p>
+<div class="pt-3 border-t border-outline-variant/40 flex items-center justify-between gap-2">
+<button class="flex-1 py-1.5 px-3 rounded-lg bg-surface-container hover:bg-surface-container-high border border-outline-variant/50 text-xs font-semibold text-white hover:text-primary transition-colors flex items-center justify-center gap-1" type="button">
+<span class="material-symbols-outlined text-[16px]">visibility</span>
+<span>Dettagli</span>
+</button>
+<button class="flex-1 py-1.5 px-3 rounded-lg bg-primary/15 hover:bg-primary/25 border border-primary/30 text-xs font-semibold text-primary transition-colors flex items-center justify-center gap-1" type="button">
+<span class="material-symbols-outlined text-[16px]">hub</span>
+<span>Simili</span>
+</button>
+</div>
+</div>
+</article>
+</div>
+</section>
+<!-- 3. TOPOLOGIA VETTORIALE & CLUSTER AI SECTION -->
+<section class="space-y-4">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+<div class="flex items-center gap-3">
+<div class="w-2.5 h-6 bg-secondary rounded-full shadow-[0_0_10px_rgba(251,191,36,0.7)]"></div>
+<div>
+<h2 class="text-xl md:text-2xl font-display font-bold text-white tracking-tight">Topologia Vettoriale &amp; Cluster AI</h2>
+<p class="text-xs text-on-surface-variant">Mappatura geometrica dei grafi narrativi ad alta densità semantica</p>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<span class="text-xs font-mono text-on-surface-variant">Proiezione: UMAP 2D</span>
+<button class="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline">
+<span>Esplora Grafo 3D</span>
+<span class="material-symbols-outlined text-[16px]">travel_explore</span>
+</button>
+</div>
+</div>
+<!-- 3-Column Bento of Semantic Clusters -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+<!-- Cluster 1: Cyberpunk -->
+<div class="bg-surface-container-low border border-outline-variant/60 hover:border-primary/40 rounded-2xl p-5 flex flex-col justify-between group transition-all">
+<div>
+<div class="flex items-center justify-between mb-3">
+<div class="flex items-center gap-2.5">
+<div class="w-10 h-10 rounded-xl bg-primary/15 text-primary border border-primary/30 flex items-center justify-center">
+<span class="material-symbols-outlined text-[22px]">smart_toy</span>
+</div>
+<div>
+<span class="text-[10px] font-mono uppercase text-primary font-bold">Cluster #082</span>
+<h3 class="font-display font-bold text-base text-white">Cyberpunk &amp; Coscienza AI</h3>
+</div>
+</div>
+<span class="text-xs font-mono text-tertiary bg-tertiary/10 px-2 py-0.5 rounded font-semibold">0.94 Corr</span>
+</div>
+<!-- Mini SVG Graph -->
+<div class="w-full h-24 bg-surface-container-lowest/90 rounded-xl border border-outline-variant/40 mb-3 p-2 relative flex items-center justify-center overflow-hidden">
+<svg class="w-full h-full text-primary" fill="none" viewbox="0 0 280 70">
+<line stroke="currentColor" stroke-opacity="0.3" stroke-width="1.5" x1="30" x2="90" y1="35" y2="20"></line>
+<line stroke="currentColor" stroke-opacity="0.4" stroke-width="1.5" x1="90" x2="150" y1="20" y2="45"></line>
+<line stroke="currentColor" stroke-opacity="0.3" stroke-width="1.5" x1="90" x2="210" y1="20" y2="25"></line>
+<line stroke="currentColor" stroke-opacity="0.5" stroke-width="1.5" x1="150" x2="250" y1="45" y2="35"></line>
+<line stroke="currentColor" stroke-opacity="0.4" stroke-width="1.5" x1="210" x2="250" y1="25" y2="35"></line>
+<circle cx="30" cy="35" fill="currentColor" fill-opacity="0.7" r="4"></circle>
+<circle cx="90" cy="20" fill="currentColor" r="7"></circle>
+<circle cx="90" cy="20" r="13" stroke="currentColor" stroke-opacity="0.3" stroke-width="1"></circle>
+<circle cx="150" cy="45" fill="#10b981" r="5"></circle>
+<circle cx="210" cy="25" fill="#fbbf24" r="6"></circle>
+<circle cx="250" cy="35" fill="currentColor" r="5"></circle>
+</svg>
+<span class="absolute bottom-1 right-2 text-[10px] font-mono text-on-surface-variant">142 Film • 8 Sotto-trame</span>
+</div>
+<p class="text-xs text-on-surface-variant leading-relaxed">
+                Dicotomia anima-macchina, metropoli al neon e simulazione identitaria. Titoli chiave includono <em class="text-white">Ghost in the Shell</em>, <em class="text-white">Ex Machina</em>, <em class="text-white">Her</em>.
+              </p>
+</div>
+<div class="pt-4 mt-3 border-t border-outline-variant/40 flex items-center justify-between">
+<div class="flex -space-x-2">
+<span class="inline-flex h-6 w-6 rounded-full ring-2 ring-background bg-primary/40 text-[10px] items-center justify-center font-bold text-white">BR</span>
+<span class="inline-flex h-6 w-6 rounded-full ring-2 ring-background bg-secondary/40 text-[10px] items-center justify-center font-bold text-white">EX</span>
+<span class="inline-flex h-6 w-6 rounded-full ring-2 ring-background bg-tertiary/40 text-[10px] items-center justify-center font-bold text-white">GH</span>
+</div>
+<a class="text-xs font-semibold text-primary hover:text-white flex items-center gap-1 group-hover:translate-x-1 transition-all" href="#">
+<span>Naviga Cluster</span>
+<span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</a>
+</div>
+</div>
+<!-- Cluster 2: Cinema d'Autore Italiano -->
+<div class="bg-surface-container-low border border-outline-variant/60 hover:border-secondary/40 rounded-2xl p-5 flex flex-col justify-between group transition-all">
+<div>
+<div class="flex items-center justify-between mb-3">
+<div class="flex items-center gap-2.5">
+<div class="w-10 h-10 rounded-xl bg-secondary/15 text-secondary border border-secondary/30 flex items-center justify-center">
+<span class="material-symbols-outlined text-[22px]">theater_comedy</span>
+</div>
+<div>
+<span class="text-[10px] font-mono uppercase text-secondary font-bold">Cluster #019</span>
+<h3 class="font-display font-bold text-base text-white">Cinema d'Autore Italiano</h3>
+</div>
+</div>
+<span class="text-xs font-mono text-secondary bg-secondary/10 px-2 py-0.5 rounded font-semibold">0.91 Corr</span>
+</div>
+<div class="w-full h-24 bg-surface-container-lowest/90 rounded-xl border border-outline-variant/40 mb-3 p-2 relative flex items-center justify-center overflow-hidden">
+<svg class="w-full h-full text-secondary" fill="none" viewbox="0 0 280 70">
+<line stroke="currentColor" stroke-opacity="0.3" stroke-width="1.5" x1="35" x2="105" y1="25" y2="45"></line>
+<line stroke="currentColor" stroke-opacity="0.4" stroke-width="1.5" x1="105" x2="175" y1="45" y2="20"></line>
+<line stroke="currentColor" stroke-opacity="0.3" stroke-width="1.5" x1="175" x2="245" y1="20" y2="40"></line>
+<circle cx="35" cy="25" fill="currentColor" r="5"></circle>
+<circle cx="105" cy="45" fill="currentColor" r="8"></circle>
+<circle cx="105" cy="45" r="15" stroke="currentColor" stroke-opacity="0.25" stroke-width="1"></circle>
+<circle cx="175" cy="20" fill="#00d2ff" r="6"></circle>
+<circle cx="245" cy="40" fill="#10b981" r="5"></circle>
+</svg>
+<span class="absolute bottom-1 right-2 text-[10px] font-mono text-on-surface-variant">98 Film • Sorrentino / Rohrwacher</span>
+</div>
+<p class="text-xs text-on-surface-variant leading-relaxed">
+                Realismo magico, decadenza urbana e introspezione provinciale. Connessioni strette tra <em class="text-white">La Grande Bellezza</em>, <em class="text-white">Lazzaro Felice</em> e <em class="text-white">Io Capitano</em>.
+              </p>
+</div>
+<div class="pt-4 mt-3 border-t border-outline-variant/40 flex items-center justify-between">
+<div class="flex -space-x-2">
+<span class="inline-flex h-6 w-6 rounded-full ring-2 ring-background bg-secondary/40 text-[10px] items-center justify-center font-bold text-white">GB</span>
+<span class="inline-flex h-6 w-6 rounded-full ring-2 ring-background bg-primary/40 text-[10px] items-center justify-center font-bold text-white">LF</span>
+<span class="inline-flex h-6 w-6 rounded-full ring-2 ring-background bg-tertiary/40 text-[10px] items-center justify-center font-bold text-white">IC</span>
+</div>
+<a class="text-xs font-semibold text-secondary hover:text-white flex items-center gap-1 group-hover:translate-x-1 transition-all" href="#">
+<span>Naviga Cluster</span>
+<span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</a>
+</div>
+</div>
+<!-- Cluster 3: Deep Space & Relativity -->
+<div class="bg-surface-container-low border border-outline-variant/60 hover:border-tertiary/40 rounded-2xl p-5 flex flex-col justify-between group transition-all">
+<div>
+<div class="flex items-center justify-between mb-3">
+<div class="flex items-center gap-2.5">
+<div class="w-10 h-10 rounded-xl bg-tertiary/15 text-tertiary border border-tertiary/30 flex items-center justify-center">
+<span class="material-symbols-outlined text-[22px]">public</span>
+</div>
+<div>
+<span class="text-[10px] font-mono uppercase text-tertiary font-bold">Cluster #114</span>
+<h3 class="font-display font-bold text-base text-white">Spazio Profondo &amp; Relatività</h3>
+</div>
+</div>
+<span class="text-xs font-mono text-tertiary bg-tertiary/10 px-2 py-0.5 rounded font-semibold">0.96 Corr</span>
+</div>
+<div class="w-full h-24 bg-surface-container-lowest/90 rounded-xl border border-outline-variant/40 mb-3 p-2 relative flex items-center justify-center overflow-hidden">
+<svg class="w-full h-full text-tertiary" fill="none" viewbox="0 0 280 70">
+<line stroke="currentColor" stroke-opacity="0.3" stroke-width="1.5" x1="45" x2="125" y1="45" y2="30"></line>
+<line stroke="currentColor" stroke-opacity="0.3" stroke-width="1.5" x1="125" x2="195" y1="30" y2="50"></line>
+<line stroke="currentColor" stroke-opacity="0.4" stroke-width="1.5" x1="125" x2="255" y1="30" y2="25"></line>
+<circle cx="45" cy="45" fill="currentColor" r="5"></circle>
+<circle cx="125" cy="30" fill="currentColor" r="8"></circle>
+<circle cx="125" cy="30" r="16" stroke="currentColor" stroke-opacity="0.25" stroke-width="1"></circle>
+<circle cx="195" cy="50" fill="#00d2ff" r="4"></circle>
+<circle cx="255" cy="25" fill="#fbbf24" r="6"></circle>
+</svg>
+<span class="absolute bottom-1 right-2 text-[10px] font-mono text-on-surface-variant">164 Film • Dilatazione Temporale</span>
+</div>
+<p class="text-xs text-on-surface-variant leading-relaxed">
+                Singolarità gravitazionali, viaggi cosmici generazionali e isolamento. Prossimità vettoriale tra <em class="text-white">Interstellar</em>, <em class="text-white">Solaris</em>, <em class="text-white">2001: Odissea nello Spazio</em>.
+              </p>
+</div>
+<div class="pt-4 mt-3 border-t border-outline-variant/40 flex items-center justify-between">
+<div class="flex -space-x-2">
+<span class="inline-flex h-6 w-6 rounded-full ring-2 ring-background bg-tertiary/40 text-[10px] items-center justify-center font-bold text-white">IN</span>
+<span class="inline-flex h-6 w-6 rounded-full ring-2 ring-background bg-primary/40 text-[10px] items-center justify-center font-bold text-white">SO</span>
+<span class="inline-flex h-6 w-6 rounded-full ring-2 ring-background bg-secondary/40 text-[10px] items-center justify-center font-bold text-white">01</span>
+</div>
+<a class="text-xs font-semibold text-tertiary hover:text-white flex items-center gap-1 group-hover:translate-x-1 transition-all" href="#">
+<span>Naviga Cluster</span>
+<span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</a>
+</div>
+</div>
+</div>
+</section>
+<!-- 4. LIVE CRAWLER INGESTION FEED TABLE -->
+<section class="space-y-4">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+<div class="flex items-center gap-3">
+<div class="w-2.5 h-6 bg-tertiary rounded-full shadow-[0_0_10px_rgba(16,185,129,0.7)]"></div>
+<div>
+<h2 class="text-xl md:text-2xl font-display font-bold text-white tracking-tight">Ultime Aggiunte dal Crawler</h2>
+<p class="text-xs text-on-surface-variant">Pipeline di scraping multi-source e vettorizzazione in streaming continuo</p>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-tertiary/10 border border-tertiary/30 text-tertiary font-mono text-xs">
+<span class="h-2 w-2 rounded-full bg-tertiary animate-pulse"></span>
+              Worker Attivi: #3 Ingestion Node
+            </span>
+<button class="p-1.5 rounded-lg bg-surface-container-low border border-outline-variant/60 text-on-surface-variant hover:text-white transition-colors" title="Aggiorna feed">
+<span class="material-symbols-outlined text-[18px]">refresh</span>
+</button>
+</div>
+</div>
+<!-- Table Container -->
+<div class="w-full bg-surface-container-low border border-outline-variant/60 rounded-2xl overflow-hidden shadow-xl">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-lowest/80 border-b border-outline-variant/60 text-on-surface-variant text-[11px] font-mono uppercase tracking-wider">
+<th class="py-3 px-4">Sorgente</th>
+<th class="py-3 px-4">Titolo &amp; Anno</th>
+<th class="py-3 px-4">Metadati Estratti</th>
+<th class="py-3 px-4">Vettorizzazione</th>
+<th class="py-3 px-4">Stato Ingestion</th>
+<th class="py-3 px-4 text-right">Timestamp</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/30 text-xs">
+<!-- Row 1: TMDB -->
+<tr class="hover:bg-surface-container/60 transition-colors">
+<td class="py-3.5 px-4 whitespace-nowrap">
+<div class="flex items-center gap-1.5">
+<span class="px-2 py-0.5 rounded bg-primary/15 border border-primary/30 text-primary font-mono font-bold">TMDB</span>
+<span class="text-[10px] text-on-surface-variant font-mono">API v3</span>
+</div>
+</td>
+<td class="py-3.5 px-4 whitespace-nowrap">
+<div class="flex flex-col">
+<span class="font-bold text-white text-sm">Civil War</span>
+<span class="text-on-surface-variant text-[11px] font-mono">Alex Garland • 2024</span>
+</div>
+</td>
+<td class="py-3.5 px-4">
+<div class="flex flex-wrap items-center gap-1.5">
+<span class="px-2 py-0.5 rounded bg-surface-container border border-outline-variant/50 text-white text-[11px]">Cast (18)</span>
+<span class="px-2 py-0.5 rounded bg-surface-container border border-outline-variant/50 text-white text-[11px]">Keyframe (32)</span>
+<span class="px-2 py-0.5 rounded bg-surface-container border border-outline-variant/50 text-primary text-[11px]">Sinossi IT</span>
+</div>
+</td>
+<td class="py-3.5 px-4 whitespace-nowrap">
+<div class="flex items-center gap-2">
+<div class="w-16 bg-surface-container-highest rounded-full h-1.5 overflow-hidden">
+<div class="bg-primary h-full w-full"></div>
+</div>
+<span class="font-mono text-primary font-semibold">1,536 dim OK</span>
+</div>
+</td>
+<td class="py-3.5 px-4 whitespace-nowrap">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-tertiary/15 text-tertiary border border-tertiary/30 font-medium">
+<span class="h-1.5 w-1.5 rounded-full bg-tertiary"></span>
+                      Indicizzato
+                    </span>
+</td>
+<td class="py-3.5 px-4 text-right font-mono text-on-surface-variant whitespace-nowrap">
+                    2m fa
+                  </td>
+</tr>
+<!-- Row 2: Letterboxd -->
+<tr class="hover:bg-surface-container/60 transition-colors">
+<td class="py-3.5 px-4 whitespace-nowrap">
+<div class="flex items-center gap-1.5">
+<span class="px-2 py-0.5 rounded bg-secondary/15 border border-secondary/30 text-secondary font-mono font-bold">Letterboxd</span>
+<span class="text-[10px] text-on-surface-variant font-mono">Scraper #1</span>
+</div>
+</td>
+<td class="py-3.5 px-4 whitespace-nowrap">
+<div class="flex flex-col">
+<span class="font-bold text-white text-sm">La Chimera</span>
+<span class="text-on-surface-variant text-[11px] font-mono">Alice Rohrwacher • 2023</span>
+</div>
+</td>
+<td class="py-3.5 px-4">
+<div class="flex flex-wrap items-center gap-1.5">
+<span class="px-2 py-0.5 rounded bg-surface-container border border-outline-variant/50 text-white text-[11px]">Recensioni (1.4k)</span>
+<span class="px-2 py-0.5 rounded bg-surface-container border border-outline-variant/50 text-secondary text-[11px]">User Tags (45)</span>
+</div>
+</td>
+<td class="py-3.5 px-4 whitespace-nowrap">
+<div class="flex items-center gap-2">
+<div class="w-16 bg-surface-container-highest rounded-full h-1.5 overflow-hidden">
+<div class="bg-primary h-full w-full"></div>
+</div>
+<span class="font-mono text-primary font-semibold">1,536 dim OK</span>
+</div>
+</td>
+<td class="py-3.5 px-4 whitespace-nowrap">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-tertiary/15 text-tertiary border border-tertiary/30 font-medium">
+<span class="h-1.5 w-1.5 rounded-full bg-tertiary"></span>
+                      Indicizzato
+                    </span>
+</td>
+<td class="py-3.5 px-4 text-right font-mono text-on-surface-variant whitespace-nowrap">
+                    6m fa
+                  </td>
+</tr>
+<!-- Row 3: IMDb -->
+<tr class="hover:bg-surface-container/60 transition-colors">
+<td class="py-3.5 px-4 whitespace-nowrap">
+<div class="flex items-center gap-1.5">
+<span class="px-2 py-0.5 rounded bg-secondary/20 border border-secondary/40 text-secondary font-mono font-bold">IMDb</span>
+<span class="text-[10px] text-on-surface-variant font-mono">Datasets</span>
+</div>
+</td>
+<td class="py-3.5 px-4 whitespace-nowrap">
+<div class="flex flex-col">
+<span class="font-bold text-white text-sm">Furiosa: A Mad Max Saga</span>
+<span class="text-on-surface-variant text-[11px] font-mono">George Miller • 2024</span>
+</div>
+</td>
+<td class="py-3.5 px-4">
+<div class="flex flex-wrap items-center gap-1.5">
+<span class="px-2 py-0.5 rounded bg-surface-container border border-outline-variant/50 text-white text-[11px]">Box Office</span>
+<span class="px-2 py-0.5 rounded bg-surface-container border border-outline-variant/50 text-white text-[11px]">Crew</span>
+<span class="px-2 py-0.5 rounded bg-surface-container border border-outline-variant/50 text-white text-[11px]">Technical specs</span>
+</div>
+</td>
+<td class="py-3.5 px-4 whitespace-nowrap">
+<div class="flex items-center gap-2">
+<div class="w-16 bg-surface-container-highest rounded-full h-1.5 overflow-hidden">
+<div class="bg-secondary h-full w-[72%] animate-pulse"></div>
+</div>
+<span class="font-mono text-secondary font-semibold">Embedding 72%</span>
+</div>
+</td>
+<td class="py-3.5 px-4 whitespace-nowrap">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-secondary/15 text-secondary border border-secondary/30 font-medium">
+<span class="h-1.5 w-1.5 rounded-full bg-secondary animate-ping"></span>
+                      Calcolo Vettori...
+                    </span>
+</td>
+<td class="py-3.5 px-4 text-right font-mono text-on-surface-variant whitespace-nowrap">
+                    11m fa
+                  </td>
+</tr>
+<!-- Row 4: Cineteca Nazionale OAI-PMH -->
+<tr class="hover:bg-surface-container/60 transition-colors">
+<td class="py-3.5 px-4 whitespace-nowrap">
+<div class="flex items-center gap-1.5">
+<span class="px-2 py-0.5 rounded bg-tertiary/15 border border-tertiary/30 text-tertiary font-mono font-bold">Cineteca</span>
+<span class="text-[10px] text-on-surface-variant font-mono">OAI-PMH</span>
+</div>
+</td>
+<td class="py-3.5 px-4 whitespace-nowrap">
+<div class="flex flex-col">
+<span class="font-bold text-white text-sm">L'Avventura</span>
+<span class="text-on-surface-variant text-[11px] font-mono">Michelangelo Antonioni • 1960</span>
+</div>
+</td>
+<td class="py-3.5 px-4">
+<div class="flex flex-wrap items-center gap-1.5">
+<span class="px-2 py-0.5 rounded bg-surface-container border border-outline-variant/50 text-white text-[11px]">Restauro 4K</span>
+<span class="px-2 py-0.5 rounded bg-surface-container border border-outline-variant/50 text-white text-[11px]">Critica Storica</span>
+</div>
+</td>
+<td class="py-3.5 px-4 whitespace-nowrap">
+<div class="flex items-center gap-2">
+<div class="w-16 bg-surface-container-highest rounded-full h-1.5 overflow-hidden">
+<div class="bg-primary h-full w-full"></div>
+</div>
+<span class="font-mono text-primary font-semibold">1,536 dim OK</span>
+</div>
+</td>
+<td class="py-3.5 px-4 whitespace-nowrap">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-tertiary/15 text-tertiary border border-tertiary/30 font-medium">
+<span class="h-1.5 w-1.5 rounded-full bg-tertiary"></span>
+                      Archiviato
+                    </span>
+</td>
+<td class="py-3.5 px-4 text-right font-mono text-on-surface-variant whitespace-nowrap">
+                    19m fa
+                  </td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Table Footer Strip -->
+<div class="p-3.5 bg-surface-container-lowest/90 border-t border-outline-variant/50 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+<span class="font-mono text-on-surface-variant">4 sorgenti sincronizzate • Coda attiva: 28 titoli in elaborazione</span>
+<a class="text-primary hover:underline font-semibold flex items-center gap-1" href="#">
+<span>Apri Console Crawler Completa</span>
+<span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</a>
+</div>
+</div>
+</section>
+</main>
+</div>
+<!-- Interactive Logic -->
+<script>
+    // Rail Scroll Behavior
+    const trendRail = document.getElementById('trend-cards-rail');
+    const scrollLeftBtn = document.getElementById('scroll-trend-left');
+    const scrollRightBtn = document.getElementById('scroll-trend-right');
+
+    if (trendRail && scrollLeftBtn && scrollRightBtn) {
+      scrollLeftBtn.addEventListener('click', () => {
+        trendRail.scrollBy({ left: -360, behavior: 'smooth' });
+      });
+      scrollRightBtn.addEventListener('click', () => {
+        trendRail.scrollBy({ left: 360, behavior: 'smooth' });
+      });
+    }
+
+    // Quick Semantic Prompt Injector
+    function applySemanticPrompt(promptText) {
+      const searchInput = document.getElementById('omni-search-input');
+      const statusMsg = document.getElementById('prompt-status-msg');
+
+      if (searchInput) {
+        searchInput.value = promptText;
+        searchInput.focus();
+
+        if (statusMsg) {
+          statusMsg.textContent = `Caricato: "${promptText.substring(0, 26)}..."`;
+          statusMsg.classList.remove('opacity-0');
+          statusMsg.classList.add('opacity-100');
+          setTimeout(() => {
+            statusMsg.classList.remove('opacity-100');
+            statusMsg.classList.add('opacity-0');
+          }, 2500);
+        }
+      }
+    }
+  </script>
+</body></html>

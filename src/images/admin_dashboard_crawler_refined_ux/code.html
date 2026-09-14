@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="it"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CineVector - Crawler &amp; Pipeline Telemetry</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;family=Plus+Jakarta+Sans:wght@500;600;700;800&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "surface": "#051424",
+            "surface-dim": "#051424",
+            "surface-container-lowest": "#010f1f",
+            "surface-container-low": "#0d1c2d",
+            "surface-container": "#122131",
+            "surface-container-high": "#1c2b3c",
+            "surface-container-highest": "#273647",
+            "surface-bright": "#2c3a4c",
+            "primary": "#00d2ff",
+            "primary-dim": "#47d6ff",
+            "primary-fixed": "#b6ebff",
+            "on-primary": "#003543",
+            "secondary": "#adc6ff",
+            "secondary-container": "#0566d9",
+            "tertiary": "#10b981",
+            "tertiary-dim": "#4edea3",
+            "accent-amber": "#f59e0b",
+            "on-surface": "#d4e4fa",
+            "on-surface-variant": "#94a9be",
+            "outline": "#859399",
+            "outline-variant": "rgba(0, 210, 255, 0.14)",
+            "border-glow": "rgba(0, 210, 255, 0.22)"
+          },
+          fontFamily: {
+            sans: ["Inter", "sans-serif"],
+            display: ["Plus Jakarta Sans", "Inter", "sans-serif"],
+            mono: ["JetBrains Mono", "monospace"]
+          }
+        }
+      }
+    };
+  </script>
+<style>
+    @layer base {
+      html, body {
+        background-color: #051424;
+        color: #d4e4fa;
+        font-family: 'Inter', sans-serif;
+      }
+      ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #010f1f;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #1c2b3c;
+        border-radius: 9999px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #00d2ff44;
+      }
+    }
+    .nebula-glow {
+      background: radial-gradient(circle at 50% 0%, rgba(0, 210, 255, 0.08) 0%, transparent 65%);
+    }
+    .card-nebula {
+      background: linear-gradient(180deg, rgba(16, 33, 54, 0.72) 0%, rgba(13, 28, 45, 0.9) 100%);
+      border: 1px solid rgba(0, 210, 255, 0.14);
+      backdrop-filter: blur(14px);
+    }
+    .card-nebula:hover {
+      border-color: rgba(0, 210, 255, 0.32);
+      box-shadow: 0 4px 24px -2px rgba(0, 210, 255, 0.08);
+    }
+  </style>
+</head>
+<body class="bg-surface text-on-surface antialiased min-h-screen flex selection:bg-primary/20 selection:text-primary">
+<!-- LEFT SIDEBAR -->
+<aside class="fixed left-0 top-0 h-screen w-72 bg-surface-container-lowest/95 backdrop-blur-2xl border-r border-cyan-500/10 z-50 flex flex-col justify-between">
+<div class="flex flex-col">
+<!-- Brand Logo Section -->
+<div class="h-16 px-5 flex items-center justify-between border-b border-cyan-500/10 bg-surface-container-lowest/80">
+<div class="flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-lg bg-gradient-to-br from-primary via-cyan-400 to-secondary-container flex items-center justify-center text-surface shadow-[0_0_14px_rgba(0,210,255,0.45)]">
+<span class="material-symbols-outlined text-[20px] font-bold">radar</span>
+</div>
+<div class="flex flex-col">
+<span class="font-display font-bold text-base tracking-tight text-white flex items-center gap-1.5">
+              CineVector
+              <span class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-primary/10 text-primary border border-primary/20">v2.4</span>
+</span>
+<span class="text-[11px] font-mono text-on-surface-variant/80 tracking-wider uppercase">Semantic Engine</span>
+</div>
+</div>
+</div>
+<!-- Navigation Section -->
+<div class="px-5 pt-5 pb-2">
+<span class="text-[10px] font-mono uppercase tracking-widest text-outline/80 px-1">Engine Console</span>
+</div>
+<nav class="flex flex-col gap-1 px-3">
+<!-- Dashboard -->
+<a class="flex items-center justify-between px-3.5 py-2.5 rounded-lg text-on-surface-variant hover:text-white hover:bg-surface-container-low transition-all duration-150 group" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors">dashboard</span>
+<span class="text-sm font-medium">Dashboard</span>
+</div>
+</a>
+<!-- Movies -->
+<a class="flex items-center justify-between px-3.5 py-2.5 rounded-lg text-on-surface-variant hover:text-white hover:bg-surface-container-low transition-all duration-150 group" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors">movie</span>
+<span class="text-sm font-medium">Movies</span>
+</div>
+<span class="text-[11px] font-mono px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface-variant">12.4k</span>
+</a>
+<!-- Advanced Search -->
+<a class="flex items-center justify-between px-3.5 py-2.5 rounded-lg text-on-surface-variant hover:text-white hover:bg-surface-container-low transition-all duration-150 group" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors">travel_explore</span>
+<span class="text-sm font-medium">Advanced Search</span>
+</div>
+<span class="text-[10px] font-mono text-primary/80">1536d</span>
+</a>
+<!-- Movie Details -->
+<a class="flex items-center justify-between px-3.5 py-2.5 rounded-lg text-on-surface-variant hover:text-white hover:bg-surface-container-low transition-all duration-150 group" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors">auto_stories</span>
+<span class="text-sm font-medium">Movie Details</span>
+</div>
+</a>
+<!-- Sources -->
+<a class="flex items-center justify-between px-3.5 py-2.5 rounded-lg text-on-surface-variant hover:text-white hover:bg-surface-container-low transition-all duration-150 group" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors">hub</span>
+<span class="text-sm font-medium">Sources</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+</a>
+<!-- Crawler & Sync (ACTIVE) -->
+<a aria-current="page" class="flex items-center justify-between px-3.5 py-2.5 rounded-lg bg-gradient-to-r from-primary/15 via-cyan-500/10 to-transparent text-primary border border-cyan-500/30 shadow-[0_0_16px_rgba(0,210,255,0.12)]" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[20px] text-primary">polyline</span>
+<span class="text-sm font-semibold tracking-tight text-white">Crawler &amp; Sync</span>
+</div>
+<span class="px-2 py-0.5 text-[10px] font-mono font-semibold rounded-full bg-primary/20 text-primary border border-primary/30 animate-pulse">LIVE</span>
+</a>
+<!-- Statistics -->
+<a class="flex items-center justify-between px-3.5 py-2.5 rounded-lg text-on-surface-variant hover:text-white hover:bg-surface-container-low transition-all duration-150 group" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors">analytics</span>
+<span class="text-sm font-medium">Statistics</span>
+</div>
+</a>
+<!-- Settings -->
+<a class="flex items-center justify-between px-3.5 py-2.5 rounded-lg text-on-surface-variant hover:text-white hover:bg-surface-container-low transition-all duration-150 group" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors">settings</span>
+<span class="text-sm font-medium">Settings</span>
+</div>
+</a>
+</nav>
+</div>
+<!-- Sidebar Bottom Telemetry & Profile -->
+<div class="flex flex-col p-3 gap-2.5 border-t border-cyan-500/10 bg-surface-container-lowest">
+<div class="rounded-lg p-3 bg-surface-container-low/90 border border-cyan-500/15 flex flex-col gap-1.5 relative overflow-hidden">
+<div class="absolute -right-4 -bottom-4 w-16 h-16 bg-primary/10 rounded-full blur-xl pointer-events-none"></div>
+<div class="flex items-center justify-between">
+<span class="text-[10px] font-mono uppercase tracking-wider text-outline">Vector DB State</span>
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-tertiary opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-tertiary"></span>
+</span>
+</div>
+<p class="text-xs font-mono font-semibold text-tertiary flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+          100k+ Embeddings Online
+        </p>
+<p class="text-[11px] font-mono text-on-surface-variant">Latent Dim: 1536 (Cosine)</p>
+</div>
+<div class="flex items-center justify-between p-2 rounded-lg hover:bg-surface-container-low transition-colors">
+<div class="flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-full bg-gradient-to-tr from-cyan-600 to-primary flex items-center justify-center text-surface font-semibold text-xs shadow-[0_0_10px_rgba(0,210,255,0.3)]">
+            SL
+          </div>
+<div class="flex flex-col">
+<span class="text-xs font-medium text-white leading-tight">Studio Lead</span>
+<span class="text-[10px] font-mono text-on-surface-variant">Production Console</span>
+</div>
+</div>
+<button class="text-on-surface-variant hover:text-white p-1 rounded transition-colors" title="Menu utente">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</div>
+</aside>
+<!-- MAIN WRAPPER -->
+<div class="pl-72 w-full min-h-screen flex flex-col bg-surface nebula-glow">
+<!-- TOP NAV BAR -->
+<header class="h-16 fixed top-0 left-72 right-0 bg-surface-container-lowest/85 backdrop-blur-xl border-b border-cyan-500/10 z-40 flex items-center justify-between px-8">
+<div class="flex items-center gap-4 flex-1 max-w-xl">
+<div class="relative w-full max-w-md">
+<span class="material-symbols-outlined text-primary/70 text-[19px] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">search</span>
+<input class="w-full pl-9 pr-14 py-1.5 bg-surface-container-low/90 border border-cyan-500/15 rounded-lg text-xs text-on-surface placeholder:text-outline focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/40 transition-all font-sans" placeholder="Cerca embedding semantici, pipeline, film o hash..." type="text"/>
+<kbd class="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] font-mono px-1.5 py-0.5 rounded bg-surface-container-high text-on-surface-variant border border-cyan-500/10">⌘K</kbd>
+</div>
+<div class="hidden xl:flex items-center gap-2 px-2.5 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+<span class="text-[11px] font-mono text-primary whitespace-nowrap">DB Online • 1536-dim</span>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<div class="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-surface-container-low border border-cyan-500/10">
+<span class="material-symbols-outlined text-[16px] text-primary">cloud_sync</span>
+<span class="text-xs font-mono text-on-surface-variant">Cluster: <span class="text-on-surface font-semibold">EU-Central-1</span></span>
+</div>
+<button class="relative p-2 rounded-lg bg-surface-container-low border border-cyan-500/10 text-on-surface-variant hover:text-white hover:border-cyan-500/30 transition-all" title="Notifiche">
+<span class="material-symbols-outlined text-[19px]">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-accent-amber ring-2 ring-surface"></span>
+</button>
+<button class="p-2 rounded-lg bg-surface-container-low border border-cyan-500/10 text-on-surface-variant hover:text-white hover:border-cyan-500/30 transition-all" title="Parametri Pipeline">
+<span class="material-symbols-outlined text-[19px]">tune</span>
+</button>
+<div class="w-8 h-8 rounded-full bg-surface-container-high border border-cyan-500/20 flex items-center justify-center text-primary font-mono text-xs">
+<span class="material-symbols-outlined text-[18px]">verified_user</span>
+</div>
+</div>
+</header>
+<!-- MAIN CONTENT -->
+<main class="w-full pt-20 px-8 pb-12 flex flex-col gap-6">
+<!-- Header Hero Area -->
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-2 border-b border-cyan-500/10">
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-2 text-xs font-mono">
+<span class="text-primary font-bold uppercase tracking-widest flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-primary animate-ping inline-block"></span>
+              Pipeline Telemetry
+            </span>
+<span class="text-outline/60">•</span>
+<span class="px-2 py-0.5 rounded bg-surface-container-high border border-cyan-500/15 text-on-surface-variant text-[11px]">Node ID: cine-crawler-prod-04</span>
+<span class="hidden sm:inline-block px-2 py-0.5 rounded bg-tertiary/10 text-tertiary text-[11px] border border-tertiary/20">Sync Rate: 99.82%</span>
+</div>
+<h1 class="text-2xl lg:text-3xl font-display font-extrabold tracking-tight text-white flex items-center gap-3">
+            Crawler &amp; Metadata Engine
+          </h1>
+<p class="text-xs sm:text-sm text-on-surface-variant max-w-3xl leading-relaxed">
+            Monitoraggio in tempo reale dell'infrastruttura di ingestion multimediale, vettorizzazione ad alta densità (1536-dim) e sync semantico tra i provider globali.
+          </p>
+</div>
+<div class="flex items-center gap-2.5 self-start lg:self-center">
+<button class="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-surface-container-low border border-cyan-500/20 text-on-surface hover:text-white hover:border-cyan-500/40 text-xs font-semibold tracking-wide transition-all shadow-sm">
+<span class="material-symbols-outlined text-[17px]">file_download</span>
+<span>Esporta Metriche</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-primary to-cyan-400 text-surface font-bold text-xs tracking-wide hover:brightness-110 shadow-[0_0_18px_rgba(0,210,255,0.35)] transition-all" id="triggerSyncAll">
+<span class="material-symbols-outlined text-[18px]">sync</span>
+<span>Forza Crawl Globale</span>
+</button>
+</div>
+</div>
+<!-- KPI METRICS GRID -->
+<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+<!-- Totale Film Censiti -->
+<div class="card-nebula rounded-xl p-4 flex flex-col justify-between relative overflow-hidden">
+<div class="flex items-center justify-between">
+<span class="text-[11px] font-mono uppercase tracking-wider text-outline">Totale Film Censiti</span>
+<div class="p-1.5 rounded-lg bg-primary/10 border border-primary/20 text-primary">
+<span class="material-symbols-outlined text-[18px]">movie</span>
+</div>
+</div>
+<div class="mt-3 flex items-baseline justify-between">
+<span class="text-2xl font-display font-bold text-white tracking-tight">48,290</span>
+<div class="flex items-center gap-0.5 text-tertiary font-mono text-xs px-2 py-0.5 rounded bg-tertiary/10 border border-tertiary/20">
+<span class="material-symbols-outlined text-[14px]">trending_up</span>
+<span>+2.4%</span>
+</div>
+</div>
+<p class="mt-2 text-xs text-on-surface-variant flex items-center gap-1.5 border-t border-cyan-500/10 pt-2">
+<span class="text-primary font-mono font-semibold">+124</span> nuovi catalogati oggi
+          </p>
+</div>
+<!-- Film Aggiunti & Aggiornati -->
+<div class="card-nebula rounded-xl p-4 flex flex-col justify-between relative overflow-hidden">
+<div class="flex items-center justify-between">
+<span class="text-[11px] font-mono uppercase tracking-wider text-outline">Film Aggiunti / Aggiornati</span>
+<div class="p-1.5 rounded-lg bg-cyan-400/10 border border-cyan-400/20 text-primary">
+<span class="material-symbols-outlined text-[18px]">autorenew</span>
+</div>
+</div>
+<div class="mt-3 flex items-baseline gap-2">
+<span class="text-2xl font-display font-bold text-white tracking-tight">124</span>
+<span class="text-xs text-outline font-medium">nuovi</span>
+<span class="text-outline font-mono text-xs">/</span>
+<span class="text-xl font-display font-semibold text-primary">856</span>
+<span class="text-xs text-outline font-medium">sync</span>
+</div>
+<p class="mt-2 text-xs text-on-surface-variant flex items-center justify-between border-t border-cyan-500/10 pt-2">
+<span>3 pipeline sincronizzate</span>
+<span class="font-mono text-primary text-[11px]">TMDB, LBD, IMDb</span>
+</p>
+</div>
+<!-- Stato Crawler & Fonti -->
+<div class="card-nebula rounded-xl p-4 flex flex-col justify-between relative overflow-hidden">
+<div class="flex items-center justify-between">
+<span class="text-[11px] font-mono uppercase tracking-wider text-outline">Stato Crawler &amp; Fonti</span>
+<div class="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-tertiary/10 border border-tertiary/20 text-tertiary text-[10px] font-mono font-bold">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary animate-pulse"></span>
+              LIVE
+            </div>
+</div>
+<div class="mt-3 flex items-baseline justify-between">
+<span class="text-2xl font-display font-bold text-white tracking-tight">6 / 6 <span class="text-sm font-normal text-on-surface-variant">Fonti</span></span>
+<span class="text-xs font-mono text-primary bg-primary/10 px-2 py-0.5 rounded border border-primary/20">4 Worker</span>
+</div>
+<p class="mt-2 text-xs text-on-surface-variant flex items-center justify-between border-t border-cyan-500/10 pt-2">
+<span>Ultimo crawl: <strong class="text-white font-mono">14m fa</strong></span>
+<span class="text-tertiary font-mono text-[11px]">Delta Sync OK</span>
+</p>
+</div>
+<!-- Coda Embedding & Avvisi -->
+<div class="card-nebula rounded-xl p-4 flex flex-col justify-between relative overflow-hidden">
+<div class="flex items-center justify-between">
+<span class="text-[11px] font-mono uppercase tracking-wider text-outline">Coda Embedding &amp; Avvisi</span>
+<span class="flex items-center gap-1 px-2 py-0.5 rounded-full bg-accent-amber/15 text-accent-amber border border-accent-amber/25 text-[10px] font-mono font-semibold">
+<span class="material-symbols-outlined text-[13px]">warning</span>
+              2 Avvisi
+            </span>
+</div>
+<div class="mt-3 flex items-baseline justify-between">
+<div class="flex items-baseline gap-1.5">
+<span class="text-2xl font-display font-bold text-white tracking-tight">342</span>
+<span class="text-xs text-on-surface-variant">in coda</span>
+</div>
+<span class="text-xs font-mono text-primary bg-surface-container-high px-2 py-0.5 rounded border border-cyan-500/15">1536-dim</span>
+</div>
+<p class="mt-2 text-xs text-on-surface-variant flex items-center justify-between border-t border-cyan-500/10 pt-2">
+<span class="text-accent-amber/90 truncate max-w-[170px]">RottenTomatoes: Throttled</span>
+<button class="text-primary hover:underline text-[11px] font-medium">Log</button>
+</p>
+</div>
+</div>
+<!-- MAIN CHARTS ROW (THROUGHPUT HERO + DONUT SOURCE DISTRIBUTION) -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+<!-- Throughput & Crawler Activity Hero Chart (8 cols) -->
+<div class="lg:col-span-8 card-nebula rounded-xl p-5 flex flex-col justify-between">
+<div>
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-cyan-500/10">
+<div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[20px]">ssid_chart</span>
+<h2 class="text-base font-display font-bold text-white tracking-tight">Attività Crawler &amp; Throughput</h2>
+</div>
+<p class="text-xs text-on-surface-variant mt-0.5">Richieste al secondo (req/s), picchi di sincronizzazione e latenza media di rete</p>
+</div>
+<div class="flex items-center p-1 rounded-lg bg-surface-container-low border border-cyan-500/15 self-start">
+<button class="px-2.5 py-1 rounded bg-primary text-surface font-mono text-xs font-bold shadow-sm">24 Ore</button>
+<button class="px-2.5 py-1 rounded text-on-surface-variant hover:text-white font-mono text-xs transition-colors">7 Giorni</button>
+<button class="px-2.5 py-1 rounded text-on-surface-variant hover:text-white font-mono text-xs transition-colors">30 Giorni</button>
+</div>
+</div>
+<!-- SVG Graph -->
+<div class="w-full pt-4">
+<div class="flex justify-between items-center text-[10px] font-mono text-outline mb-1.5 px-1">
+<span>00:00 (Night Batch)</span>
+<span>06:00</span>
+<span>12:00 (Delta Sync)</span>
+<span>18:00</span>
+<span class="text-primary font-semibold">Live (Adesso)</span>
+</div>
+<div class="h-56 w-full relative">
+<svg class="w-full h-full overflow-visible" preserveaspectratio="none" viewbox="0 0 800 200">
+<defs>
+<lineargradient id="nebulaCyanGrad" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#00d2ff" stop-opacity="0.38"></stop>
+<stop offset="100%" stop-color="#00d2ff" stop-opacity="0.0"></stop>
+</lineargradient>
+<lineargradient id="nebulaAmberGrad" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#f59e0b" stop-opacity="0.25"></stop>
+<stop offset="100%" stop-color="#f59e0b" stop-opacity="0.0"></stop>
+</lineargradient>
+</defs>
+<!-- Dashed Horizontal Guides -->
+<line stroke="rgba(0, 210, 255, 0.08)" stroke-dasharray="4 4" stroke-width="1" x1="0" x2="800" y1="35" y2="35"></line>
+<line stroke="rgba(0, 210, 255, 0.08)" stroke-dasharray="4 4" stroke-width="1" x1="0" x2="800" y1="85" y2="85"></line>
+<line stroke="rgba(0, 210, 255, 0.08)" stroke-dasharray="4 4" stroke-width="1" x1="0" x2="800" y1="135" y2="135"></line>
+<!-- Latency Line (Amber) -->
+<path d="M0,152 C90,165 150,110 220,122 C300,135 340,168 430,150 C510,132 590,165 710,128 L800,140 L800,200 L0,200 Z" fill="url(#nebulaAmberGrad)"></path>
+<path d="M0,152 C90,165 150,110 220,122 C300,135 340,168 430,150 C510,132 590,165 710,128 L800,140" fill="none" stroke="#f59e0b" stroke-linecap="round" stroke-width="1.8"></path>
+<!-- Throughput Area (Cyan) -->
+<path d="M0,110 C80,36 140,18 210,32 C290,48 350,124 430,86 C510,48 590,18 680,42 L800,24 L800,200 L0,200 Z" fill="url(#nebulaCyanGrad)"></path>
+<path d="M0,110 C80,36 140,18 210,32 C290,48 350,124 430,86 C510,48 590,18 680,42 L800,24" fill="none" stroke="#00d2ff" stroke-linecap="round" stroke-width="2.5"></path>
+<!-- Pulsing Anchor Point on live head -->
+<circle class="animate-pulse" cx="800" cy="24" fill="#00d2ff" r="5"></circle>
+<circle cx="800" cy="24" fill="#00d2ff" opacity="0.25" r="10"></circle>
+<!-- Night Peak Marker -->
+<circle cx="210" cy="32" fill="#00d2ff" r="3.5"></circle>
+<circle cx="430" cy="86" fill="#00d2ff" r="3.5"></circle>
+</svg>
+</div>
+</div>
+</div>
+<!-- Bottom Telemetry Badges -->
+<div class="mt-4 pt-3 border-t border-cyan-500/10 flex flex-wrap items-center justify-between gap-3 bg-surface-container-low/50 rounded-lg p-3">
+<div class="flex items-center gap-4 flex-wrap">
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-primary shadow-[0_0_8px_rgba(0,210,255,0.6)]"></span>
+<span class="text-xs text-on-surface">Throughput: <strong class="text-primary font-mono font-bold">184 req/s</strong> (Picco: 412 req/s)</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-accent-amber"></span>
+<span class="text-xs text-on-surface">Latenza Media: <strong class="text-accent-amber font-mono font-semibold">120ms</strong></span>
+</div>
+</div>
+<div class="flex items-center gap-1.5 text-xs font-mono text-tertiary">
+<span class="material-symbols-outlined text-[16px]">verified</span>
+<span>HTTP 2xx Success Rate: 99.82%</span>
+</div>
+</div>
+</div>
+<!-- Source Distribution Donut (4 cols) -->
+<div class="lg:col-span-4 card-nebula rounded-xl p-5 flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between pb-3 border-b border-cyan-500/10">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[20px]">pie_chart</span>
+<h2 class="text-base font-display font-bold text-white tracking-tight">Distribuzione per Fonte</h2>
+</div>
+<span class="text-[10px] font-mono text-primary px-2 py-0.5 rounded bg-primary/10 border border-primary/20">Ingestion Share</span>
+</div>
+<p class="text-xs text-on-surface-variant mt-2">Quota entità indicizzate dai vari cataloghi cinematografici.</p>
+<!-- Donut Visual -->
+<div class="relative w-44 h-44 mx-auto my-4 flex items-center justify-center">
+<svg class="w-full h-full -rotate-90" viewbox="0 0 100 100">
+<!-- TMDB 45% (Cyan) -> Circumference = 2*PI*38 ~= 238.76 -->
+<!-- 45% = 107.44 -->
+<circle cx="50" cy="50" fill="transparent" r="38" stroke="#00d2ff" stroke-dasharray="107.44 131.32" stroke-dashoffset="0" stroke-width="11"></circle>
+<!-- IMDb 30% (Blue-Indigo) -> 71.63 -->
+<circle cx="50" cy="50" fill="transparent" r="38" stroke="#0566d9" stroke-dasharray="71.63 167.13" stroke-dashoffset="-107.44" stroke-width="11"></circle>
+<!-- Letterboxd 15% (Emerald) -> 35.81 -->
+<circle cx="50" cy="50" fill="transparent" r="38" stroke="#10b981" stroke-dasharray="35.81 202.95" stroke-dashoffset="-179.07" stroke-width="11"></circle>
+<!-- Cineteca 10% (Amber) -> 23.88 -->
+<circle cx="50" cy="50" fill="transparent" r="38" stroke="#f59e0b" stroke-dasharray="23.88 214.88" stroke-dashoffset="-214.88" stroke-width="11"></circle>
+</svg>
+<div class="absolute flex flex-col items-center justify-center text-center">
+<span class="text-2xl font-display font-extrabold text-white leading-none">48.2k</span>
+<span class="text-[10px] font-mono text-outline uppercase tracking-wider mt-1">Entità Totali</span>
+</div>
+</div>
+</div>
+<!-- Breakdown List -->
+<div class="flex flex-col gap-2 pt-1 border-t border-cyan-500/10">
+<div class="flex items-center justify-between text-xs py-1 px-2.5 rounded bg-surface-container-low border border-cyan-500/10">
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-primary"></span>
+<span class="text-white font-medium">TMDB API v3</span>
+</div>
+<span class="font-mono text-primary font-semibold">45% (21.7k)</span>
+</div>
+<div class="flex items-center justify-between text-xs py-1 px-2.5 rounded bg-surface-container-low border border-cyan-500/10">
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-secondary-container"></span>
+<span class="text-white font-medium">IMDb Datasets</span>
+</div>
+<span class="font-mono text-secondary font-semibold">30% (14.5k)</span>
+</div>
+<div class="flex items-center justify-between text-xs py-1 px-2.5 rounded bg-surface-container-low border border-cyan-500/10">
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-tertiary"></span>
+<span class="text-white font-medium">Letterboxd Sync</span>
+</div>
+<span class="font-mono text-tertiary font-semibold">15% (7.2k)</span>
+</div>
+<div class="flex items-center justify-between text-xs py-1 px-2.5 rounded bg-surface-container-low border border-cyan-500/10">
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-accent-amber"></span>
+<span class="text-white font-medium">Cineteca OAI-PMH</span>
+</div>
+<span class="font-mono text-accent-amber font-semibold">10% (4.8k)</span>
+</div>
+</div>
+</div>
+</div>
+<!-- 3-COLUMN ANALYTICAL CLUSTERS (ANNO, GENERE, RATING) -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+<!-- Cluster 1: Distribuzione per Anno -->
+<div class="card-nebula rounded-xl p-5 flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between pb-2 border-b border-cyan-500/10">
+<div>
+<h3 class="text-sm font-display font-bold text-white tracking-tight">Distribuzione per Anno</h3>
+<span class="text-[11px] text-on-surface-variant">Copertura storica (1960 - 2025)</span>
+</div>
+<span class="material-symbols-outlined text-primary text-[19px]">calendar_today</span>
+</div>
+<!-- Historical Histogram Bars -->
+<div class="h-40 w-full mt-4 flex flex-col justify-end">
+<div class="flex items-end justify-between h-28 w-full gap-2 px-1">
+<!-- 60s -->
+<div class="w-full flex flex-col items-center gap-1.5 group cursor-pointer">
+<div class="w-full bg-surface-container-high group-hover:bg-primary/60 rounded-t transition-all" style="height: 18%;"></div>
+<span class="text-[10px] font-mono text-outline group-hover:text-white">60s</span>
+</div>
+<!-- 70s -->
+<div class="w-full flex flex-col items-center gap-1.5 group cursor-pointer">
+<div class="w-full bg-surface-container-high group-hover:bg-primary/60 rounded-t transition-all" style="height: 28%;"></div>
+<span class="text-[10px] font-mono text-outline group-hover:text-white">70s</span>
+</div>
+<!-- 80s -->
+<div class="w-full flex flex-col items-center gap-1.5 group cursor-pointer">
+<div class="w-full bg-surface-container-high group-hover:bg-primary/60 rounded-t transition-all" style="height: 44%;"></div>
+<span class="text-[10px] font-mono text-outline group-hover:text-white">80s</span>
+</div>
+<!-- 90s -->
+<div class="w-full flex flex-col items-center gap-1.5 group cursor-pointer">
+<div class="w-full bg-surface-container-high group-hover:bg-primary/60 rounded-t transition-all" style="height: 62%;"></div>
+<span class="text-[10px] font-mono text-outline group-hover:text-white">90s</span>
+</div>
+<!-- 00s -->
+<div class="w-full flex flex-col items-center gap-1.5 group cursor-pointer">
+<div class="w-full bg-surface-container-high group-hover:bg-primary/60 rounded-t transition-all" style="height: 78%;"></div>
+<span class="text-[10px] font-mono text-outline group-hover:text-white">00s</span>
+</div>
+<!-- 10s -->
+<div class="w-full flex flex-col items-center gap-1.5 group cursor-pointer">
+<div class="w-full bg-primary/70 group-hover:bg-primary rounded-t transition-all" style="height: 92%;"></div>
+<span class="text-[10px] font-mono text-primary">10s</span>
+</div>
+<!-- 20-25 -->
+<div class="w-full flex flex-col items-center gap-1.5 group cursor-pointer">
+<div class="w-full bg-primary rounded-t shadow-[0_0_12px_rgba(0,210,255,0.4)] transition-all" style="height: 100%;"></div>
+<span class="text-[10px] font-mono text-primary font-bold">25</span>
+</div>
+</div>
+</div>
+</div>
+<div class="pt-3 border-t border-cyan-500/10 flex items-center justify-between text-xs">
+<span class="text-on-surface-variant">Picco produzione:</span>
+<span class="font-mono text-primary font-semibold">2023 (1,890 titoli)</span>
+</div>
+</div>
+<!-- Cluster 2: Film per Genere -->
+<div class="card-nebula rounded-xl p-5 flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between pb-2 border-b border-cyan-500/10">
+<div>
+<h3 class="text-sm font-display font-bold text-white tracking-tight">Film per Genere</h3>
+<span class="text-[11px] text-on-surface-variant">Classificazione ontologica</span>
+</div>
+<span class="material-symbols-outlined text-primary text-[19px]">category</span>
+</div>
+<div class="mt-4 flex flex-col gap-3">
+<!-- Fantascienza 28% -->
+<div class="flex flex-col gap-1">
+<div class="flex justify-between text-xs">
+<span class="text-white font-medium">Fantascienza &amp; Cyberpunk</span>
+<span class="font-mono text-primary font-bold">28%</span>
+</div>
+<div class="w-full h-2 rounded-full bg-surface-container-high overflow-hidden">
+<div class="h-full bg-gradient-to-r from-cyan-500 to-primary rounded-full shadow-[0_0_8px_rgba(0,210,255,0.4)]" style="width: 28%"></div>
+</div>
+</div>
+<!-- Drammatico 22% -->
+<div class="flex flex-col gap-1">
+<div class="flex justify-between text-xs">
+<span class="text-white font-medium">Drammatico</span>
+<span class="font-mono text-tertiary font-bold">22%</span>
+</div>
+<div class="w-full h-2 rounded-full bg-surface-container-high overflow-hidden">
+<div class="h-full bg-tertiary rounded-full" style="width: 22%"></div>
+</div>
+</div>
+<!-- Thriller 18% -->
+<div class="flex flex-col gap-1">
+<div class="flex justify-between text-xs">
+<span class="text-white font-medium">Thriller &amp; Noir</span>
+<span class="font-mono text-secondary font-bold">18%</span>
+</div>
+<div class="w-full h-2 rounded-full bg-surface-container-high overflow-hidden">
+<div class="h-full bg-secondary-container rounded-full" style="width: 18%"></div>
+</div>
+</div>
+<!-- Commedia / Altro 14% & 10% -->
+<div class="flex flex-col gap-1">
+<div class="flex justify-between text-xs">
+<span class="text-white font-medium">Commedia &amp; Horror</span>
+<span class="font-mono text-on-surface-variant">14% / 10%</span>
+</div>
+<div class="w-full h-2 rounded-full bg-surface-container-high overflow-hidden flex">
+<div class="h-full bg-accent-amber" style="width: 14%"></div>
+<div class="h-full bg-cyan-700" style="width: 10%"></div>
+</div>
+</div>
+</div>
+</div>
+<div class="pt-3 border-t border-cyan-500/10 flex items-center justify-between text-xs">
+<span class="text-on-surface-variant">Cluster dominante:</span>
+<span class="font-mono text-primary font-semibold">Sci-Fi (13,520 titoli)</span>
+</div>
+</div>
+<!-- Cluster 3: Distribuzione Rating -->
+<div class="card-nebula rounded-xl p-5 flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between pb-2 border-b border-cyan-500/10">
+<div>
+<h3 class="text-sm font-display font-bold text-white tracking-tight">Distribuzione Rating</h3>
+<span class="text-[11px] text-on-surface-variant">Punteggi normalizzati (1.0 - 10.0)</span>
+</div>
+<div class="flex items-center gap-1 text-accent-amber font-mono text-xs bg-accent-amber/10 px-2 py-0.5 rounded border border-accent-amber/20">
+<span class="material-symbols-outlined text-[13px]">star</span>
+<span>Picco: 7.2</span>
+</div>
+</div>
+<!-- Gaussian Bell Curve SVG -->
+<div class="h-40 w-full mt-4 flex flex-col justify-end relative">
+<svg class="w-full h-28 overflow-visible" preserveaspectratio="none" viewbox="0 0 300 120">
+<defs>
+<lineargradient id="ratingNebulaGrad" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#f59e0b" stop-opacity="0.5"></stop>
+<stop offset="100%" stop-color="#f59e0b" stop-opacity="0.0"></stop>
+</lineargradient>
+</defs>
+<!-- Bell curve -->
+<path d="M 0,118 C 60,118 110,110 150,80 C 180,55 205,12 216,12 C 228,12 250,55 275,95 C 290,112 295,118 300,118 L 300,120 L 0,120 Z" fill="url(#ratingNebulaGrad)"></path>
+<path d="M 0,118 C 60,118 110,110 150,80 C 180,55 205,12 216,12 C 228,12 250,55 275,95 C 290,112 295,118 300,118" fill="none" stroke="#f59e0b" stroke-linecap="round" stroke-width="2"></path>
+<!-- Vertical Peak Apex -->
+<line stroke="#f59e0b" stroke-dasharray="3 3" stroke-width="1.5" x1="216" x2="216" y1="12" y2="120"></line>
+<circle cx="216" cy="12" fill="#f59e0b" r="3.5"></circle>
+</svg>
+<div class="flex justify-between items-center text-[10px] font-mono text-outline mt-1 px-1">
+<span>1.0</span>
+<span>3.0</span>
+<span>5.0</span>
+<span class="text-accent-amber font-bold">7.2 (Avg)</span>
+<span>9.0</span>
+<span>10.0</span>
+</div>
+</div>
+</div>
+<div class="pt-3 border-t border-cyan-500/10 flex items-center justify-between text-xs">
+<span class="text-on-surface-variant">Top Tier (≥ 8.5):</span>
+<span class="font-mono text-accent-amber font-semibold">3,840 film (7.9%)</span>
+</div>
+</div>
+</div>
+<!-- INGESTION PIPELINES MASTER TABLE -->
+<div class="card-nebula rounded-xl p-5 shadow-lg flex flex-col gap-4">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-3 border-b border-cyan-500/10">
+<div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[22px]">dns</span>
+<h2 class="text-base font-display font-bold text-white tracking-tight">Pipeline di Crawling &amp; Fonti Connesse</h2>
+</div>
+<p class="text-xs text-on-surface-variant mt-0.5">Stato operativo delle sorgenti di ingestion, sync delta e monitoraggio errori di rete.</p>
+</div>
+<div class="flex items-center gap-2">
+<div class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-low border border-cyan-500/15 text-xs text-on-surface">
+<span class="material-symbols-outlined text-[16px] text-primary">filter_alt</span>
+<span>Filtro: Tutte le fonti</span>
+</div>
+<button class="p-2 rounded-lg bg-surface-container-low border border-cyan-500/15 text-on-surface-variant hover:text-white transition-colors" title="Ricarica tabella">
+<span class="material-symbols-outlined text-[18px]">refresh</span>
+</button>
+</div>
+</div>
+<!-- Table Responsive Container -->
+<div class="overflow-x-auto w-full">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-lowest/80 text-outline text-[11px] font-mono uppercase tracking-wider border-b border-cyan-500/10">
+<th class="py-3 px-4 rounded-l-lg">Sorgente &amp; Endpoint</th>
+<th class="py-3 px-3">Tipo</th>
+<th class="py-3 px-3">Stato Pipeline</th>
+<th class="py-3 px-3">Ultima Esecuzione</th>
+<th class="py-3 px-3">Record Estratti</th>
+<th class="py-3 px-3">Errori / Throttling</th>
+<th class="py-3 px-3">Health Status</th>
+<th class="py-3 px-4 text-right rounded-r-lg">Azioni</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-cyan-500/5 text-xs">
+<!-- ROW 1: TMDB API v3 -->
+<tr class="hover:bg-cyan-500/5 transition-colors group">
+<td class="py-3.5 px-4 flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[18px]">api</span>
+</div>
+<div class="flex flex-col">
+<span class="font-semibold text-white group-hover:text-primary transition-colors">TMDB API v3</span>
+<span class="text-[11px] font-mono text-outline">api.themoviedb.org/3/movie</span>
+</div>
+</td>
+<td class="py-3.5 px-3">
+<span class="px-2 py-0.5 rounded bg-surface-container-high text-on-surface-variant font-mono text-[11px] border border-cyan-500/10">REST API</span>
+</td>
+<td class="py-3.5 px-3">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-tertiary/10 border border-tertiary/20 text-tertiary font-mono text-[10px] font-bold">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+                    ACTIVE
+                  </span>
+</td>
+<td class="py-3.5 px-3 font-mono text-on-surface-variant text-[11px]">14 min fa</td>
+<td class="py-3.5 px-3 font-mono font-semibold text-white">21,730 <span class="text-tertiary text-[11px]">(+84)</span></td>
+<td class="py-3.5 px-3 font-mono text-tertiary text-[11px]">0 err / 100% OK</td>
+<td class="py-3.5 px-3">
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-tertiary"></span>
+<span class="text-tertiary font-mono font-semibold text-[11px]">99.9%</span>
+</div>
+</td>
+<td class="py-3.5 px-4 text-right">
+<div class="flex items-center justify-end gap-1.5">
+<button class="px-2.5 py-1 rounded bg-primary text-surface hover:brightness-110 font-mono text-[11px] font-bold transition-all shadow-sm">Sync</button>
+<button class="p-1 rounded hover:bg-surface-container-high text-on-surface-variant hover:text-white transition-colors" title="Log">
+<span class="material-symbols-outlined text-[17px]">description</span>
+</button>
+<button class="p-1 rounded hover:bg-surface-container-high text-on-surface-variant hover:text-white transition-colors" title="Config">
+<span class="material-symbols-outlined text-[17px]">settings</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- ROW 2: Letterboxd Sync -->
+<tr class="hover:bg-cyan-500/5 transition-colors group">
+<td class="py-3.5 px-4 flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-secondary-container/20 border border-secondary-container/40 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[18px]">language</span>
+</div>
+<div class="flex flex-col">
+<span class="font-semibold text-white group-hover:text-primary transition-colors">Letterboxd Sync</span>
+<span class="text-[11px] font-mono text-outline">letterboxd.com/films/popular</span>
+</div>
+</td>
+<td class="py-3.5 px-3">
+<span class="px-2 py-0.5 rounded bg-surface-container-high text-on-surface-variant font-mono text-[11px] border border-cyan-500/10">Web Scraper</span>
+</td>
+<td class="py-3.5 px-3">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-primary/15 border border-primary/25 text-primary font-mono text-[10px] font-bold">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+                    RUNNING
+                  </span>
+</td>
+<td class="py-3.5 px-3 font-mono text-on-surface-variant text-[11px]">In corso (2m)</td>
+<td class="py-3.5 px-3 font-mono font-semibold text-white">7,240 <span class="text-primary text-[11px]">(+26)</span></td>
+<td class="py-3.5 px-3 font-mono text-on-surface-variant text-[11px]">Throttling 4 req/s</td>
+<td class="py-3.5 px-3">
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+<span class="text-primary font-mono font-semibold text-[11px]">98.4%</span>
+</div>
+</td>
+<td class="py-3.5 px-4 text-right">
+<div class="flex items-center justify-end gap-1.5">
+<button class="px-2.5 py-1 rounded bg-surface-container-high hover:bg-surface-bright text-white font-mono text-[11px] border border-cyan-500/20 transition-all">Sync</button>
+<button class="p-1 rounded hover:bg-surface-container-high text-on-surface-variant hover:text-white transition-colors" title="Log">
+<span class="material-symbols-outlined text-[17px]">description</span>
+</button>
+<button class="p-1 rounded hover:bg-surface-container-high text-on-surface-variant hover:text-white transition-colors" title="Config">
+<span class="material-symbols-outlined text-[17px]">settings</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- ROW 3: IMDb Datasets Sync -->
+<tr class="hover:bg-cyan-500/5 transition-colors group">
+<td class="py-3.5 px-4 flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-surface-container-high border border-cyan-500/10 flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-[18px]">dataset</span>
+</div>
+<div class="flex flex-col">
+<span class="font-semibold text-white group-hover:text-secondary transition-colors">IMDb Datasets Sync</span>
+<span class="text-[11px] font-mono text-outline">datasets.imdbws.com/title.basics</span>
+</div>
+</td>
+<td class="py-3.5 px-3">
+<span class="px-2 py-0.5 rounded bg-surface-container-high text-on-surface-variant font-mono text-[11px] border border-cyan-500/10">TSV Batch</span>
+</td>
+<td class="py-3.5 px-3">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-surface-container-high border border-cyan-500/10 text-on-surface-variant font-mono text-[10px] font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-outline"></span>
+                    IDLE
+                  </span>
+</td>
+<td class="py-3.5 px-3 font-mono text-on-surface-variant text-[11px]">Ieri, 23:30</td>
+<td class="py-3.5 px-3 font-mono font-semibold text-white">14,490 <span class="text-secondary text-[11px]">(+14)</span></td>
+<td class="py-3.5 px-3 font-mono text-tertiary text-[11px]">Nessun errore</td>
+<td class="py-3.5 px-3">
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-tertiary"></span>
+<span class="text-tertiary font-mono font-semibold text-[11px]">100%</span>
+</div>
+</td>
+<td class="py-3.5 px-4 text-right">
+<div class="flex items-center justify-end gap-1.5">
+<button class="px-2.5 py-1 rounded bg-surface-container-high hover:bg-surface-bright text-white font-mono text-[11px] border border-cyan-500/20 transition-all">Sync</button>
+<button class="p-1 rounded hover:bg-surface-container-high text-on-surface-variant hover:text-white transition-colors" title="Log">
+<span class="material-symbols-outlined text-[17px]">description</span>
+</button>
+<button class="p-1 rounded hover:bg-surface-container-high text-on-surface-variant hover:text-white transition-colors" title="Config">
+<span class="material-symbols-outlined text-[17px]">settings</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- ROW 4: Cineteca Nazionale -->
+<tr class="hover:bg-cyan-500/5 transition-colors group">
+<td class="py-3.5 px-4 flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-surface-container-high border border-cyan-500/10 flex items-center justify-center text-white">
+<span class="material-symbols-outlined text-[18px]">account_balance</span>
+</div>
+<div class="flex flex-col">
+<span class="font-semibold text-white group-hover:text-primary transition-colors">Cineteca Nazionale</span>
+<span class="text-[11px] font-mono text-outline">oai.cinetecamilano.it/oai-pmh</span>
+</div>
+</td>
+<td class="py-3.5 px-3">
+<span class="px-2 py-0.5 rounded bg-surface-container-high text-on-surface-variant font-mono text-[11px] border border-cyan-500/10">OAI-PMH XML</span>
+</td>
+<td class="py-3.5 px-3">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-surface-container-high border border-cyan-500/10 text-on-surface-variant font-mono text-[10px] font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-outline"></span>
+                    IDLE
+                  </span>
+</td>
+<td class="py-3.5 px-3 font-mono text-on-surface-variant text-[11px]">4 ore fa</td>
+<td class="py-3.5 px-3 font-mono font-semibold text-white">4,830 <span class="text-outline text-[11px]">(0)</span></td>
+<td class="py-3.5 px-3 font-mono text-on-surface-variant text-[11px]">Schema Dublin Core OK</td>
+<td class="py-3.5 px-3">
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-tertiary"></span>
+<span class="text-tertiary font-mono font-semibold text-[11px]">99.1%</span>
+</div>
+</td>
+<td class="py-3.5 px-4 text-right">
+<div class="flex items-center justify-end gap-1.5">
+<button class="px-2.5 py-1 rounded bg-surface-container-high hover:bg-surface-bright text-white font-mono text-[11px] border border-cyan-500/20 transition-all">Sync</button>
+<button class="p-1 rounded hover:bg-surface-container-high text-on-surface-variant hover:text-white transition-colors" title="Log">
+<span class="material-symbols-outlined text-[17px]">description</span>
+</button>
+<button class="p-1 rounded hover:bg-surface-container-high text-on-surface-variant hover:text-white transition-colors" title="Config">
+<span class="material-symbols-outlined text-[17px]">settings</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- ROW 5: Rotten Tomatoes Critic -->
+<tr class="hover:bg-cyan-500/5 transition-colors group bg-accent-amber/5">
+<td class="py-3.5 px-4 flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-accent-amber/15 border border-accent-amber/25 flex items-center justify-center text-accent-amber">
+<span class="material-symbols-outlined text-[18px]">rate_review</span>
+</div>
+<div class="flex flex-col">
+<span class="font-semibold text-white group-hover:text-accent-amber transition-colors">Rotten Tomatoes Critic</span>
+<span class="text-[11px] font-mono text-outline">rottentomatoes.com/m/*</span>
+</div>
+</td>
+<td class="py-3.5 px-3">
+<span class="px-2 py-0.5 rounded bg-surface-container-high text-on-surface-variant font-mono text-[11px] border border-cyan-500/10">Headless</span>
+</td>
+<td class="py-3.5 px-3">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-accent-amber/15 border border-accent-amber/25 text-accent-amber font-mono text-[10px] font-bold">
+<span class="w-1.5 h-1.5 rounded-full bg-accent-amber"></span>
+                    THROTTLED
+                  </span>
+</td>
+<td class="py-3.5 px-3 font-mono text-on-surface-variant text-[11px]">8 min fa</td>
+<td class="py-3.5 px-3 font-mono font-semibold text-white">3,120 <span class="text-outline text-[11px]">(+0)</span></td>
+<td class="py-3.5 px-3 font-mono text-accent-amber font-semibold text-[11px]">HTTP 429 (Cooldown 15m)</td>
+<td class="py-3.5 px-3">
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-accent-amber"></span>
+<span class="text-accent-amber font-mono font-semibold text-[11px]">82.0%</span>
+</div>
+</td>
+<td class="py-3.5 px-4 text-right">
+<div class="flex items-center justify-end gap-1.5">
+<button class="px-2.5 py-1 rounded bg-accent-amber/20 hover:bg-accent-amber/30 text-accent-amber border border-accent-amber/30 font-mono text-[11px] font-semibold transition-all">Riprova</button>
+<button class="p-1 rounded hover:bg-surface-container-high text-on-surface-variant hover:text-white transition-colors" title="Log">
+<span class="material-symbols-outlined text-[17px]">description</span>
+</button>
+<button class="p-1 rounded hover:bg-surface-container-high text-on-surface-variant hover:text-white transition-colors" title="Config">
+<span class="material-symbols-outlined text-[17px]">tune</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- ROW 6: JustWatch Streaming API -->
+<tr class="hover:bg-cyan-500/5 transition-colors group">
+<td class="py-3.5 px-4 flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[18px]">live_tv</span>
+</div>
+<div class="flex flex-col">
+<span class="font-semibold text-white group-hover:text-primary transition-colors">JustWatch Streaming API</span>
+<span class="text-[11px] font-mono text-outline">apis.justwatch.com/content/titles</span>
+</div>
+</td>
+<td class="py-3.5 px-3">
+<span class="px-2 py-0.5 rounded bg-surface-container-high text-on-surface-variant font-mono text-[11px] border border-cyan-500/10">GraphQL</span>
+</td>
+<td class="py-3.5 px-3">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-tertiary/10 border border-tertiary/20 text-tertiary font-mono text-[10px] font-bold">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+                    ACTIVE
+                  </span>
+</td>
+<td class="py-3.5 px-3 font-mono text-on-surface-variant text-[11px]">1 ora fa</td>
+<td class="py-3.5 px-3 font-mono font-semibold text-white">18,910 <span class="text-tertiary text-[11px]">(+180)</span></td>
+<td class="py-3.5 px-3 font-mono text-tertiary text-[11px]">0 err / Flat rate</td>
+<td class="py-3.5 px-3">
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-tertiary"></span>
+<span class="text-tertiary font-mono font-semibold text-[11px]">99.7%</span>
+</div>
+</td>
+<td class="py-3.5 px-4 text-right">
+<div class="flex items-center justify-end gap-1.5">
+<button class="px-2.5 py-1 rounded bg-primary text-surface hover:brightness-110 font-mono text-[11px] font-bold transition-all shadow-sm">Sync</button>
+<button class="p-1 rounded hover:bg-surface-container-high text-on-surface-variant hover:text-white transition-colors" title="Log">
+<span class="material-symbols-outlined text-[17px]">description</span>
+</button>
+<button class="p-1 rounded hover:bg-surface-container-high text-on-surface-variant hover:text-white transition-colors" title="Config">
+<span class="material-symbols-outlined text-[17px]">settings</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- OpenAI Pipeline Telemetry Bar -->
+<div class="mt-2 p-3.5 rounded-xl bg-surface-container-lowest/80 border border-cyan-500/15 flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div class="flex items-center gap-3">
+<div class="w-9 h-9 rounded-lg bg-gradient-to-tr from-cyan-600 to-primary flex items-center justify-center text-surface shadow-[0_0_12px_rgba(0,210,255,0.3)]">
+<span class="material-symbols-outlined text-[20px] font-bold">memory</span>
+</div>
+<div class="flex flex-col">
+<span class="text-xs font-display font-bold text-white flex items-center gap-2">
+                OpenAI text-embedding-3 Pipeline
+                <span class="text-[10px] font-mono px-2 py-0.2 rounded-full bg-primary/10 text-primary border border-primary/20">Active Ingestion</span>
+</span>
+<span class="text-[11px] text-on-surface-variant">342 film in attesa di compilazione vettoriale (CineVector Space 1536d)</span>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex flex-col items-end">
+<span class="text-xs font-mono font-bold text-primary">2,440 tokens / sec</span>
+<span class="text-[10px] font-mono text-outline">Tempo stimato: 4 min 12 sec</span>
+</div>
+<div class="w-36 h-2 bg-surface-container-high rounded-full overflow-hidden border border-cyan-500/10">
+<div class="h-full bg-gradient-to-r from-cyan-400 to-primary rounded-full transition-all duration-500 shadow-[0_0_8px_rgba(0,210,255,0.6)]" style="width: 72%;"></div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+<script>
+    document.getElementById('triggerSyncAll')?.addEventListener('click', function() {
+      const btn = this;
+      const originalHtml = btn.innerHTML;
+      btn.disabled = true;
+      btn.classList.add('opacity-80');
+      btn.innerHTML = '<span class="material-symbols-outlined text-[18px] animate-spin">refresh</span><span>Sincronizzazione in corso...</span>';
+      setTimeout(() => {
+        btn.innerHTML = '<span class="material-symbols-outlined text-[18px]">done</span><span>Delta Sync Inviato!</span>';
+        setTimeout(() => {
+          btn.innerHTML = originalHtml;
+          btn.disabled = false;
+          btn.classList.remove('opacity-80');
+        }, 2200);
+      }, 1600);
+    });
+  </script>
+</body></html>
