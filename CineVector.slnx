@@ -1,0 +1,16 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/CineVector.Api/CineVector.Api.csproj" />
+    <Project Path="src/CineVector.Application/CineVector.Application.csproj" />
+    <Project Path="src/CineVector.Contracts/CineVector.Contracts.csproj" />
+    <Project Path="src/CineVector.Domain/CineVector.Domain.csproj" />
+    <Project Path="src/CineVector.Infrastructure/CineVector.Infrastructure.csproj" />
+    <Project Path="src/CineVector.Search/CineVector.Search.csproj" />
+    <Project Path="src/CineVector.Worker/CineVector.Worker.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/CineVector.IntegrationTests/CineVector.IntegrationTests.csproj" />
+    <Project Path="tests/CineVector.SearchTests/CineVector.SearchTests.csproj" />
+    <Project Path="tests/CineVector.UnitTests/CineVector.UnitTests.csproj" />
+  </Folder>
+</Solution>
