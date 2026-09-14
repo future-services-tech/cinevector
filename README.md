@@ -4,6 +4,8 @@ Catalogo cinematografico e motore di ricerca avanzata sui metadati dei film (tit
 
 Stato attuale: **Fasi 1-5 completate** (solution .NET 10, dominio, PostgreSQL/EF Core, CRUD film, full-text search con filtri strutturati e facet, frontend React con ricerca, crawler TMDb con deduplicazione e tracciamento CrawlJob, embedding semantici con pgvector/HNSW, ranking ibrido a tre segnali, ricerca in linguaggio naturale, film simili). Le fasi successive (Redis/worker, dashboard admin, sicurezza/osservabilità di produzione) sono descritte in fondo a questo file.
 
+<img width="1897" height="942" alt="image" src="https://github.com/user-attachments/assets/afcf504c-bf73-49f7-aef7-05ff86fc40c9" />
+
 ## Prerequisiti
 
 - .NET SDK 10
