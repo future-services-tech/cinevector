@@ -13,7 +13,7 @@ Stato attuale: **Fasi 1-5 completate** (solution .NET 10, dominio, PostgreSQL/EF
 
 ## 0. Crawler TMDb (Fase 3)
 
-Il crawler usa l'API ufficiale TMDb (mai scraping HTML), tramite `TmdbSourceAdapter` (`src/MovieCatalog.Infrastructure/Sources/Tmdb`). Per usarlo:
+Il crawler usa l'API ufficiale TMDb (mai scraping HTML), tramite `TmdbSourceAdapter` (`src/CineVector.Infrastructure/Sources/Tmdb`). Per usarlo:
 
 1. Ottieni un **Read Access Token v4** da https://www.themoviedb.org/settings/api e mettilo in `.env` come `TMDB_API_KEY`.
 2. Crea la fonte (una sola volta):
@@ -87,16 +87,16 @@ PostgreSQL (immagine `pgvector/pgvector:pg16`, con l'estensione `vector` già di
 ```bash
 dotnet tool update --global dotnet-ef   # se non già installato/aggiornato
 dotnet ef database update \
-  --project src/MovieCatalog.Infrastructure \
-  --startup-project src/MovieCatalog.Api
+  --project src/CineVector.Infrastructure \
+  --startup-project src/CineVector.Api
 ```
 
-La connection string di default (`appsettings.json`) punta a `localhost:5433`. Per sviluppo locale fuori Docker, crea un `src/MovieCatalog.Api/appsettings.Local.json` (ignorato da git) con la password reale e avvia con `ASPNETCORE_ENVIRONMENT=Local`.
+La connection string di default (`appsettings.json`) punta a `localhost:5433`. Per sviluppo locale fuori Docker, crea un `src/CineVector.Api/appsettings.Local.json` (ignorato da git) con la password reale e avvia con `ASPNETCORE_ENVIRONMENT=Local`.
 
 ## 4. Avvio dell'API
 
 ```bash
-dotnet run --project src/MovieCatalog.Api
+dotnet run --project src/CineVector.Api
 ```
 
 - Swagger/OpenAPI: `http://localhost:5080/openapi/v1.json` (in ambiente Development)
@@ -113,7 +113,7 @@ dotnet run --project src/MovieCatalog.Api
 ## 5. Avvio del frontend
 
 ```bash
-cd src/moviecatalog-web
+cd src/cinevector-web
 cp .env.example .env
 npm install
 npm run dev
@@ -158,25 +158,25 @@ curl -X POST http://localhost:5080/api/movies \
 dotnet test
 ```
 
-`MovieCatalog.SearchTests` usa [Testcontainers](https://testcontainers.com/) per avviare un vero PostgreSQL (`pgvector/pgvector:pg16`) durante i test: richiede Docker attivo.
+`CineVector.SearchTests` usa [Testcontainers](https://testcontainers.com/) per avviare un vero PostgreSQL (`pgvector/pgvector:pg16`) durante i test: richiede Docker attivo.
 
 ## Struttura della solution
 
 ```text
 src/
-├── MovieCatalog.Api/            API ASP.NET Core (controller, Program.cs, appsettings)
-├── MovieCatalog.Application/    Servizi applicativi, validazione, DTO mapping
-├── MovieCatalog.Domain/         Entità di dominio (Movie, Person, Genre, Source, CrawlJob, ...)
-├── MovieCatalog.Infrastructure/ EF Core, PostgreSQL/pgvector, repository, migration
-├── MovieCatalog.Worker/         Background worker (crawler/embedding, dalla Fase 3)
-├── MovieCatalog.Search/         Motore di ricerca ibrido (dalla Fase 2)
-├── MovieCatalog.Contracts/      DTO condivisi tra Application e Api
-└── moviecatalog-web/            Frontend React + Vite + TypeScript
+├── CineVector.Api/            API ASP.NET Core (controller, Program.cs, appsettings)
+├── CineVector.Application/    Servizi applicativi, validazione, DTO mapping
+├── CineVector.Domain/         Entità di dominio (Movie, Person, Genre, Source, CrawlJob, ...)
+├── CineVector.Infrastructure/ EF Core, PostgreSQL/pgvector, repository, migration
+├── CineVector.Worker/         Background worker (crawler/embedding, dalla Fase 3)
+├── CineVector.Search/         Motore di ricerca ibrido (dalla Fase 2)
+├── CineVector.Contracts/      DTO condivisi tra Application e Api
+└── cinevector-web/            Frontend React + Vite + TypeScript
 
 tests/
-├── MovieCatalog.UnitTests/
-├── MovieCatalog.IntegrationTests/
-└── MovieCatalog.SearchTests/
+├── CineVector.UnitTests/
+├── CineVector.IntegrationTests/
+└── CineVector.SearchTests/
 
 infrastructure/docker/           Dockerfile di Api, Worker, Frontend
 ```
