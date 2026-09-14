@@ -33,7 +33,16 @@ public class CrawlJobRepository(AppDbContext db) : ICrawlJobRepository
 
     public Task<CrawlJob?> GetLatestRunningBySourceAsync(int sourceId, CancellationToken ct) =>
         db.CrawlJobs
-            .Where(j => j.SourceId == sourceId && j.Status == CrawlJobStatus.Running)
+            .Where(j => j.SourceId == sourceId && (j.Status == CrawlJobStatus.Running || j.Status == CrawlJobStatus.Paused))
+            .OrderByDescending(j => j.StartedAt)
+            .FirstOrDefaultAsync(ct);
+
+    public Task<CrawlJob?> GetLatestActiveByCriteriaAsync(int sourceId, CrawlQueryMode mode, string? query, CancellationToken ct) =>
+        db.CrawlJobs
+            .Where(j => j.SourceId == sourceId
+                && (j.Status == CrawlJobStatus.Running || j.Status == CrawlJobStatus.Paused)
+                && j.QueryMode == mode
+                && j.Query == query)
             .OrderByDescending(j => j.StartedAt)
             .FirstOrDefaultAsync(ct);
 
@@ -52,6 +61,19 @@ public class CrawlJobRepository(AppDbContext db) : ICrawlJobRepository
     }
 
     public Task SaveChangesAsync(CancellationToken ct) => db.SaveChangesAsync(ct);
+
+    public async Task<bool> DeleteAsync(int id, CancellationToken ct)
+    {
+        var job = await db.CrawlJobs.FirstOrDefaultAsync(j => j.Id == id, ct);
+        if (job is null)
+        {
+            return false;
+        }
+
+        db.CrawlJobs.Remove(job);
+        await db.SaveChangesAsync(ct);
+        return true;
+    }
 
     public void ResetTrackingKeepingJob(CrawlJob job)
     {

@@ -288,6 +288,11 @@ p {
   color: var(--color-error);
 }
 
+.status-chip--paused {
+  background: rgba(236, 72, 153, 0.12);
+  color: var(--color-magenta);
+}
+
 /* ---------- Cards & panels ---------- */
 
 .panel {
@@ -631,6 +636,130 @@ p {
   align-self: center;
 }
 
+.fab-settings {
+  position: fixed;
+  right: var(--space-xl);
+  bottom: var(--space-xl);
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  box-shadow: 0 8px 24px rgba(0, 210, 255, 0.35);
+  z-index: 20;
+  transition: transform 0.15s ease;
+}
+
+.fab-settings:hover {
+  transform: scale(1.06);
+}
+
+/* ---------- Dashboard: general statistics (stat card + cluster table + globo) ---------- */
+
+.dash-hero {
+  display: grid;
+  grid-template-columns: minmax(320px, 640px) 1fr;
+  gap: var(--space-lg);
+  align-items: stretch;
+}
+
+@media (max-width: 960px) {
+  .dash-hero {
+    grid-template-columns: 1fr;
+  }
+}
+
+.dash-hero__stats {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  min-width: 0;
+}
+
+.dash-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-md);
+}
+
+@media (max-width: 480px) {
+  .dash-stat-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.dash-stat-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  background: var(--color-surface-container-low);
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-lg);
+  padding: var(--space-md);
+  min-width: 0;
+}
+
+.dash-stat-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.dash-stat-card__label {
+  font-size: 11px;
+  color: var(--color-on-surface-variant);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dash-stat-card__value {
+  font-size: 21px;
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.dash-stat-card__delta {
+  font-size: 11px;
+  color: var(--color-on-surface-variant);
+}
+
+.dash-stat-card__delta--up {
+  color: var(--color-success);
+  font-weight: 600;
+}
+
+.dash-stat-card__icon {
+  flex-shrink: 0;
+  width: 42px;
+  height: 42px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  box-shadow: 0 6px 18px rgba(0, 210, 255, 0.28);
+}
+
+.dash-hero__sphere {
+  position: relative;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border-hairline);
+  background: radial-gradient(circle at 62% 45%, rgba(0, 150, 220, 0.22), rgba(1, 15, 31, 0.55) 58%, rgba(1, 10, 20, 0.85) 78%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 360px;
+  overflow: hidden;
+}
+
 .search-bar {
   display: flex;
   gap: var(--space-sm);
@@ -709,14 +838,6 @@ p {
 
 .filter-field--action {
   justify-content: flex-end;
-}
-
-/* ---------- Vista spaziale (sfera poster) ---------- */
-
-.sphere-view {
-  display: flex;
-  justify-content: center;
-  padding: var(--space-xl) 0;
 }
 
 .quick-view-backdrop {

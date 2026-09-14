@@ -23,6 +23,8 @@ export interface CrawlJob {
   moviesCreated: number;
   moviesUpdated: number;
   errors: CrawlError[];
+  /** True se lo stato è Running/Paused ma nessuna istanza API attiva lo sta gestendo davvero: un job zombie. */
+  isOrphaned: boolean;
 }
 
 export interface StartCrawlRequest {
@@ -51,4 +53,22 @@ export function startAllCrawls() {
 
 export function cancelCrawl(sourceId: number) {
   return apiFetch<{ jobId: number; cancelling: boolean }>(`/api/crawl/${sourceId}/cancel`, { method: "POST" });
+}
+
+export function cancelCrawlJob(jobId: number) {
+  return apiFetch<{ jobId: number; cancelling: boolean; reconciled: boolean }>(`/api/crawl/jobs/${jobId}/cancel`, {
+    method: "POST",
+  });
+}
+
+export function pauseCrawlJob(jobId: number) {
+  return apiFetch<{ jobId: number; pausing: boolean }>(`/api/crawl/jobs/${jobId}/pause`, { method: "POST" });
+}
+
+export function resumeCrawlJob(jobId: number) {
+  return apiFetch<{ jobId: number; resuming: boolean }>(`/api/crawl/jobs/${jobId}/resume`, { method: "POST" });
+}
+
+export function deleteCrawlJob(jobId: number) {
+  return apiFetch<void>(`/api/crawl/jobs/${jobId}`, { method: "DELETE" });
 }

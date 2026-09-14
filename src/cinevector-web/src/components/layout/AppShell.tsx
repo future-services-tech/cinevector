@@ -104,6 +104,10 @@ export function AppShell() {
           )}
         </main>
       </div>
+
+      <NavLink to="/settings" className="fab-settings" title="Impostazioni">
+        <Settings size={20} />
+      </NavLink>
     </div>
   );
 }
