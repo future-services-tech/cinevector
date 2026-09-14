@@ -21,14 +21,15 @@ public class CrawlController(
     public async Task<ActionResult<IReadOnlyCollection<CrawlJobDto>>> GetJobs(CancellationToken ct)
     {
         var jobs = await crawlJobRepository.GetRecentAsync(50, ct);
-        return Ok(jobs.Select(ToDtoWithOrphanFlag).ToList());
+        var dtos = await Task.WhenAll(jobs.Select(j => ToDtoWithOrphanFlagAsync(j, ct)));
+        return Ok(dtos);
     }
 
     [HttpGet("jobs/{id:int}")]
     public async Task<ActionResult<CrawlJobDto>> GetJob(int id, CancellationToken ct)
     {
         var job = await crawlJobRepository.GetByIdAsync(id, ct);
-        return job is null ? NotFound() : Ok(ToDtoWithOrphanFlag(job));
+        return job is null ? NotFound() : Ok(await ToDtoWithOrphanFlagAsync(job, ct));
     }
 
     /// <summary>Avvia il crawl per tutte le fonti abilitate.</summary>
@@ -98,15 +99,16 @@ public class CrawlController(
             return NotFound(new { error = "Nessun crawl in esecuzione per questa fonte." });
         }
 
-        var cancelled = cancellationRegistry.TryCancel(runningJob.Id);
+        var cancelled = await cancellationRegistry.TryCancelAsync(runningJob.Id, ct);
         return cancelled
             ? Ok(new { jobId = runningJob.Id, cancelling = true })
-            : NotFound(new { error = "Il job risulta 'Running' ma non è gestito da questa istanza API (riavviata dopo l'avvio del crawl?)." });
+            : NotFound(new { error = "Il job risulta 'Running' ma non è gestito da nessuna istanza API (riavviate dopo l'avvio del crawl?)." });
     }
 
-    /// <summary>Ferma un job specifico per Id. Se il job è ancora vivo in questa istanza lo annulla in modo
-    /// cooperativo (come <see cref="Cancel"/>); se invece è uno zombie (Running/Paused in DB ma orfano, es. dopo
-    /// un riavvio dell'API) non c'è alcun task reale da fermare: si riconcilia direttamente lo stato in DB.</summary>
+    /// <summary>Ferma un job specifico per Id. Se il job è ancora vivo su una qualsiasi istanza lo annulla in
+    /// modo cooperativo (come <see cref="Cancel"/>, coordinato via Redis); se invece è uno zombie (Running/Paused
+    /// in DB ma orfano, es. dopo un riavvio di tutte le istanze) non c'è alcun task reale da fermare: si
+    /// riconcilia direttamente lo stato in DB.</summary>
     [HttpPost("jobs/{jobId:int}/cancel")]
     public async Task<IActionResult> CancelJob(int jobId, CancellationToken ct)
     {
@@ -121,7 +123,7 @@ public class CrawlController(
             return BadRequest(new { error = $"Il job è nello stato '{job.Status}', non può essere fermato." });
         }
 
-        if (cancellationRegistry.TryCancel(jobId))
+        if (await cancellationRegistry.TryCancelAsync(jobId, ct))
         {
             return Ok(new { jobId, cancelling = true, reconciled = false });
         }
@@ -147,12 +149,12 @@ public class CrawlController(
             return BadRequest(new { error = $"Il job è nello stato '{job.Status}', non può essere messo in pausa." });
         }
 
-        if (!cancellationRegistry.Contains(jobId))
+        if (!await cancellationRegistry.ContainsAsync(jobId, ct))
         {
-            return NotFound(new { error = "Il job risulta 'Running' ma non è gestito da questa istanza API (riavviata dopo l'avvio del crawl?)." });
+            return NotFound(new { error = "Il job risulta 'Running' ma non è gestito da nessuna istanza API (riavviate dopo l'avvio del crawl?)." });
         }
 
-        cancellationRegistry.Pause(jobId);
+        await cancellationRegistry.PauseAsync(jobId, ct);
         return Ok(new { jobId, pausing = true });
     }
 
@@ -165,13 +167,13 @@ public class CrawlController(
             return NotFound();
         }
 
-        // Pulisce sempre il flag in-memory per primo, anche se lo stato in DB non è ancora "Paused": una Pause
-        // può essere stata richiesta un istante prima che il loop del pipeline avesse il tempo di rilevarla e
+        // Pulisce sempre il flag Redis per primo, anche se lo stato in DB non è ancora "Paused": una Pause può
+        // essere stata richiesta un istante prima che il loop del pipeline avesse il tempo di rilevarla e
         // scrivere lo stato. Senza questo "resume anticipato" il flag resterebbe attivo e il job si fermerebbe
         // comunque alla prossima occasione, senza che nessuna nuova Resume possa più sbloccarlo (il client crede
         // già di averlo fatto).
-        var wasPaused = cancellationRegistry.IsPaused(jobId);
-        cancellationRegistry.Resume(jobId);
+        var wasPaused = await cancellationRegistry.IsPausedAsync(jobId, ct);
+        await cancellationRegistry.ResumeAsync(jobId, ct);
 
         if (job.Status != CrawlJobStatus.Paused && !wasPaused)
         {
@@ -181,8 +183,9 @@ public class CrawlController(
         return Ok(new { jobId, resuming = true });
     }
 
-    /// <summary>Elimina il job: se è ancora vivo prova prima a fermarlo (best-effort), poi rimuove il record
-    /// e i relativi errori dal DB (cascade). L'unica traccia dell'operazione resta nei log applicativi.</summary>
+    /// <summary>Elimina il job: se è ancora vivo prova prima a fermarlo (best-effort, su qualsiasi istanza lo
+    /// stia gestendo), poi rimuove il record e i relativi errori dal DB (cascade). L'unica traccia
+    /// dell'operazione resta nei log applicativi.</summary>
     [HttpDelete("jobs/{jobId:int}")]
     public async Task<IActionResult> DeleteJob(int jobId, CancellationToken ct)
     {
@@ -194,7 +197,7 @@ public class CrawlController(
 
         if (job.Status is CrawlJobStatus.Running or CrawlJobStatus.Paused)
         {
-            cancellationRegistry.TryCancel(jobId);
+            await cancellationRegistry.TryCancelAsync(jobId, ct);
         }
 
         logger.LogInformation(
@@ -207,7 +210,7 @@ public class CrawlController(
 
     /// <summary>Null se non esiste già un job Running/Paused per la stessa fonte con lo stesso identico
     /// criterio (QueryMode + Query — la "stringa di chiamata"); altrimenti la risposta 409 da restituire, con
-    /// un messaggio diverso a seconda che il job trovato sia ancora vivo in questa istanza o sia uno zombie
+    /// un messaggio diverso a seconda che il job trovato sia ancora vivo su qualche istanza o sia uno zombie
     /// (nel qual caso indica di fermarlo/eliminarlo prima, invece di lasciarne accumulare altri). Un criterio
     /// diverso sulla stessa fonte non genera conflitto: il parallelismo tra criteri diversi è intenzionale.</summary>
     private async Task<ActionResult?> GetActiveJobConflictAsync(int sourceId, CrawlQueryMode mode, string? query, CancellationToken ct)
@@ -218,7 +221,7 @@ public class CrawlController(
             return null;
         }
 
-        var isOrphaned = !cancellationRegistry.Contains(existing.Id);
+        var isOrphaned = !await cancellationRegistry.ContainsAsync(existing.Id, ct);
         return Conflict(new
         {
             error = isOrphaned
@@ -229,18 +232,18 @@ public class CrawlController(
         });
     }
 
-    private CrawlJobDto ToDtoWithOrphanFlag(CrawlJob job)
+    private async Task<CrawlJobDto> ToDtoWithOrphanFlagAsync(CrawlJob job, CancellationToken ct)
     {
         var dto = CrawlJobMapper.ToDto(job);
         dto.IsOrphaned = job.Status is CrawlJobStatus.Running or CrawlJobStatus.Paused
-            && !cancellationRegistry.Contains(job.Id);
+            && !await cancellationRegistry.ContainsAsync(job.Id, ct);
         return dto;
     }
 
     private async Task<CrawlJobDto> StartCrawlAsync(int sourceId, CrawlQuery query, CancellationToken requestCt)
     {
         var job = await pipeline.StartJobAsync(sourceId, query, requestCt);
-        var backgroundToken = cancellationRegistry.Register(job.Id);
+        var backgroundToken = await cancellationRegistry.RegisterAsync(job.Id, requestCt);
 
         _ = Task.Run(async () =>
         {
@@ -259,7 +262,7 @@ public class CrawlController(
             }
             finally
             {
-                cancellationRegistry.Remove(job.Id);
+                await cancellationRegistry.RemoveAsync(job.Id, CancellationToken.None);
             }
         }, CancellationToken.None);
 

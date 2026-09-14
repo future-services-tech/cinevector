@@ -2,48 +2,53 @@ using System.Collections.Concurrent;
 
 namespace CineVector.Application.Crawling;
 
-/// <summary>Coordina cancellazione e pausa dei CrawlJob in esecuzione nel processo corrente. È una soluzione in-memory
-/// adatta a una singola istanza API/Worker; il coordinamento cross-istanza (Redis) arriva in Fase 6. Un job il cui
-/// Id non è (più) presente qui ma che in DB risulta ancora "Running"/"Paused" è per definizione orfano/zombie:
-/// l'istanza che lo eseguiva non esiste più (crash, riavvio, deploy).</summary>
+/// <summary>Coordina cancellazione, pausa e visibilità di "chi sta davvero eseguendo" i CrawlJob in corso.
+/// L'implementazione di produzione (<c>RedisCrawlCancellationRegistry</c> in Infrastructure) è condivisa tra
+/// tutte le istanze API tramite Redis: un job avviato su un'istanza può essere fermato/messo in pausa da una
+/// richiesta gestita da un'altra istanza, e <see cref="ContainsAsync"/> riflette se una QUALSIASI istanza lo sta
+/// ancora eseguendo davvero (non solo quella che ha ricevuto la richiesta). Un job il cui Id non risulta
+/// presente ma che in DB è ancora "Running"/"Paused" è per definizione orfano/zombie: nessuna istanza lo sta
+/// eseguendo (crash, riavvio, deploy).</summary>
 public interface ICrawlCancellationRegistry
 {
-    CancellationToken Register(int crawlJobId);
-    bool TryCancel(int crawlJobId);
-    void Remove(int crawlJobId);
+    Task<CancellationToken> RegisterAsync(int crawlJobId, CancellationToken ct);
+    Task<bool> TryCancelAsync(int crawlJobId, CancellationToken ct);
+    Task RemoveAsync(int crawlJobId, CancellationToken ct);
 
-    /// <summary>True se il job è gestito (vivo) in questa istanza di processo.</summary>
-    bool Contains(int crawlJobId);
+    /// <summary>True se il job è gestito (vivo) su una qualsiasi istanza.</summary>
+    Task<bool> ContainsAsync(int crawlJobId, CancellationToken ct);
 
-    void Pause(int crawlJobId);
-    void Resume(int crawlJobId);
-    bool IsPaused(int crawlJobId);
+    Task PauseAsync(int crawlJobId, CancellationToken ct);
+    Task ResumeAsync(int crawlJobId, CancellationToken ct);
+    Task<bool> IsPausedAsync(int crawlJobId, CancellationToken ct);
 }
 
-public class CrawlCancellationRegistry : ICrawlCancellationRegistry
+/// <summary>Variante puramente in-process (nessuna dipendenza esterna): non coordina nulla tra istanze diverse.
+/// Usata come test double nei test di integrazione dei controller e come fallback se Redis non è configurato.</summary>
+public class InMemoryCrawlCancellationRegistry : ICrawlCancellationRegistry
 {
     private readonly ConcurrentDictionary<int, CancellationTokenSource> _tokens = new();
     private readonly ConcurrentDictionary<int, bool> _paused = new();
 
-    public CancellationToken Register(int crawlJobId)
+    public Task<CancellationToken> RegisterAsync(int crawlJobId, CancellationToken ct)
     {
         var cts = new CancellationTokenSource();
         _tokens[crawlJobId] = cts;
-        return cts.Token;
+        return Task.FromResult(cts.Token);
     }
 
-    public bool TryCancel(int crawlJobId)
+    public Task<bool> TryCancelAsync(int crawlJobId, CancellationToken ct)
     {
         if (_tokens.TryGetValue(crawlJobId, out var cts))
         {
             cts.Cancel();
-            return true;
+            return Task.FromResult(true);
         }
 
-        return false;
+        return Task.FromResult(false);
     }
 
-    public void Remove(int crawlJobId)
+    public Task RemoveAsync(int crawlJobId, CancellationToken ct)
     {
         if (_tokens.TryRemove(crawlJobId, out var cts))
         {
@@ -51,13 +56,22 @@ public class CrawlCancellationRegistry : ICrawlCancellationRegistry
         }
 
         _paused.TryRemove(crawlJobId, out _);
+        return Task.CompletedTask;
     }
 
-    public bool Contains(int crawlJobId) => _tokens.ContainsKey(crawlJobId);
+    public Task<bool> ContainsAsync(int crawlJobId, CancellationToken ct) => Task.FromResult(_tokens.ContainsKey(crawlJobId));
 
-    public void Pause(int crawlJobId) => _paused[crawlJobId] = true;
+    public Task PauseAsync(int crawlJobId, CancellationToken ct)
+    {
+        _paused[crawlJobId] = true;
+        return Task.CompletedTask;
+    }
 
-    public void Resume(int crawlJobId) => _paused.TryRemove(crawlJobId, out _);
+    public Task ResumeAsync(int crawlJobId, CancellationToken ct)
+    {
+        _paused.TryRemove(crawlJobId, out _);
+        return Task.CompletedTask;
+    }
 
-    public bool IsPaused(int crawlJobId) => _paused.ContainsKey(crawlJobId);
+    public Task<bool> IsPausedAsync(int crawlJobId, CancellationToken ct) => Task.FromResult(_paused.ContainsKey(crawlJobId));
 }

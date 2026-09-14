@@ -19,6 +19,7 @@ builder.Services.AddSingleton<IInMemoryLogSink>(inMemoryLogSink);
 builder.Host.UseSerilog((context, services, configuration) => configuration
     .ReadFrom.Configuration(context.Configuration)
     .Enrich.FromLogContext()
+    .Enrich.With<TraceIdEnricher>()
     .WriteTo.Sink(inMemoryLogSink, LogEventLevel.Warning));
 
 const string corsPolicyName = "Frontend";

@@ -20,7 +20,8 @@ public static class DependencyInjection
         services.Configure<CrawlerOptions>(configuration.GetSection(CrawlerOptions.SectionName));
         services.AddScoped<IMetadataEnrichmentService, NoOpMetadataEnrichmentService>();
         services.AddScoped<CrawlerPipelineService>();
-        services.AddSingleton<ICrawlCancellationRegistry, CrawlCancellationRegistry>();
+        // ICrawlCancellationRegistry è registrato in Infrastructure (AddInfrastructure): l'implementazione di
+        // produzione dipende da Redis, un dettaglio infrastrutturale che Application non deve conoscere.
         services.AddScoped<EmbeddingIndexingService>();
         services.AddScoped<SearchAnalyticsService>();
 

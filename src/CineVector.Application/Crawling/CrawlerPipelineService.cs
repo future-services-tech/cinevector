@@ -107,7 +107,7 @@ public class CrawlerPipelineService(
     /// finché non arriva una Resume, aggiornando lo stato in DB così l'admin lo vede riflesso subito.</summary>
     private async Task WaitWhilePausedAsync(CrawlJob job, CancellationToken ct)
     {
-        if (!cancellationRegistry.IsPaused(job.Id))
+        if (!await cancellationRegistry.IsPausedAsync(job.Id, ct))
         {
             return;
         }
@@ -115,7 +115,7 @@ public class CrawlerPipelineService(
         job.Status = CrawlJobStatus.Paused;
         await crawlJobRepository.SaveChangesAsync(CancellationToken.None);
 
-        while (cancellationRegistry.IsPaused(job.Id))
+        while (await cancellationRegistry.IsPausedAsync(job.Id, ct))
         {
             await Task.Delay(500, ct);
         }

@@ -2,6 +2,7 @@ using System.Net.Http.Headers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using StackExchange.Redis;
 using CineVector.Application.Clustering;
 using CineVector.Application.Crawling;
 using CineVector.Application.Embeddings;
@@ -43,11 +44,24 @@ public static class DependencyInjection
         services.AddScoped<IClusterRepository, ClusterRepository>();
         services.AddScoped<IStatisticsRepository, StatisticsRepository>();
 
+        AddCrawlCoordination(services, configuration);
         AddTmdbSource(services, configuration);
         AddEmbeddingProvider(services, configuration);
         AddWikipediaLookup(services);
 
         return services;
+    }
+
+    /// <summary>Registro condiviso via Redis per cancellazione/pausa/rilevamento-orfani dei crawl job: una
+    /// singola connessione multiplexata, riusata da tutte le richieste (StackExchange.Redis è pensato per
+    /// essere un singleton a lunga vita, non per essere creato per richiesta).</summary>
+    private static void AddCrawlCoordination(IServiceCollection services, IConfiguration configuration)
+    {
+        var redisConnectionString = configuration.GetConnectionString("Redis")
+            ?? throw new InvalidOperationException("Connection string 'Redis' non configurata.");
+
+        services.AddSingleton<IConnectionMultiplexer>(_ => ConnectionMultiplexer.Connect(redisConnectionString));
+        services.AddSingleton<ICrawlCancellationRegistry, RedisCrawlCancellationRegistry>();
     }
 
     private static void AddWikipediaLookup(IServiceCollection services)
