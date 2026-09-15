@@ -51,6 +51,9 @@ export interface SoundtrackTrack {
   duration: string;
   totalSec: number;
   styleTag?: string;
+  /** Presente solo per tracce reali trovate su Spotify (anteprima 30s, Client Credentials Flow) —
+   * se assente la traccia è sintetica e la riproduzione resta simulata come prima. */
+  previewUrl?: string;
 }
 
 export interface MovieCredits {

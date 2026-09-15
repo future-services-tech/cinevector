@@ -18,7 +18,7 @@ export function TopHeader() {
         </div>
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-base font-bold tracking-wide text-white">CineSphere 3D</span>
+            <span className="text-base font-bold tracking-wide text-white">CineVector 3D</span>
             <span className="rounded border border-cyan-400/30 bg-cyan-500/10 px-1.5 py-0.5 text-[9px] font-mono font-bold text-cyan-300">
               V1.0 VECTOR
             </span>

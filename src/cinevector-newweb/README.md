@@ -1,4 +1,4 @@
-# CineVector — CineSphere 3D (cinevector-newweb)
+# CineVector — CineVector 3D (cinevector-newweb)
 
 Dashboard sperimentale standalone: esploratore semantico dei film su una sfera 3D interattiva, con pannello di dettaglio (trailer + colonna sonora). Ricostruisce fedelmente le specifiche di design fornite in `src/documents/dashboard_sfere3d/code.html` e `src/documents/dettaglio_sfere3d/code.html`, ma renderizzate con Three.js/`@react-three/fiber` reale invece del Canvas2D originale del mockup.
 

@@ -1,8 +1,8 @@
 import { Music2, Pause, Play, Repeat, Repeat1, Shuffle, SkipBack, SkipForward, Volume2 } from "lucide-react";
-import { useRef, useState } from "react";
-import type { SoundtrackTrack } from "../../types/movie";
+import { useEffect, useRef, useState } from "react";
 import { formatSecondsToTime } from "../../lib/format";
 import { useInterval } from "../../lib/useInterval";
+import type { SoundtrackTrack } from "../../types/movie";
 import { TrackList } from "./TrackList";
 
 type RepeatMode = "off" | "one" | "all";
@@ -17,47 +17,73 @@ export function SoundtrackPlayer({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [progressSec, setProgressSec] = useState(0);
+  const [durationSec, setDurationSec] = useState(tracks[0]?.totalSec ?? 0);
   const [volume, setVolume] = useState(80);
   const [shuffleOn, setShuffleOn] = useState(false);
   const [repeatMode, setRepeatMode] = useState<RepeatMode>("off");
   const [barHeights, setBarHeights] = useState<number[]>(Array(8).fill(6));
 
   const progressRef = useRef<HTMLDivElement>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const currentTrack = tracks[currentIndex];
+  // Le tracce con previewUrl sono match reali trovati su Spotify (anteprima 30s): per quelle la riproduzione
+  // usa un vero elemento <audio> invece della simulazione a tick usata per le tracce sintetiche.
+  const isReal = Boolean(currentTrack.previewUrl);
+
+  // Al cambio traccia: azzera il progresso e, se reale, carica/avvia davvero l'audio; se sintetica, ferma
+  // un eventuale audio residuo della traccia precedente. Non dipende da isPlaying di proposito: quel valore
+  // serve solo a decidere se avviare subito la nuova traccia, non deve far ripartire questo effect da solo.
+  useEffect(() => {
+    setProgressSec(0);
+    setDurationSec(currentTrack.totalSec);
+    const audio = audioRef.current;
+    if (!audio) return;
+    if (currentTrack.previewUrl) {
+      audio.src = currentTrack.previewUrl;
+      audio.currentTime = 0;
+      audio.volume = volume / 100;
+      if (isPlaying) audio.play().catch(() => {});
+    } else {
+      audio.pause();
+      audio.removeAttribute("src");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentIndex]);
+
+  useEffect(() => {
+    if (audioRef.current) audioRef.current.volume = volume / 100;
+  }, [volume]);
 
   function selectTrack(index: number) {
     setCurrentIndex(index);
-    setProgressSec(0);
     setIsPlaying(true);
   }
 
   function trackEnded() {
     if (repeatMode === "one") {
       setProgressSec(0);
+      if (isReal && audioRef.current) {
+        audioRef.current.currentTime = 0;
+        audioRef.current.play().catch(() => {});
+      }
       return;
     }
     if (shuffleOn) {
       const candidates = tracks.map((_, i) => i).filter((i) => i !== currentIndex);
       const nextIndex = candidates[Math.floor(Math.random() * candidates.length)] ?? currentIndex;
       setCurrentIndex(nextIndex);
-      setProgressSec(0);
       return;
     }
     const isLast = currentIndex === tracks.length - 1;
     if (isLast && repeatMode === "off") {
       setIsPlaying(false);
       setCurrentIndex(0);
-      setProgressSec(0);
       return;
     }
     setCurrentIndex((prev) => (prev + 1) % tracks.length);
-    setProgressSec(0);
   }
 
-  // Legge progressSec/currentTrack direttamente dallo scope di render (non dalla forma funzionale di
-  // setState): useInterval richiama sempre la versione più recente della callback, quindi qui il valore
-  // è già aggiornato — evita di annidare altre chiamate setState dentro un updater di setProgressSec,
-  // che altrimenti competerebbero tra loro sull'ordine di applicazione.
+  // Simulazione a tick solo per tracce sintetiche: quelle reali avanzano via evento 'timeupdate' dell'audio.
   useInterval(
     () => {
       if (progressSec + 1 >= currentTrack.totalSec) {
@@ -66,7 +92,7 @@ export function SoundtrackPlayer({
         setProgressSec(progressSec + 1);
       }
     },
-    isPlaying ? 1000 : null,
+    isPlaying && !isReal ? 1000 : null,
   );
 
   useInterval(
@@ -77,6 +103,18 @@ export function SoundtrackPlayer({
   );
 
   function togglePlay() {
+    if (isReal) {
+      const audio = audioRef.current;
+      if (!audio) return;
+      if (isPlaying) {
+        audio.pause();
+        setIsPlaying(false);
+      } else {
+        audio.play().catch(() => {});
+        setIsPlaying(true);
+      }
+      return;
+    }
     setIsPlaying((prev) => !prev);
     if (!isPlaying) return;
     setBarHeights(Array(8).fill(6));
@@ -84,13 +122,11 @@ export function SoundtrackPlayer({
 
   function goPrev() {
     setCurrentIndex((prev) => (prev - 1 + tracks.length) % tracks.length);
-    setProgressSec(0);
     setIsPlaying(true);
   }
 
   function goNext() {
     setCurrentIndex((prev) => (prev + 1) % tracks.length);
-    setProgressSec(0);
     setIsPlaying(true);
   }
 
@@ -99,16 +135,25 @@ export function SoundtrackPlayer({
     if (!bar) return;
     const rect = bar.getBoundingClientRect();
     const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
-    // A differenza del mockup originale (dove il seek non ricalcolava il tempo mostrato), qui il
-    // timestamp segue sempre lo stato reale del progresso.
-    setProgressSec(Math.round(ratio * currentTrack.totalSec));
+    const target = Math.round(ratio * durationSec);
+    if (isReal && audioRef.current) {
+      audioRef.current.currentTime = target;
+    }
+    setProgressSec(target);
   }
 
-  const progressPercent = (progressSec / currentTrack.totalSec) * 100;
+  const progressPercent = durationSec > 0 ? (progressSec / durationSec) * 100 : 0;
   const totalDuration = tracks.reduce((acc, t) => acc + t.totalSec, 0);
 
   return (
     <div id="soundtrackPlayerSection">
+      <audio
+        ref={audioRef}
+        onTimeUpdate={(e) => setProgressSec(Math.floor(e.currentTarget.currentTime))}
+        onLoadedMetadata={(e) => setDurationSec(Math.round(e.currentTarget.duration) || currentTrack.totalSec)}
+        onEnded={trackEnded}
+      />
+
       <div className="mb-2 flex flex-wrap items-center gap-2">
         <span className="glass-pill rounded-full border border-purple-400/20 bg-purple-500/10 px-2.5 py-1 text-[10px] font-semibold text-purple-300">
           {album.title}
@@ -213,7 +258,7 @@ export function SoundtrackPlayer({
                 role="slider"
                 tabIndex={0}
                 aria-valuemin={0}
-                aria-valuemax={currentTrack.totalSec}
+                aria-valuemax={durationSec}
                 aria-valuenow={progressSec}
                 className="group/audiobar relative h-2 flex-1 cursor-pointer overflow-hidden rounded-full bg-space-900"
               >
@@ -223,7 +268,7 @@ export function SoundtrackPlayer({
                   style={{ left: `${progressPercent}%` }}
                 />
               </div>
-              <span className="font-mono text-[10px] text-slate-400">{currentTrack.duration}</span>
+              <span className="font-mono text-[10px] text-slate-400">{formatSecondsToTime(durationSec)}</span>
             </div>
           </div>
         </div>

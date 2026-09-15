@@ -1,6 +1,11 @@
 import { Route, Routes } from "react-router-dom";
+import { CrawlerPage } from "./pages/CrawlerPage";
 import { DashboardPage } from "./pages/DashboardPage";
+import { MetricsPage } from "./pages/MetricsPage";
+import { MusicPage } from "./pages/MusicPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
+import { SourcesPage } from "./pages/SourcesPage";
+import { SpotifyCallbackPage } from "./pages/SpotifyCallbackPage";
 import { FilterProvider } from "./state/FilterContext";
 import { MovieDataProvider } from "./state/MovieDataContext";
 import { SelectionProvider } from "./state/SelectionContext";
@@ -15,6 +20,11 @@ export default function App() {
             <Routes>
               <Route path="/" element={<DashboardPage />} />
               <Route path="/movie/:id" element={<DashboardPage />} />
+              <Route path="/sources" element={<SourcesPage />} />
+              <Route path="/crawler" element={<CrawlerPage />} />
+              <Route path="/metrics" element={<MetricsPage />} />
+              <Route path="/music" element={<MusicPage />} />
+              <Route path="/callback" element={<SpotifyCallbackPage />} />
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </WatchlistProvider>

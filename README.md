@@ -128,7 +128,7 @@ npm run dev
 
 Apri `http://localhost:5173`. La lista film e la pagina di dettaglio leggono dall'API su `VITE_API_BASE_URL` (default `http://localhost:5080`).
 
-## 5b. Dashboard sperimentale "CineSphere 3D" (cinevector-newweb)
+## 5b. Dashboard sperimentale "CineVector 3D" (cinevector-newweb)
 
 Progetto standalone separato, con dati completamente mock (~1000 film generati deterministicamente): esploratore semantico dei film su una sfera 3D (Three.js/`@react-three/fiber`), con modal di dettaglio (trailer + colonna sonora, entrambi con stato reale, controlli realmente funzionanti). **Non richiede backend né database** — non è collegato a `CineVector.Api`.
 
@@ -191,7 +191,7 @@ src/
 ├── CineVector.Search/         Motore di ricerca ibrido (dalla Fase 2)
 ├── CineVector.Contracts/      DTO condivisi tra Application e Api
 ├── cinevector-web/            Frontend React + Vite + TypeScript
-└── cinevector-newweb/         Dashboard sperimentale standalone "CineSphere 3D" (dati mock, nessun backend)
+└── cinevector-newweb/         Dashboard sperimentale standalone "CineVector 3D" (dati mock, nessun backend)
 
 tests/
 ├── CineVector.UnitTests/

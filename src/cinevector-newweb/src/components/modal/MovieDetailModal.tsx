@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useMovieDetail } from "../../hooks/useMovieDetail";
+import { useSpotifyMatch } from "../../hooks/useSpotifyMatch";
 import { CastGrid } from "./CastGrid";
 import { ModalFooter } from "./ModalFooter";
 import { ModalHeader } from "./ModalHeader";
@@ -9,6 +10,10 @@ import { TrailerPlayer } from "./TrailerPlayer";
 
 export function MovieDetailModal({ movieId, onClose }: { movieId: string; onClose: () => void }) {
   const { detail, isLoading, isError } = useMovieDetail(movieId);
+  // Cerca un match reale su Spotify (titolo film + "soundtrack"): se trova anteprime disponibili le usa al
+  // posto della colonna sonora sintetica, altrimenti resta il comportamento di sempre (fallback silenzioso).
+  const spotifyMatch = useSpotifyMatch(detail?.title ?? null);
+  const hasRealSoundtrack = spotifyMatch.tracks.length > 0 && spotifyMatch.album !== null;
 
   useEffect(() => {
     const originalOverflow = document.body.style.overflow;
@@ -59,7 +64,10 @@ export function MovieDetailModal({ movieId, onClose }: { movieId: string; onClos
 
             <div className="space-y-8 p-6">
               <TrailerPlayer posterUrl={detail.poster} tagline={detail.tags[0] ?? detail.title} title={detail.title} />
-              <SoundtrackPlayer album={detail.album} tracks={detail.tracks} />
+              <SoundtrackPlayer
+                album={hasRealSoundtrack ? spotifyMatch.album! : detail.album}
+                tracks={hasRealSoundtrack ? spotifyMatch.tracks : detail.tracks}
+              />
               <CastGrid cast={detail.cast} />
               <TechnicalCredits credits={detail.credits} />
             </div>

@@ -8,3 +8,7 @@ export function getClusters(): Promise<ClusterDto[]> {
 export function getClusterMovies(clusterId: number): Promise<ClusterMemberDto[]> {
   return apiFetch<ClusterMemberDto[]>(`/api/clusters/${clusterId}/movies`);
 }
+
+export function recomputeClusters(): Promise<{ clusters: number }> {
+  return apiFetch<{ clusters: number }>("/api/clusters/recompute", { method: "POST" });
+}

@@ -18,7 +18,7 @@ export function SphereControlsBar() {
     <div className="pointer-events-none absolute left-4 right-4 top-4 z-10 flex flex-wrap items-center justify-between gap-3">
       <div className="glass-card pointer-events-auto flex items-center gap-4 rounded-lg px-3.5 py-2">
         <div>
-          <div className="text-[10px] font-bold text-white">Cinesphere Semantica 3D</div>
+          <div className="text-[10px] font-bold text-white">CineVector Semantica 3D</div>
           <div className="text-[10px] text-slate-500">Proiezione | Cosine Similarity</div>
         </div>
         <div className="hidden items-center gap-2 font-mono text-[10px] text-slate-400 sm:flex">
