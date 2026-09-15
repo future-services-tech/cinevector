@@ -15,6 +15,7 @@ using CineVector.Infrastructure.Clustering;
 using CineVector.Infrastructure.Crawling;
 using CineVector.Infrastructure.Embeddings;
 using CineVector.Infrastructure.Movies;
+using CineVector.Infrastructure.Music.Spotify;
 using CineVector.Infrastructure.People;
 using CineVector.Infrastructure.Persistence;
 using CineVector.Infrastructure.Search;
@@ -48,8 +49,34 @@ public static class DependencyInjection
         AddTmdbSource(services, configuration);
         AddEmbeddingProvider(services, configuration);
         AddWikipediaLookup(services);
+        AddSpotify(services, configuration);
 
         return services;
+    }
+
+    /// <summary>Ricerca nel catalogo pubblico Spotify (mai libreria/playlist utente): Client Credentials Flow,
+    /// l'app si autentica come sé stessa con Client ID + Secret app-level, stesso pattern di TMDB_API_KEY —
+    /// nessun login/OAuth utente, nessun token esposto al frontend (il backend fa da proxy).</summary>
+    private static void AddSpotify(IServiceCollection services, IConfiguration configuration)
+    {
+        services.Configure<SpotifyOptions>(configuration.GetSection(SpotifyOptions.SectionName));
+
+        services.AddHttpClient("SpotifyAuth", (sp, http) =>
+            {
+                var options = configuration.GetSection(SpotifyOptions.SectionName).Get<SpotifyOptions>() ?? new SpotifyOptions();
+                http.BaseAddress = new Uri(options.AuthBaseUrl);
+            })
+            .AddStandardResilienceHandler();
+
+        services.AddSingleton<SpotifyAccountStore>();
+        services.AddSingleton<SpotifyTokenProvider>();
+
+        services.AddHttpClient<SpotifyApiClient>((sp, http) =>
+            {
+                var options = configuration.GetSection(SpotifyOptions.SectionName).Get<SpotifyOptions>() ?? new SpotifyOptions();
+                http.BaseAddress = new Uri(options.ApiBaseUrl);
+            })
+            .AddStandardResilienceHandler();
     }
 
     /// <summary>Registro condiviso via Redis per cancellazione/pausa/rilevamento-orfani dei crawl job: una

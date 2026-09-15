@@ -7,6 +7,13 @@ namespace CineVector.Infrastructure.Crawling;
 /// non conosce quali fonti esistono, solo questa factory in Infrastructure sa mappare "Tmdb" -> TmdbSourceAdapter.</summary>
 public class SourceAdapterFactory(IServiceProvider serviceProvider) : ISourceAdapterFactory
 {
+    // Nessuna API di enumerazione nativa per i keyed service in Microsoft.Extensions.DependencyInjection:
+    // questo elenco va tenuto allineato a mano con le registrazioni AddKeyedScoped<ISourceAdapter, ...> in
+    // DependencyInjection.cs. Aggiungere un adapter = aggiungere una riga qui + una riga di registrazione DI.
+    private static readonly string[] KnownAdapterTypes = ["Tmdb"];
+
     public ISourceAdapter? GetAdapter(string adapterType) =>
         serviceProvider.GetKeyedService<ISourceAdapter>(adapterType);
+
+    public IReadOnlyCollection<string> GetRegisteredAdapterTypes() => KnownAdapterTypes;
 }
