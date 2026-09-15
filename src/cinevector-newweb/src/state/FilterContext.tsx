@@ -1,26 +1,39 @@
-import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
-import type { ClusterId } from "../types/movie";
-import { clusters } from "../data";
+import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useMovieData } from "./MovieDataContext";
 
 interface FilterState {
-  activeClusterIds: Set<ClusterId>;
+  activeClusterIds: Set<number>;
   similarityThreshold: number; // 0-100
   yearRange: [number, number];
-  toggleCluster: (id: ClusterId) => void;
-  isolateCluster: (id: ClusterId) => void;
+  toggleCluster: (id: number) => void;
+  isolateCluster: (id: number) => void;
   resetClusters: () => void;
   setSimilarityThreshold: (value: number) => void;
   setYearRange: (range: [number, number]) => void;
 }
 
-const ALL_CLUSTER_IDS = clusters.map((c) => c.id);
-
 const FilterContext = createContext<FilterState | null>(null);
 
 export function FilterProvider({ children }: { children: ReactNode }) {
-  const [activeClusterIds, setActiveClusterIds] = useState<Set<ClusterId>>(new Set(ALL_CLUSTER_IDS));
+  const { clusters, movies } = useMovieData();
+  const [activeClusterIds, setActiveClusterIds] = useState<Set<number>>(new Set());
   const [similarityThreshold, setSimilarityThreshold] = useState(70);
-  const [yearRange, setYearRange] = useState<[number, number]>([1970, 2025]);
+  const [yearRange, setYearRange] = useState<[number, number]>([1900, new Date().getFullYear()]);
+  const initialized = useRef(false);
+
+  // I cluster/anni reali arrivano in modo asincrono dal backend: al primo caricamento inizializziamo
+  // "tutti i cluster attivi" e l'arco temporale sui dati effettivamente presenti, una sola volta.
+  useEffect(() => {
+    if (initialized.current || clusters.length === 0) return;
+    initialized.current = true;
+    setActiveClusterIds(new Set(clusters.map((c) => c.id)));
+    const years = movies.map((m) => m.year).filter((y) => y > 0);
+    if (years.length > 0) {
+      setYearRange([Math.min(...years), Math.max(...years)]);
+    }
+  }, [clusters, movies]);
+
+  const allClusterIds = useMemo(() => clusters.map((c) => c.id), [clusters]);
 
   const value = useMemo<FilterState>(
     () => ({
@@ -32,14 +45,14 @@ export function FilterProvider({ children }: { children: ReactNode }) {
           const next = new Set(prev);
           if (next.has(id)) next.delete(id);
           else next.add(id);
-          return next.size === 0 ? new Set(ALL_CLUSTER_IDS) : next;
+          return next.size === 0 ? new Set(allClusterIds) : next;
         }),
       isolateCluster: (id) => setActiveClusterIds(new Set([id])),
-      resetClusters: () => setActiveClusterIds(new Set(ALL_CLUSTER_IDS)),
+      resetClusters: () => setActiveClusterIds(new Set(allClusterIds)),
       setSimilarityThreshold,
       setYearRange,
     }),
-    [activeClusterIds, similarityThreshold, yearRange],
+    [activeClusterIds, similarityThreshold, yearRange, allClusterIds],
   );
 
   return <FilterContext.Provider value={value}>{children}</FilterContext.Provider>;

@@ -1,8 +1,7 @@
 import { useMemo } from "react";
 import * as THREE from "three";
-import type { MovieNode } from "../../types/movie";
-import { getClusterConfig } from "../../data/clustersConfig";
 import { getGlowTexture, SPHERE_RADIUS } from "../../lib/three-helpers";
+import type { MovieNode } from "../../types/movie";
 
 interface MovieNodesProps {
   movies: MovieNode[];
@@ -17,7 +16,7 @@ function buildGeometry(list: MovieNode[]): THREE.BufferGeometry {
     positions[i * 3] = movie.position[0] * SPHERE_RADIUS;
     positions[i * 3 + 1] = movie.position[1] * SPHERE_RADIUS;
     positions[i * 3 + 2] = movie.position[2] * SPHERE_RADIUS;
-    const color = new THREE.Color(getClusterConfig(movie.clusterId).color);
+    const color = new THREE.Color(movie.color);
     colors[i * 3] = color.r;
     colors[i * 3 + 1] = color.g;
     colors[i * 3 + 2] = color.b;
@@ -28,8 +27,8 @@ function buildGeometry(list: MovieNode[]): THREE.BufferGeometry {
   return geo;
 }
 
-/** I ~1000 nodi film come due nuvole di punti (hero più grandi/prominenti, gli altri più piccoli) —
- * un singolo BufferGeometry per gruppo, non 1000 componenti React, per restare performante. */
+/** I nodi film come due nuvole di punti (hero più grandi/prominenti, gli altri più piccoli) —
+ * un singolo BufferGeometry per gruppo, non un componente React per film, per restare performante. */
 export function MovieNodes({ movies, onHover, onSelect }: MovieNodesProps) {
   const heroList = useMemo(() => movies.filter((m) => m.isKey), [movies]);
   const regularList = useMemo(() => movies.filter((m) => !m.isKey), [movies]);

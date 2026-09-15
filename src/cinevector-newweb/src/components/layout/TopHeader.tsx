@@ -1,13 +1,14 @@
 import { Bell, Settings, SlidersHorizontal, Sparkles } from "lucide-react";
-import { SearchBar } from "../common/SearchBar";
-import { movies } from "../../data";
-import { formatCount } from "../../lib/format";
-import { useSelection } from "../../state/SelectionContext";
 import { useNavigate } from "react-router-dom";
+import { formatCount } from "../../lib/format";
+import { useMovieData } from "../../state/MovieDataContext";
+import { useSelection } from "../../state/SelectionContext";
+import { SearchBar } from "../common/SearchBar";
 
 export function TopHeader() {
   const { select } = useSelection();
   const navigate = useNavigate();
+  const { movies } = useMovieData();
 
   return (
     <header data-purpose="main-header" className="glass-card z-20 flex h-16 shrink-0 items-center gap-4 border-b border-white/5 px-5">
@@ -25,7 +26,13 @@ export function TopHeader() {
         </div>
       </div>
 
-      <SearchBar onSelect={(movie) => { select(movie.id); navigate(`/movie/${movie.id}`); }} />
+      <SearchBar
+        onSelect={(result) => {
+          const id = String(result.id);
+          select(id);
+          navigate(`/movie/${id}`);
+        }}
+      />
 
       <button className="glass-pill hidden items-center gap-1.5 rounded-full px-3 py-2 text-xs text-slate-300 hover:text-cyan-200 sm:flex">
         <SlidersHorizontal size={14} />

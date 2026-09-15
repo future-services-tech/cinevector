@@ -1,6 +1,8 @@
-import { clusters } from "../../data";
+import { useMovieData } from "../../state/MovieDataContext";
 
 export function SphereHintBar() {
+  const { clusters } = useMovieData();
+
   return (
     <div className="pointer-events-none absolute bottom-4 left-4 right-4 z-10 flex flex-wrap items-end justify-between gap-3">
       <span className="glass-card rounded-lg px-3 py-1.5 text-[11px] text-slate-400">🖱 Trascina per ruotare · Scroll per zoom</span>

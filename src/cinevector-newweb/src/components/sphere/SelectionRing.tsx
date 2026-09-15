@@ -1,9 +1,8 @@
-import { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
+import { useMemo, useRef } from "react";
 import * as THREE from "three";
-import type { MovieNode } from "../../types/movie";
-import { getClusterConfig } from "../../data/clustersConfig";
 import { getRingTexture, SPHERE_RADIUS } from "../../lib/three-helpers";
+import type { MovieNode } from "../../types/movie";
 
 const CYCLE_SECONDS = 2.2;
 
@@ -29,7 +28,7 @@ export function SelectionRing({ node }: { node: MovieNode | null }) {
 
   return (
     <sprite ref={spriteRef} position={position}>
-      <spriteMaterial ref={materialRef} map={texture} color={getClusterConfig(node.clusterId).color} transparent depthWrite={false} />
+      <spriteMaterial ref={materialRef} map={texture} color={node.color} transparent depthWrite={false} />
     </sprite>
   );
 }

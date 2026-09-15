@@ -1,20 +1,26 @@
 import { Heart, Layers } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { getClusterById, getMovieById, getTopNeighbors } from "../../data";
+import { useSimilarMovies } from "../../hooks/useSimilarMovies";
 import { useFilters } from "../../state/FilterContext";
+import { useMovieData } from "../../state/MovieDataContext";
 import { useSelection } from "../../state/SelectionContext";
 import { useWatchlist } from "../../state/WatchlistContext";
 import { Chip } from "../common/Chip";
 
 export function RightDetailPanel() {
   const { selectedId, select } = useSelection();
+  const { getMovieById } = useMovieData();
   const { isolateCluster } = useFilters();
   const { isSaved, toggle } = useWatchlist();
   const navigate = useNavigate();
 
   const movie = selectedId ? getMovieById(selectedId) : null;
-  const cluster = movie ? getClusterById(movie.clusterId) : null;
-  const neighbors = movie ? getTopNeighbors(movie.id, 4) : [];
+  const { data: similarData } = useSimilarMovies(movie ? movie.id : null);
+  const neighbors = (similarData?.results ?? []).map((r) => ({
+    id: String(r.id),
+    title: r.title,
+    matchPercent: Math.round((r.similarity ?? r.relevance ?? 0) * 100),
+  }));
 
   return (
     <aside data-purpose="right-details-panel" className="scrollbar-thin flex w-84 shrink-0 flex-col overflow-y-auto border-l border-white/5 bg-space-850/60 md:w-96">
@@ -29,16 +35,15 @@ export function RightDetailPanel() {
         </div>
       )}
 
-      {movie && cluster && (
+      {movie && (
         <div className="space-y-5 p-5">
           <div className="space-y-1.5">
             <div className="flex flex-wrap items-center gap-1.5">
-              <Chip>{cluster.name}</Chip>
-              <Chip>{movie.year}</Chip>
+              <Chip>{movie.clusterLabel}</Chip>
+              <Chip>{movie.year || "Anno sconosciuto"}</Chip>
               <Chip>★ {movie.rating.toFixed(1)}</Chip>
             </div>
             <h2 className="text-xl font-extrabold text-white">{movie.title}</h2>
-            <p className="text-xs text-slate-400">Regia di {movie.director}</p>
           </div>
 
           <div>
@@ -54,7 +59,7 @@ export function RightDetailPanel() {
           <div>
             <div className="mb-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-500">Sinossi Semantica</div>
             <p className="text-xs leading-relaxed text-slate-300">
-              Film del cluster {cluster.name}, con affinità semantica {movie.affinity.toFixed(1)}% rispetto ai nodi vicini più rilevanti.
+              Film del cluster {movie.clusterLabel}, con affinità semantica {movie.affinity.toFixed(1)}% rispetto ai nodi vicini più rilevanti.
             </p>
           </div>
 

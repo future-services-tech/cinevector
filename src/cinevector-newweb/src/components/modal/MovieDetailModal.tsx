@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { getMovieDetail } from "../../data";
+import { useMovieDetail } from "../../hooks/useMovieDetail";
 import { CastGrid } from "./CastGrid";
 import { ModalFooter } from "./ModalFooter";
 import { ModalHeader } from "./ModalHeader";
@@ -8,7 +8,7 @@ import { TechnicalCredits } from "./TechnicalCredits";
 import { TrailerPlayer } from "./TrailerPlayer";
 
 export function MovieDetailModal({ movieId, onClose }: { movieId: string; onClose: () => void }) {
-  const movie = getMovieDetail(movieId);
+  const { detail, isLoading, isError } = useMovieDetail(movieId);
 
   useEffect(() => {
     const originalOverflow = document.body.style.overflow;
@@ -37,16 +37,36 @@ export function MovieDetailModal({ movieId, onClose }: { movieId: string; onClos
         onClick={(e) => e.stopPropagation()}
         className="scrollbar-thin relative flex max-h-[90vh] w-full max-w-5xl flex-col overflow-y-auto rounded-2xl border border-cyan-500/30 bg-slate-900/95 shadow-2xl shadow-cyan-950/60"
       >
-        <ModalHeader movie={movie} onClose={onClose} />
+        {isLoading && (
+          <div className="flex h-72 items-center justify-center gap-2 text-sm text-slate-400">
+            <span className="h-2 w-2 animate-ping rounded-full bg-cyan-400" />
+            Caricamento scheda film...
+          </div>
+        )}
 
-        <div className="space-y-8 p-6">
-          <TrailerPlayer posterUrl={movie.poster} tagline={movie.tags[0] ?? movie.title} title={movie.title} />
-          <SoundtrackPlayer album={movie.album} tracks={movie.tracks} />
-          <CastGrid cast={movie.cast} awardsNote={movie.awardsNote} />
-          <TechnicalCredits credits={movie.credits} />
-        </div>
+        {!isLoading && (isError || !detail) && (
+          <div className="flex h-72 flex-col items-center justify-center gap-3 p-6 text-center text-sm text-slate-400">
+            <p>Impossibile caricare i dettagli di questo film.</p>
+            <button onClick={onClose} className="glass-pill rounded-lg px-4 py-2 text-xs font-semibold text-slate-200 hover:text-white">
+              Chiudi
+            </button>
+          </div>
+        )}
 
-        <ModalFooter movieId={movie.id} onClose={onClose} />
+        {!isLoading && detail && (
+          <>
+            <ModalHeader movie={detail} onClose={onClose} />
+
+            <div className="space-y-8 p-6">
+              <TrailerPlayer posterUrl={detail.poster} tagline={detail.tags[0] ?? detail.title} title={detail.title} />
+              <SoundtrackPlayer album={detail.album} tracks={detail.tracks} />
+              <CastGrid cast={detail.cast} />
+              <TechnicalCredits credits={detail.credits} />
+            </div>
+
+            <ModalFooter movieId={detail.id} onClose={onClose} />
+          </>
+        )}
       </div>
     </div>
   );

@@ -1,10 +1,12 @@
 import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
-import { getMovieById, links, movies } from "../../data";
-import { useFilters } from "../../state/FilterContext";
-import { useSelection } from "../../state/SelectionContext";
+import { useSimilarMovies } from "../../hooks/useSimilarMovies";
 import { setCameraCoords } from "../../lib/cameraCoordsStore";
+import { useFilters } from "../../state/FilterContext";
+import { useMovieData } from "../../state/MovieDataContext";
+import { useSelection } from "../../state/SelectionContext";
+import type { MovieLink } from "../../types/movie";
 import { BackgroundParticles } from "./BackgroundParticles";
 import { HolographicGrid } from "./HolographicGrid";
 import { MovieNodes } from "./MovieNodes";
@@ -23,38 +25,34 @@ function CameraCoordsReporter() {
 }
 
 export function SphereScene() {
-  const { activeClusterIds, similarityThreshold, yearRange } = useFilters();
+  const { movies, getMovieById } = useMovieData();
+  const { activeClusterIds, yearRange } = useFilters();
   const { selectedId, hoveredId, select, hover } = useSelection();
 
   const filteredMovies = useMemo(
-    () =>
-      movies.filter(
-        (m) => activeClusterIds.has(m.clusterId) && m.year >= yearRange[0] && m.year <= yearRange[1],
-      ),
-    [activeClusterIds, yearRange],
+    () => movies.filter((m) => activeClusterIds.has(m.clusterId) && m.year >= yearRange[0] && m.year <= yearRange[1]),
+    [movies, activeClusterIds, yearRange],
   );
 
   const visibleIds = useMemo(() => new Set(filteredMovies.map((m) => m.id)), [filteredMovies]);
   const nodeById = useMemo(() => new Map(filteredMovies.map((m) => [m.id, m])), [filteredMovies]);
 
+  // Il nodo selezionato/in hover resta visibile nel pannello destro anche se un filtro successivo lo
+  // esclude dalla sfera: per questo si legge dal set completo (getMovieById), non da quello filtrato.
   const selectedNode = selectedId ? (getMovieById(selectedId) ?? null) : null;
   const hoveredNode = hoveredId ? (getMovieById(hoveredId) ?? null) : null;
 
-  // Con ~1000 nodi, disegnare TUTTI gli archi che superano la soglia crea un groviglio illeggibile
-  // (migliaia di curve sovrapposte) invece dell'effetto "pochi archi eleganti" del mockup. Mostra quindi
-  // solo i collegamenti del nodo selezionato/in hover, più un piccolo campione ambientale (i più forti
-  // in assoluto) quando nulla è selezionato — stesso principio della "modalità esplosa" della spec di
-  // riferimento (i collegamenti hanno senso soprattutto nel contesto di un nodo attivo).
+  // Gli archi semantici, a differenza del mock, non sono un grafo precalcolato: arrivano on-demand da
+  // GET /api/movies/{id}/similar solo per il nodo attivo (nessun campione "ambientale" quando nulla è
+  // selezionato — il backend non offre un grafo completo pronto per 1000+ nodi).
   const focusId = selectedId ?? hoveredId;
-  const filteredLinks = useMemo(() => {
-    const passingThreshold = links.filter(
-      (l) => l.affinity >= similarityThreshold && visibleIds.has(l.source) && visibleIds.has(l.target),
-    );
-    if (focusId) {
-      return passingThreshold.filter((l) => l.source === focusId || l.target === focusId);
-    }
-    return [...passingThreshold].sort((a, b) => b.affinity - a.affinity).slice(0, 18);
-  }, [similarityThreshold, visibleIds, focusId]);
+  const { data: similarData } = useSimilarMovies(focusId);
+  const filteredLinks = useMemo<MovieLink[]>(() => {
+    if (!focusId || !similarData) return [];
+    return similarData.results
+      .filter((r) => visibleIds.has(String(r.id)))
+      .map((r) => ({ source: focusId, target: String(r.id), affinity: Math.round((r.similarity ?? r.relevance ?? 0) * 100) }));
+  }, [focusId, similarData, visibleIds]);
 
   const groupRef = useRef<THREE.Group>(null);
   const targetRotation = useRef({ x: 0, y: 0 });

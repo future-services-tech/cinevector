@@ -1,12 +1,5 @@
-export type ClusterId =
-  | "scifi"
-  | "cyberpunk"
-  | "thriller"
-  | "drama"
-  | "animation"
-  | "action"
-  | "comedy"
-  | "horror";
+/** Id di cluster reale (backend: k-means dinamico, non più una tassonomia fissa). */
+export type ClusterId = number;
 
 export interface MovieCluster {
   id: ClusterId;
@@ -15,15 +8,17 @@ export interface MovieCluster {
   count: number;
 }
 
-/** Campi "leggeri": alimentano la sfera 3D, una istanza per ciascuno dei ~1000 film. */
+/** Campi "leggeri": alimentano la sfera 3D, una istanza per ciascun film restituito da
+ * GET /api/clusters/{id}/movies (nessun regista/sinossi qui: arrivano solo con il dettaglio pesante). */
 export interface MovieNode {
   id: string;
   vectorId: string;
   title: string;
   year: number;
-  director: string;
   rating: number;
   clusterId: ClusterId;
+  clusterLabel: string;
+  color: string;
   affinity: number;
   tags: string[];
   isKey: boolean;
@@ -60,14 +55,17 @@ export interface SoundtrackTrack {
 
 export interface MovieCredits {
   director: string;
-  cinematography: string;
+  cinematography?: string;
   cinematographyAward?: string;
-  music: string;
-  screenplay: string;
+  music?: string;
+  screenplay?: string;
 }
 
-/** Campi "pesanti": generati on-demand solo quando si apre il modal di dettaglio. */
+/** Campi "pesanti": generati on-demand solo quando si apre il modal di dettaglio, combinando dati
+ * reali dal backend (sinossi, cast, crediti, poster) con sintesi deterministica seedata sull'id
+ * reale del film per ciò che il backend non ha (trailer, colonna sonora, runtime). */
 export interface MovieDetail extends MovieNode {
+  director: string;
   synopsis: string;
   qualityBadges: string[];
   runtimeMinutes: number;
@@ -75,7 +73,5 @@ export interface MovieDetail extends MovieNode {
   album: { title: string; composer: string; format: string[] };
   tracks: SoundtrackTrack[];
   cast: CastMember[];
-  awardsNote?: string;
   credits: MovieCredits;
-  nearestNeighbors: { id: string; title: string; matchPercent: number }[];
 }

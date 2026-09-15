@@ -1,6 +1,6 @@
 import { Clock, Compass, Heart, Orbit, User } from "lucide-react";
-import { clusters } from "../../data";
 import { useFilters } from "../../state/FilterContext";
+import { useMovieData } from "../../state/MovieDataContext";
 import { RangeSlider } from "../common/RangeSlider";
 import { SidebarClusterItem } from "./SidebarClusterItem";
 
@@ -13,6 +13,7 @@ const NAV_ITEMS = [
 ];
 
 export function LeftSidebar() {
+  const { clusters } = useMovieData();
   const { activeClusterIds, toggleCluster, similarityThreshold, setSimilarityThreshold, yearRange, setYearRange } = useFilters();
 
   return (
@@ -59,7 +60,7 @@ export function LeftSidebar() {
               <input
                 type="number"
                 value={yearRange[0]}
-                min={1970}
+                min={1900}
                 max={yearRange[1]}
                 onChange={(e) => setYearRange([Number(e.target.value), yearRange[1]])}
                 className="glass-pill w-full rounded-md px-2 py-1.5 text-center font-mono text-[11px] text-slate-200 outline-none"
@@ -69,7 +70,7 @@ export function LeftSidebar() {
                 type="number"
                 value={yearRange[1]}
                 min={yearRange[0]}
-                max={2025}
+                max={new Date().getFullYear()}
                 onChange={(e) => setYearRange([yearRange[0], Number(e.target.value)])}
                 className="glass-pill w-full rounded-md px-2 py-1.5 text-center font-mono text-[11px] text-slate-200 outline-none"
               />

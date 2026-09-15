@@ -1,10 +1,8 @@
 import { Film, X } from "lucide-react";
 import type { MovieDetail } from "../../types/movie";
-import { getClusterConfig } from "../../data/clustersConfig";
 import { Badge } from "../common/Badge";
 
 export function ModalHeader({ movie, onClose }: { movie: MovieDetail; onClose: () => void }) {
-  const cluster = getClusterConfig(movie.clusterId);
   return (
     <div className="glass-card sticky top-0 z-20 flex items-center justify-between gap-4 rounded-t-2xl border-b border-white/5 px-6 py-4">
       <div className="flex min-w-0 items-center gap-3">
@@ -16,14 +14,14 @@ export function ModalHeader({ movie, onClose }: { movie: MovieDetail; onClose: (
             <h2 id="modalMovieTitle" className="truncate text-lg font-bold tracking-tight text-white">
               {movie.title}
             </h2>
-            <Badge tone="cyan">{cluster.name}</Badge>
+            <Badge tone="cyan">{movie.clusterLabel}</Badge>
             {movie.qualityBadges.map((badge) => (
               <Badge key={badge}>{badge}</Badge>
             ))}
             <Badge tone="amber">★ {movie.rating.toFixed(1)}/10</Badge>
           </div>
           <p className="mt-0.5 truncate text-xs text-slate-400">
-            Regia di {movie.director} · {movie.year} · {movie.runtimeMinutes} min
+            Regia di {movie.director} · {movie.year || "anno sconosciuto"} · {movie.runtimeMinutes} min
           </p>
         </div>
       </div>
