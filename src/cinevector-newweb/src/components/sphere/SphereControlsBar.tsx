@@ -6,7 +6,7 @@ import { useSelection, type ViewMode } from "../../state/SelectionContext";
 
 const VIEW_MODES: { id: ViewMode; label: string }[] = [
   { id: "cluster", label: "Cluster" },
-  { id: "network", label: "Rete" },
+  { id: "network", label: "Catalogo" },
   { id: "sphere", label: "Sfera" },
 ];
 

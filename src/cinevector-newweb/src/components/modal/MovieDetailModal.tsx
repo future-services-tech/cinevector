@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useMovieDetail } from "../../hooks/useMovieDetail";
 import { useSpotifyMatch } from "../../hooks/useSpotifyMatch";
+import { useSettings } from "../../state/SettingsContext";
 import { CastGrid } from "./CastGrid";
 import { ModalFooter } from "./ModalFooter";
 import { ModalHeader } from "./ModalHeader";
@@ -10,9 +11,11 @@ import { TrailerPlayer } from "./TrailerPlayer";
 
 export function MovieDetailModal({ movieId, onClose }: { movieId: string; onClose: () => void }) {
   const { detail, isLoading, isError } = useMovieDetail(movieId);
+  const { settings } = useSettings();
   // Cerca un match reale su Spotify (titolo film + "soundtrack"): se trova anteprime disponibili le usa al
   // posto della colonna sonora sintetica, altrimenti resta il comportamento di sempre (fallback silenzioso).
-  const spotifyMatch = useSpotifyMatch(detail?.title ?? null);
+  // Disattivabile dalle Impostazioni per evitare chiamate inutili quando l'account non è collegato.
+  const spotifyMatch = useSpotifyMatch(settings.spotifyAutoMatchEnabled ? (detail?.title ?? null) : null);
   const hasRealSoundtrack = spotifyMatch.tracks.length > 0 && spotifyMatch.album !== null;
 
   useEffect(() => {
@@ -63,6 +66,11 @@ export function MovieDetailModal({ movieId, onClose }: { movieId: string; onClos
             <ModalHeader movie={detail} onClose={onClose} />
 
             <div className="space-y-8 p-6">
+              <div data-purpose="synopsis-section">
+                <div className="mb-2 text-[10px] font-bold uppercase tracking-wider text-slate-500">Trama</div>
+                <p className="text-sm leading-relaxed text-slate-300">{detail.synopsis}</p>
+              </div>
+
               <TrailerPlayer posterUrl={detail.poster} tagline={detail.tags[0] ?? detail.title} title={detail.title} />
               <SoundtrackPlayer
                 album={hasRealSoundtrack ? spotifyMatch.album! : detail.album}

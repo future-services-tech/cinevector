@@ -41,6 +41,8 @@ export interface CastMember {
   gradientFrom: string;
   gradientTo: string;
   initials: string;
+  /** Foto reale (TMDb) se il backend l'ha già recuperata — altrimenti si usa il fallback a gradiente. */
+  profileUrl?: string;
 }
 
 export interface SoundtrackTrack {
@@ -56,12 +58,17 @@ export interface SoundtrackTrack {
   previewUrl?: string;
 }
 
+export interface CreditPerson {
+  name: string;
+  profileUrl?: string;
+}
+
 export interface MovieCredits {
-  director: string;
-  cinematography?: string;
+  director: CreditPerson;
+  cinematography?: CreditPerson;
   cinematographyAward?: string;
-  music?: string;
-  screenplay?: string;
+  music?: CreditPerson;
+  screenplay?: CreditPerson;
 }
 
 /** Campi "pesanti": generati on-demand solo quando si apre il modal di dettaglio, combinando dati

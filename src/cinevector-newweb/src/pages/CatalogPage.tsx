@@ -1,11 +1,12 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { Film, LayoutGrid, List, Search } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { searchMovies, type SearchSort } from "../api/search";
 import { LeftSidebar } from "../components/layout/LeftSidebar";
 import { TopHeader } from "../components/layout/TopHeader";
 import { MovieDetailModal } from "../components/modal/MovieDetailModal";
 import { PosterCard } from "../components/common/PosterCard";
+import { pushNotification } from "../lib/notificationStore";
 
 const PAGE_SIZE = 20;
 
@@ -63,6 +64,14 @@ export function CatalogPage() {
 
   const totalPages = data ? Math.max(1, Math.ceil(data.total / data.pageSize)) : 1;
   const isSearchActive = query.trim().length > 0;
+
+  // Notifica solo per ricerche testuali effettive (non per il semplice cambio pagina/filtro senza testo),
+  // altrimenti la campanella si riempirebbe di "ricerca completata" ad ogni interazione con i filtri.
+  useEffect(() => {
+    if (!data || !isSearchActive) return;
+    pushNotification("success", `Ricerca completata: ${data.total} film trovati per "${query}".`);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data]);
 
   function resetToFirstPage() {
     setPage(1);

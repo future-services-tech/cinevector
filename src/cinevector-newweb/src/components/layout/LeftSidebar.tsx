@@ -1,8 +1,9 @@
-import { Activity, Bot, Clock, Compass, Database, Film, Heart, Music, Orbit, User } from "lucide-react";
-import type { ComponentType } from "react";
+import { Activity, Bot, ChevronDown, Database, Orbit } from "lucide-react";
+import { type ComponentType, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useFilters } from "../../state/FilterContext";
 import { useMovieData } from "../../state/MovieDataContext";
+import { useSettings } from "../../state/SettingsContext";
 import { RangeSlider } from "../common/RangeSlider";
 import { SidebarClusterItem } from "./SidebarClusterItem";
 
@@ -12,15 +13,10 @@ interface NavItem {
   to: string | null;
 }
 
-const EXPLORE_ITEMS: NavItem[] = [
-  { label: "Esplora Galassia 3D", icon: Orbit, to: "/" },
-  { label: "Catalogo", icon: Film, to: "/catalogo" },
-  { label: "Musica", icon: Music, to: "/music" },
-  { label: "Generi & Cluster", icon: Compass, to: null },
-  { label: "Registi & Autori", icon: User, to: null },
-  { label: "Timeline Storica", icon: Clock, to: null },
-  { label: "I Miei Preferiti", icon: Heart, to: null },
-];
+// Catalogo e Musica sono raggiungibili dal menu "Filtri" nell'header (vedi TopHeader.tsx) — qui resta solo la
+// sfera. Generi & Cluster / Registi & Autori / Timeline Storica / I Miei Preferiti non portano ancora a nulla:
+// nascoste finché non verranno davvero costruite in un intervento dedicato.
+const EXPLORE_ITEMS: NavItem[] = [{ label: "Esplora Galassia 3D", icon: Orbit, to: "/" }];
 
 const OPERATIONS_ITEMS: NavItem[] = [
   { label: "Sorgenti", icon: Database, to: "/sources" },
@@ -54,6 +50,8 @@ function NavRow({ item, active, onClick }: { item: NavItem; active: boolean; onC
 export function LeftSidebar() {
   const { clusters } = useMovieData();
   const { activeClusterIds, toggleCluster, similarityThreshold, setSimilarityThreshold, yearRange, setYearRange } = useFilters();
+  const { settings } = useSettings();
+  const [clusterPanelOpen, setClusterPanelOpen] = useState(settings.clusterPanelDefaultOpen);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -83,10 +81,14 @@ export function LeftSidebar() {
         {isSphereRoute && (
           <>
             <div>
-              <div className="mb-2 flex items-center justify-between px-1">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Cluster Tematici</span>
-              </div>
-              <div className="space-y-1.5">
+              <button
+                onClick={() => setClusterPanelOpen((v) => !v)}
+                className="mb-2 flex w-full items-center justify-between px-1 text-[10px] font-bold uppercase tracking-wider text-slate-500 hover:text-slate-300"
+              >
+                <span>Cluster Tematici</span>
+                <ChevronDown size={13} className={`transition-transform ${clusterPanelOpen ? "rotate-180" : ""}`} />
+              </button>
+              <div className={`space-y-1.5 overflow-hidden transition-[max-height] duration-200 ${clusterPanelOpen ? "max-h-[1000px]" : "max-h-0"}`}>
                 {clusters.map((cluster) => (
                   <SidebarClusterItem
                     key={cluster.id}

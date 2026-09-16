@@ -1,7 +1,7 @@
 import type { MovieDto } from "../api/types";
 import { CAST_FIRST_NAMES, CAST_LAST_NAMES, TRACK_TITLE_FRAGMENTS } from "../data/lexicon";
 import { hashStringToSeed, mulberry32, pick, randInt, type Rng } from "../data/seedRandom";
-import type { CastMember, MovieCredits, MovieDetail, MovieNode, RoleType, SoundtrackTrack } from "../types/movie";
+import type { CastMember, CreditPerson, MovieCredits, MovieDetail, MovieNode, RoleType, SoundtrackTrack } from "../types/movie";
 
 const QUALITY_BADGE_POOL = ["4K UHD", "Dolby Atmos", "HDR10+", "Dolby Vision", "IMAX Enhanced"];
 
@@ -34,12 +34,14 @@ function mapCast(dto: MovieDto): CastMember[] {
       gradientFrom,
       gradientTo,
       initials: initialsOf(member.name),
+      profileUrl: member.profileUrl ?? undefined,
     };
   });
 }
 
-function findCrew(dto: MovieDto, pattern: RegExp): string | undefined {
-  return dto.crew.find((c) => pattern.test(c.role))?.name;
+function findCrew(dto: MovieDto, pattern: RegExp): CreditPerson | undefined {
+  const match = dto.crew.find((c) => pattern.test(c.role));
+  return match ? { name: match.name, profileUrl: match.profileUrl ?? undefined } : undefined;
 }
 
 function generateTracks(rng: Rng, composer: string): SoundtrackTrack[] {
@@ -68,13 +70,15 @@ export function buildMovieDetail(node: MovieNode, dto: MovieDto): MovieDetail {
   const seed = hashStringToSeed(`${node.id}:detail`);
   const rng = mulberry32(seed);
 
-  const composer = findCrew(dto, /music|score|composer/i) ?? `${pick(rng, CAST_FIRST_NAMES)} ${pick(rng, CAST_LAST_NAMES)}`;
-  const director = dto.directors[0]?.name ?? "Regista non specificato";
+  const composerCredit = findCrew(dto, /music|score|composer/i);
+  const composer = composerCredit?.name ?? `${pick(rng, CAST_FIRST_NAMES)} ${pick(rng, CAST_LAST_NAMES)}`;
+  const directorDto = dto.directors[0];
+  const director = directorDto?.name ?? "Regista non specificato";
 
   const credits: MovieCredits = {
-    director,
+    director: { name: director, profileUrl: directorDto?.profileUrl ?? undefined },
     cinematography: findCrew(dto, /photography/i),
-    music: composer,
+    music: composerCredit,
     screenplay: findCrew(dto, /screenplay|writer/i),
   };
 

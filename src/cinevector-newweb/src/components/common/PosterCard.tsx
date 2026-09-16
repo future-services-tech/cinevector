@@ -1,4 +1,5 @@
 import { Film } from "lucide-react";
+import { useSettings } from "../../state/SettingsContext";
 
 export interface PosterCardData {
   id: number | string;
@@ -13,14 +14,21 @@ export interface PosterCardData {
 /** Card poster riusabile — carosello "Rete" e pagina "Catalogo". Nessun <Link>: il chiamante decide cosa fare
  * al click (di solito aprire il modal di dettaglio in overlay, senza toccare l'URL). */
 export function PosterCard({ movie, onClick }: { movie: PosterCardData; onClick?: () => void }) {
+  const { settings } = useSettings();
+  const hoverEnabled = settings.animationsEnabled && settings.cardHoverEffects;
   return (
     <button
       onClick={onClick}
-      className="glass-card glass-card-hover group w-full overflow-hidden rounded-xl text-left transition"
+      className={`glass-card group w-full overflow-hidden rounded-xl text-left transition ${hoverEnabled ? "glass-card-hover" : ""}`}
     >
       <div className="relative aspect-[2/3] w-full overflow-hidden bg-space-950">
         {movie.posterUrl ? (
-          <img src={movie.posterUrl} alt={movie.title} loading="lazy" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+          <img
+            src={movie.posterUrl}
+            alt={movie.title}
+            loading="lazy"
+            className={`h-full w-full object-cover transition-transform duration-300 ${hoverEnabled ? "group-hover:scale-105" : ""}`}
+          />
         ) : (
           <div className="flex h-full w-full items-center justify-center text-slate-600">
             <Film size={28} />

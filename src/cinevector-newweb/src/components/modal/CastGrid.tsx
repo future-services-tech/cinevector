@@ -16,12 +16,16 @@ export function CastGrid({ cast }: { cast: CastMember[] }) {
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           {cast.map((member) => (
             <div key={member.name} className="glass-card rounded-xl p-3">
-              <div
-                className="mb-2 flex h-10 w-10 items-center justify-center rounded-full text-xs font-bold text-white"
-                style={{ background: `linear-gradient(135deg, ${member.gradientFrom}, ${member.gradientTo})` }}
-              >
-                {member.initials}
-              </div>
+              {member.profileUrl ? (
+                <img src={member.profileUrl} alt={member.name} className="mb-2 h-10 w-10 rounded-full object-cover" loading="lazy" />
+              ) : (
+                <div
+                  className="mb-2 flex h-10 w-10 items-center justify-center rounded-full text-xs font-bold text-white"
+                  style={{ background: `linear-gradient(135deg, ${member.gradientFrom}, ${member.gradientTo})` }}
+                >
+                  {member.initials}
+                </div>
+              )}
               <p className="truncate text-xs font-semibold text-white">{member.name}</p>
               <p className="truncate text-[11px] text-slate-400">{member.role}</p>
               <span className="mt-1 inline-block rounded bg-white/5 px-1.5 py-0.5 text-[9px] uppercase tracking-wide text-slate-400">

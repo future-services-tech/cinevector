@@ -1,14 +1,35 @@
-import { Bell, Settings, SlidersHorizontal, Sparkles } from "lucide-react";
+import { Bell, Film, Music, Settings, SlidersHorizontal, Sparkles } from "lucide-react";
+import { type FocusEvent, useState, useSyncExternalStore } from "react";
 import { useNavigate } from "react-router-dom";
 import { formatCount } from "../../lib/format";
+import { getUnreadCount, markAllRead, subscribeNotifications } from "../../lib/notificationStore";
 import { useMovieData } from "../../state/MovieDataContext";
 import { useSelection } from "../../state/SelectionContext";
 import { SearchBar } from "../common/SearchBar";
+import { SettingsModal } from "../settings/SettingsModal";
+import { NotificationsDropdown } from "./NotificationsDropdown";
+
+function closesOnBlur(setOpen: (open: boolean) => void) {
+  return (e: FocusEvent<HTMLDivElement>) => {
+    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+      setOpen(false);
+    }
+  };
+}
 
 export function TopHeader() {
   const { select } = useSelection();
   const navigate = useNavigate();
   const { movies } = useMovieData();
+  const [exploreOpen, setExploreOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const unreadCount = useSyncExternalStore(subscribeNotifications, getUnreadCount);
+
+  function goTo(path: string) {
+    navigate(path);
+    setExploreOpen(false);
+  }
 
   return (
     <header data-purpose="main-header" className="glass-card z-20 flex h-16 shrink-0 items-center gap-4 border-b border-white/5 px-5">
@@ -34,10 +55,25 @@ export function TopHeader() {
         }}
       />
 
-      <button className="glass-pill hidden items-center gap-1.5 rounded-full px-3 py-2 text-xs text-slate-300 hover:text-cyan-200 sm:flex">
-        <SlidersHorizontal size={14} />
-        Filtri
-      </button>
+      <div tabIndex={-1} onBlur={closesOnBlur(setExploreOpen)} className="relative hidden sm:block">
+        <button
+          onClick={() => setExploreOpen((v) => !v)}
+          className="glass-pill flex items-center gap-1.5 rounded-full px-3 py-2 text-xs text-slate-300 hover:text-cyan-200"
+        >
+          <SlidersHorizontal size={14} />
+          Esplora
+        </button>
+        {exploreOpen && (
+          <div className="glass-card absolute right-0 top-full z-30 mt-2 w-48 overflow-hidden rounded-xl">
+            <button onClick={() => goTo("/catalogo")} className="flex w-full items-center gap-2 px-3.5 py-2.5 text-left text-xs text-slate-200 hover:bg-white/5 hover:text-cyan-200">
+              <Film size={14} /> Catalogo
+            </button>
+            <button onClick={() => goTo("/music")} className="flex w-full items-center gap-2 px-3.5 py-2.5 text-left text-xs text-slate-200 hover:bg-white/5 hover:text-cyan-200">
+              <Music size={14} /> Musica
+            </button>
+          </div>
+        )}
+      </div>
 
       <span className="glass-pill hidden shrink-0 items-center gap-1.5 rounded-full px-3 py-2 text-[11px] font-mono text-emerald-300 md:flex">
         <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399]" />
@@ -45,12 +81,33 @@ export function TopHeader() {
       </span>
 
       <div className="flex items-center gap-2.5 text-slate-400">
-        <Bell size={18} className="hidden cursor-pointer hover:text-cyan-300 sm:block" />
-        <Settings size={18} className="hidden cursor-pointer hover:text-cyan-300 sm:block" />
+        <div tabIndex={-1} onBlur={closesOnBlur(setNotificationsOpen)} className="relative">
+          <button
+            onClick={() => {
+              setNotificationsOpen((v) => !v);
+              if (!notificationsOpen) markAllRead();
+            }}
+            className="relative hidden cursor-pointer hover:text-cyan-300 sm:block"
+            aria-label="Notifiche"
+          >
+            <Bell size={18} />
+            {unreadCount > 0 && (
+              <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-rose-500 shadow-[0_0_6px_#f43f5e]" />
+            )}
+          </button>
+          {notificationsOpen && <NotificationsDropdown />}
+        </div>
+
+        <button onClick={() => setSettingsOpen(true)} className="hidden cursor-pointer hover:text-cyan-300 sm:block" aria-label="Impostazioni">
+          <Settings size={18} />
+        </button>
+
         <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-purple-400 to-blue-500 text-xs font-bold text-white">
           CV
         </div>
       </div>
+
+      {settingsOpen && <SettingsModal onClose={() => setSettingsOpen(false)} />}
     </header>
   );
 }

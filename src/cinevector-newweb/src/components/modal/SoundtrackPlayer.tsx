@@ -2,6 +2,7 @@ import { Music2, Pause, Play, Repeat, Repeat1, Shuffle, SkipBack, SkipForward, V
 import { useEffect, useRef, useState } from "react";
 import { formatSecondsToTime } from "../../lib/format";
 import { useInterval } from "../../lib/useInterval";
+import { useSettings } from "../../state/SettingsContext";
 import type { SoundtrackTrack } from "../../types/movie";
 import { TrackList } from "./TrackList";
 
@@ -14,11 +15,12 @@ export function SoundtrackPlayer({
   album: { title: string; composer: string; format: string[] };
   tracks: SoundtrackTrack[];
 }) {
+  const { settings } = useSettings();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [progressSec, setProgressSec] = useState(0);
   const [durationSec, setDurationSec] = useState(tracks[0]?.totalSec ?? 0);
-  const [volume, setVolume] = useState(80);
+  const [volume, setVolume] = useState(settings.defaultPlayerVolume);
   const [shuffleOn, setShuffleOn] = useState(false);
   const [repeatMode, setRepeatMode] = useState<RepeatMode>("off");
   const [barHeights, setBarHeights] = useState<number[]>(Array(8).fill(6));

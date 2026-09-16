@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import * as THREE from "three";
 import { getGlowTexture, SPHERE_RADIUS } from "../../lib/three-helpers";
+import { useSettings, type AppSettings } from "../../state/SettingsContext";
 import type { MovieNode } from "../../types/movie";
 
 interface MovieNodesProps {
@@ -8,6 +9,12 @@ interface MovieNodesProps {
   onHover: (id: string | null) => void;
   onSelect: (id: string) => void;
 }
+
+const DENSITY_PRESETS: Record<AppSettings["sphereDensity"], { regularOpacity: number; regularSize: number; heroOpacity: number; heroSize: number }> = {
+  leggera: { regularOpacity: 0.6, regularSize: 0.05, heroOpacity: 0.85, heroSize: 0.1 },
+  media: { regularOpacity: 0.9, regularSize: 0.07, heroOpacity: 1, heroSize: 0.13 },
+  piena: { regularOpacity: 1, regularSize: 0.09, heroOpacity: 1, heroSize: 0.16 },
+};
 
 function buildGeometry(list: MovieNode[]): THREE.BufferGeometry {
   const positions = new Float32Array(list.length * 3);
@@ -30,6 +37,8 @@ function buildGeometry(list: MovieNode[]): THREE.BufferGeometry {
 /** I nodi film come due nuvole di punti (hero più grandi/prominenti, gli altri più piccoli) —
  * un singolo BufferGeometry per gruppo, non un componente React per film, per restare performante. */
 export function MovieNodes({ movies, onHover, onSelect }: MovieNodesProps) {
+  const { settings } = useSettings();
+  const density = DENSITY_PRESETS[settings.sphereDensity];
   const heroList = useMemo(() => movies.filter((m) => m.isKey), [movies]);
   const regularList = useMemo(() => movies.filter((m) => !m.isKey), [movies]);
 
@@ -51,7 +60,16 @@ export function MovieNodes({ movies, onHover, onSelect }: MovieNodesProps) {
           if (e.index !== undefined && regularList[e.index]) onSelect(regularList[e.index].id);
         }}
       >
-        <pointsMaterial map={glowTexture} vertexColors transparent opacity={0.9} size={0.07} sizeAttenuation depthWrite={false} blending={THREE.AdditiveBlending} />
+        <pointsMaterial
+          map={glowTexture}
+          vertexColors
+          transparent
+          opacity={density.regularOpacity}
+          size={density.regularSize}
+          sizeAttenuation
+          depthWrite={false}
+          blending={THREE.AdditiveBlending}
+        />
       </points>
 
       <points
@@ -66,7 +84,16 @@ export function MovieNodes({ movies, onHover, onSelect }: MovieNodesProps) {
           if (e.index !== undefined && heroList[e.index]) onSelect(heroList[e.index].id);
         }}
       >
-        <pointsMaterial map={glowTexture} vertexColors transparent opacity={1} size={0.13} sizeAttenuation depthWrite={false} blending={THREE.AdditiveBlending} />
+        <pointsMaterial
+          map={glowTexture}
+          vertexColors
+          transparent
+          opacity={density.heroOpacity}
+          size={density.heroSize}
+          sizeAttenuation
+          depthWrite={false}
+          blending={THREE.AdditiveBlending}
+        />
       </points>
     </group>
   );
