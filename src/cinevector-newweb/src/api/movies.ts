@@ -1,5 +1,9 @@
 import { apiFetch } from "./client";
-import type { MovieDto, SimilarMoviesResponseDto } from "./types";
+import type { MovieDto, MovieSummaryDto, PagedResultDto, SimilarMoviesResponseDto } from "./types";
+
+export function getMovies(page = 1, pageSize = 20): Promise<PagedResultDto<MovieSummaryDto>> {
+  return apiFetch<PagedResultDto<MovieSummaryDto>>(`/api/movies?page=${page}&pageSize=${pageSize}`);
+}
 
 export function getMovie(id: number): Promise<MovieDto> {
   return apiFetch<MovieDto>(`/api/movies/${id}`);

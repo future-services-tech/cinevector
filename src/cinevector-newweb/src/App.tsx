@@ -1,4 +1,5 @@
 import { Route, Routes } from "react-router-dom";
+import { CatalogPage } from "./pages/CatalogPage";
 import { CrawlerPage } from "./pages/CrawlerPage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { MetricsPage } from "./pages/MetricsPage";
@@ -20,6 +21,7 @@ export default function App() {
             <Routes>
               <Route path="/" element={<DashboardPage />} />
               <Route path="/movie/:id" element={<DashboardPage />} />
+              <Route path="/catalogo" element={<CatalogPage />} />
               <Route path="/sources" element={<SourcesPage />} />
               <Route path="/crawler" element={<CrawlerPage />} />
               <Route path="/metrics" element={<MetricsPage />} />

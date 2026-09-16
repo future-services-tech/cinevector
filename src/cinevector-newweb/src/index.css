@@ -83,3 +83,22 @@ body {
 .radar-ring {
   animation: ringRadar 2.2s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
 }
+
+/* Carosello "Rete": contenuto duplicato x2 affiancato, il loop trasla di metà larghezza totale (= una
+   copia intera) così il punto di ricongiungimento è impercettibile. */
+@keyframes marqueeScroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+.marquee-row {
+  animation-name: marqueeScroll;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+.marquee-row--reverse {
+  animation-direction: reverse;
+}

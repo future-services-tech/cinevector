@@ -1,4 +1,4 @@
-import { Activity, Bot, Clock, Compass, Database, Heart, Music, Orbit, User } from "lucide-react";
+import { Activity, Bot, Clock, Compass, Database, Film, Heart, Music, Orbit, User } from "lucide-react";
 import type { ComponentType } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useFilters } from "../../state/FilterContext";
@@ -14,6 +14,7 @@ interface NavItem {
 
 const EXPLORE_ITEMS: NavItem[] = [
   { label: "Esplora Galassia 3D", icon: Orbit, to: "/" },
+  { label: "Catalogo", icon: Film, to: "/catalogo" },
   { label: "Musica", icon: Music, to: "/music" },
   { label: "Generi & Cluster", icon: Compass, to: null },
   { label: "Registi & Autori", icon: User, to: null },

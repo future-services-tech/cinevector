@@ -5,6 +5,8 @@ import { LeftSidebar } from "../components/layout/LeftSidebar";
 import { RightDetailPanel } from "../components/layout/RightDetailPanel";
 import { TopHeader } from "../components/layout/TopHeader";
 import { MovieDetailModal } from "../components/modal/MovieDetailModal";
+import { ClusterChartView } from "../components/sphere/ClusterChartView";
+import { MoviesWallView } from "../components/sphere/MoviesWallView";
 import { SphereCanvas } from "../components/sphere/SphereCanvas";
 import { SphereControlsBar } from "../components/sphere/SphereControlsBar";
 import { SphereHintBar } from "../components/sphere/SphereHintBar";
@@ -16,7 +18,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:5080
 export function DashboardPage() {
   const { id } = useParams<{ id?: string }>();
   const navigate = useNavigate();
-  const { select } = useSelection();
+  const { select, viewMode } = useSelection();
   const { isLoading, isError } = useMovieData();
 
   // Un deep-link diretto a /movie/:id seleziona anche il nodo corrispondente (se presente sulla sfera),
@@ -59,9 +61,15 @@ export function DashboardPage() {
         <LeftSidebar />
 
         <section data-purpose="three-viewport-section" role="region" aria-label="Mappa semantica tridimensionale delle relazioni tra film" className="relative flex-1">
-          <SphereCanvas />
+          {viewMode === "sphere" && (
+            <>
+              <SphereCanvas />
+              <SphereHintBar />
+            </>
+          )}
+          {viewMode === "cluster" && <ClusterChartView />}
+          {viewMode === "network" && <MoviesWallView />}
           <SphereControlsBar />
-          <SphereHintBar />
         </section>
 
         <RightDetailPanel />

@@ -106,3 +106,20 @@ export interface SimilarMoviesResponseDto {
   movieId: number;
   results: SearchResultItemDto[];
 }
+
+export interface MovieSummaryDto {
+  id: number;
+  title: string;
+  originalTitle: string | null;
+  year: number | null;
+  rating: number | null;
+  posterUrl: string | null;
+  genres: string[];
+}
+
+export interface PagedResultDto<T> {
+  items: T[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
