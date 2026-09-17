@@ -43,6 +43,8 @@ export interface CastMember {
   initials: string;
   /** Foto reale (TMDb) se il backend l'ha già recuperata — altrimenti si usa il fallback a gradiente. */
   profileUrl?: string;
+  /** Pagina Wikipedia della persona, se il backend l'ha risolta — rende la foto/nome un link cliccabile. */
+  wikipediaUrl?: string;
 }
 
 export interface SoundtrackTrack {
@@ -61,6 +63,7 @@ export interface SoundtrackTrack {
 export interface CreditPerson {
   name: string;
   profileUrl?: string;
+  wikipediaUrl?: string;
 }
 
 export interface MovieCredits {

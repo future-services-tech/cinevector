@@ -24,6 +24,7 @@ using CineVector.Infrastructure.Persistence;
 using CineVector.Infrastructure.Search;
 using CineVector.Infrastructure.Settings;
 using CineVector.Infrastructure.Sources;
+using CineVector.Infrastructure.Sources.Omdb;
 using CineVector.Infrastructure.Sources.Tmdb;
 using CineVector.Infrastructure.Statistics;
 
@@ -52,6 +53,7 @@ public static class DependencyInjection
 
         AddCrawlCoordination(services, configuration);
         AddTmdbSource(services, configuration);
+        AddOmdbSource(services, configuration);
         AddEmbeddingProvider(services, configuration);
         AddWikipediaLookup(services);
         AddSpotify(services, configuration);
@@ -165,5 +167,43 @@ public static class DependencyInjection
             .AddStandardResilienceHandler();
 
         services.AddKeyedScoped<ISourceAdapter, TmdbSourceAdapter>("Tmdb");
+    }
+
+    private static void AddOmdbSource(IServiceCollection services, IConfiguration configuration)
+    {
+        services.Configure<OmdbOptions>(configuration.GetSection(OmdbOptions.SectionName));
+
+        var omdbApiKey = new Lazy<string>(() =>
+        {
+            var options = configuration.GetSection(OmdbOptions.SectionName).Get<OmdbOptions>()
+                ?? throw new InvalidOperationException("Sezione di configurazione 'Omdb' mancante.");
+
+            var apiKey = Environment.GetEnvironmentVariable(options.ApiKeyEnvironmentVariable);
+            if (string.IsNullOrWhiteSpace(apiKey))
+            {
+                throw new InvalidOperationException(
+                    $"Variabile d'ambiente '{options.ApiKeyEnvironmentVariable}' non impostata: necessaria per l'adapter OMDb.");
+            }
+
+            return apiKey;
+        });
+
+        // OMDb autentica via query string (?apikey=...) su ogni richiesta, non con un header: la chiave viene
+        // quindi propagata in OmdbOptions.ApiKey (PostConfigure gira dopo Configure) invece che su HttpClient.
+        services.PostConfigure<OmdbOptions>(o => o.ApiKey = omdbApiKey.Value);
+
+        services.AddHttpClient<OmdbApiClient>((sp, http) =>
+            {
+                var options = configuration.GetSection(OmdbOptions.SectionName).Get<OmdbOptions>()
+                    ?? throw new InvalidOperationException("Sezione di configurazione 'Omdb' mancante.");
+
+                // BaseAddress punta sempre e solo alla configurazione applicativa (mai a Source.BaseUrl, che è
+                // un campo modificabile da un amministratore): evita che una modifica alla Source diventi un SSRF.
+                http.BaseAddress = new Uri(options.BaseUrl.TrimEnd('/') + "/");
+                http.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            })
+            .AddStandardResilienceHandler();
+
+        services.AddKeyedScoped<ISourceAdapter, OmdbSourceAdapter>("Omdb");
     }
 }

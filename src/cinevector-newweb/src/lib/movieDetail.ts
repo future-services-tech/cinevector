@@ -35,13 +35,16 @@ function mapCast(dto: MovieDto): CastMember[] {
       gradientTo,
       initials: initialsOf(member.name),
       profileUrl: member.profileUrl ?? undefined,
+      wikipediaUrl: member.wikipediaUrl ?? undefined,
     };
   });
 }
 
 function findCrew(dto: MovieDto, pattern: RegExp): CreditPerson | undefined {
   const match = dto.crew.find((c) => pattern.test(c.role));
-  return match ? { name: match.name, profileUrl: match.profileUrl ?? undefined } : undefined;
+  return match
+    ? { name: match.name, profileUrl: match.profileUrl ?? undefined, wikipediaUrl: match.wikipediaUrl ?? undefined }
+    : undefined;
 }
 
 function generateTracks(rng: Rng, composer: string): SoundtrackTrack[] {
@@ -76,7 +79,11 @@ export function buildMovieDetail(node: MovieNode, dto: MovieDto): MovieDetail {
   const director = directorDto?.name ?? "Regista non specificato";
 
   const credits: MovieCredits = {
-    director: { name: director, profileUrl: directorDto?.profileUrl ?? undefined },
+    director: {
+      name: director,
+      profileUrl: directorDto?.profileUrl ?? undefined,
+      wikipediaUrl: directorDto?.wikipediaUrl ?? undefined,
+    },
     cinematography: findCrew(dto, /photography/i),
     music: composerCredit,
     screenplay: findCrew(dto, /screenplay|writer/i),

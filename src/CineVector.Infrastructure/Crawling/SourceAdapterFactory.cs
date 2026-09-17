@@ -10,7 +10,7 @@ public class SourceAdapterFactory(IServiceProvider serviceProvider) : ISourceAda
     // Nessuna API di enumerazione nativa per i keyed service in Microsoft.Extensions.DependencyInjection:
     // questo elenco va tenuto allineato a mano con le registrazioni AddKeyedScoped<ISourceAdapter, ...> in
     // DependencyInjection.cs. Aggiungere un adapter = aggiungere una riga qui + una riga di registrazione DI.
-    private static readonly string[] KnownAdapterTypes = ["Tmdb"];
+    private static readonly string[] KnownAdapterTypes = ["Tmdb", "Omdb"];
 
     public ISourceAdapter? GetAdapter(string adapterType) =>
         serviceProvider.GetKeyedService<ISourceAdapter>(adapterType);

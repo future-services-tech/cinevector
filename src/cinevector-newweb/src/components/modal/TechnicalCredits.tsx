@@ -10,13 +10,28 @@ function initialsOf(name: string): string {
 }
 
 function CreditAvatar({ person }: { person: CreditPerson }) {
-  if (person.profileUrl) {
-    return <img src={person.profileUrl} alt={person.name} className="h-7 w-7 rounded-full object-cover" loading="lazy" />;
-  }
-  return (
+  const avatar = person.profileUrl ? (
+    <img src={person.profileUrl} alt={person.name} className="h-7 w-7 rounded-full object-cover" loading="lazy" />
+  ) : (
     <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 text-[10px] font-bold text-white">
       {initialsOf(person.name)}
     </div>
+  );
+
+  if (!person.wikipediaUrl) {
+    return avatar;
+  }
+
+  return (
+    <a
+      href={person.wikipediaUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      title={`Apri la pagina Wikipedia di ${person.name}`}
+      className="inline-block transition-opacity hover:opacity-80"
+    >
+      {avatar}
+    </a>
   );
 }
 
@@ -39,7 +54,13 @@ export function TechnicalCredits({ credits }: { credits: MovieCredits }) {
           <div>
             <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500">{row.label}</div>
             <div className="text-xs text-slate-200">
-              {row.value.name}
+              {row.value.wikipediaUrl ? (
+                <a href={row.value.wikipediaUrl} target="_blank" rel="noopener noreferrer" className="hover:text-cyan-300 hover:underline">
+                  {row.value.name}
+                </a>
+              ) : (
+                row.value.name
+              )}
               {row.award && <span className="ml-1.5 text-[10px] text-amber-300">({row.award})</span>}
             </div>
           </div>

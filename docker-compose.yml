@@ -47,6 +47,7 @@ services:
       Cors__AllowedOrigins__3: http://localhost:5175
       Embedding__BaseUrl: ${EMBEDDING__BASEURL:-https://omniroute-ehdl.srv1293923.hstgr.cloud/v1}
       TMDB_API_KEY: ${TMDB_API_KEY}
+      OMDB_API_KEY: ${OMDB_API_KEY}
       OMNIROUTER_API_KEY: ${OMNIROUTER_API_KEY}
       SPOTIFY_CLIENT_ID: ${SPOTIFY_CLIENT_ID}
       SPOTIFY_CLIENT_SECRET: ${SPOTIFY_CLIENT_SECRET}
@@ -71,6 +72,7 @@ services:
       ConnectionStrings__Redis: ${CONNECTIONSTRINGS__REDIS}
       Embedding__BaseUrl: ${EMBEDDING__BASEURL:-https://omniroute-ehdl.srv1293923.hstgr.cloud/v1}
       TMDB_API_KEY: ${TMDB_API_KEY}
+      OMDB_API_KEY: ${OMDB_API_KEY}
       OMNIROUTER_API_KEY: ${OMNIROUTER_API_KEY}
 
   frontend:

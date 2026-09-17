@@ -73,7 +73,7 @@ export function PosterSphereView() {
     <div className="flex h-full flex-col items-center overflow-hidden p-6 pt-24">
       <div className="mb-3 max-w-lg shrink-0 text-center">
         <h2 className="text-sm font-bold text-ink">Sfera Film</h2>
-        <p className="text-xs text-slate-400">Trascina per ruotare, passa il mouse per ingrandire, clicca un poster per il dettaglio.</p>
+        <p className="text-xs text-slate-400">Trascina per ruotare, scorri per zoomare, clicca un poster per il dettaglio.</p>
       </div>
 
       <div className="glass-card mb-4 flex shrink-0 items-center gap-3 rounded-lg px-3 py-1.5">
