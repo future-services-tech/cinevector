@@ -146,7 +146,7 @@ Apri `http://localhost:5173` (o la porta indicata in console). Dettagli in `src/
 docker compose up -d --build
 ```
 
-Avvia `postgres`, `redis`, `api` (porta 5080), `worker` (nessun endpoint HTTP, per ora inattivo), `frontend` (porta 5173, servito da Nginx). Il profilo opzionale `dev` aggiunge `pgadmin` (porta 5050):
+Avvia `postgres`, `redis`, `api` (porta 5080), `worker` (nessun endpoint HTTP, per ora inattivo), `frontend` (il vecchio `cinevector-web`, porta 5173, servito da Nginx) e `frontend-new` (`cinevector-newweb`, porta 5175, servito da Nginx) — i due frontend girano in parallelo sulla stessa API/database per poterli confrontare. Il profilo opzionale `dev` aggiunge `pgadmin` (porta 5050):
 
 ```bash
 docker compose --profile dev up -d

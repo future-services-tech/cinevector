@@ -170,15 +170,21 @@ export function SoundtrackPlayer({
       <div className="glass-card relative overflow-hidden rounded-xl border border-cyan-500/30 bg-gradient-to-br from-slate-900/90 to-space-900 p-4">
         <div className="grid grid-cols-1 items-center gap-5 md:grid-cols-12">
           <div className="flex items-center gap-3.5 md:col-span-4">
-            <div className="relative shrink-0 cursor-pointer">
+            <div className="relative shrink-0 cursor-pointer" onClick={togglePlay}>
+              {/* Solchi concentrici + etichetta a gradiente (non simmetrica) per rendere la rotazione visibile
+                  a colpo d'occhio: un anello pieno rotante appare identico a se stesso in ogni angolo. */}
               <div
-                className={`flex h-16 w-16 items-center justify-center rounded-full border-2 border-cyan-400/60 bg-space-950 shadow-[0_0_15px_rgba(0,242,254,0.35)] ${
+                className={`relative flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border-2 border-cyan-400/60 bg-space-950 shadow-[0_0_15px_rgba(0,242,254,0.35)] ${
                   isPlaying ? "animate-spin" : ""
                 }`}
                 style={{ animationDuration: "3s" }}
               >
-                <div className="h-8 w-8 rounded-full border border-white/10" />
-                <div className="absolute h-2.5 w-2.5 rounded-full bg-cyan-400" />
+                <div className="absolute inset-1 rounded-full border border-slate-700/60" />
+                <div className="absolute inset-2.5 rounded-full border border-slate-800/80" />
+                <div className="absolute inset-4 rounded-full border border-cyan-500/30" />
+                <div className="flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-tr from-cyan-400 to-purple-600">
+                  <div className="h-2 w-2 rounded-full bg-space-950" />
+                </div>
               </div>
               <span className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-cyan-400 text-[9px] text-slate-950">
                 <Music2 size={10} />

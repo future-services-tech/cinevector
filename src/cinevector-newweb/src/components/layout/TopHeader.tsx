@@ -6,6 +6,7 @@ import { getUnreadCount, markAllRead, subscribeNotifications } from "../../lib/n
 import { useMovieData } from "../../state/MovieDataContext";
 import { useSelection } from "../../state/SelectionContext";
 import { SearchBar } from "../common/SearchBar";
+import { ProfileModal } from "../profile/ProfileModal";
 import { SettingsModal } from "../settings/SettingsModal";
 import { NotificationsDropdown } from "./NotificationsDropdown";
 
@@ -24,6 +25,7 @@ export function TopHeader() {
   const [exploreOpen, setExploreOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
   const unreadCount = useSyncExternalStore(subscribeNotifications, getUnreadCount);
 
   function goTo(path: string) {
@@ -102,12 +104,17 @@ export function TopHeader() {
           <Settings size={18} />
         </button>
 
-        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-purple-400 to-blue-500 text-xs font-bold text-white">
+        <button
+          onClick={() => setProfileOpen(true)}
+          aria-label="Profilo"
+          className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-purple-400 to-blue-500 text-xs font-bold text-white hover:brightness-110"
+        >
           CV
-        </div>
+        </button>
       </div>
 
       {settingsOpen && <SettingsModal onClose={() => setSettingsOpen(false)} />}
+      {profileOpen && <ProfileModal onClose={() => setProfileOpen(false)} />}
     </header>
   );
 }

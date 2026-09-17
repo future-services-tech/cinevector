@@ -7,6 +7,7 @@ import { TopHeader } from "../components/layout/TopHeader";
 import { MovieDetailModal } from "../components/modal/MovieDetailModal";
 import { ClusterChartView } from "../components/sphere/ClusterChartView";
 import { MoviesWallView } from "../components/sphere/MoviesWallView";
+import { PosterSphereView } from "../components/sphere/PosterSphereView";
 import { SphereCanvas } from "../components/sphere/SphereCanvas";
 import { SphereControlsBar } from "../components/sphere/SphereControlsBar";
 import { SphereHintBar } from "../components/sphere/SphereHintBar";
@@ -60,7 +61,12 @@ export function DashboardPage() {
       <main className="relative flex flex-1 overflow-hidden">
         <LeftSidebar />
 
-        <section data-purpose="three-viewport-section" role="region" aria-label="Mappa semantica tridimensionale delle relazioni tra film" className="relative flex-1">
+        <section
+          data-purpose="three-viewport-section"
+          role="region"
+          aria-label="Mappa semantica tridimensionale delle relazioni tra film"
+          className="relative min-w-0 flex-1 overflow-hidden"
+        >
           {viewMode === "sphere" && (
             <>
               <SphereCanvas />
@@ -69,6 +75,7 @@ export function DashboardPage() {
           )}
           {viewMode === "cluster" && <ClusterChartView />}
           {viewMode === "network" && <MoviesWallView />}
+          {viewMode === "posters" && <PosterSphereView />}
           <SphereControlsBar />
         </section>
 

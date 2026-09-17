@@ -44,6 +44,7 @@ services:
       Cors__AllowedOrigins__0: http://localhost:5173
       Cors__AllowedOrigins__1: http://localhost:5174
       Cors__AllowedOrigins__2: http://127.0.0.1:5174
+      Cors__AllowedOrigins__3: http://localhost:5175
       Embedding__BaseUrl: ${EMBEDDING__BASEURL:-https://omniroute-ehdl.srv1293923.hstgr.cloud/v1}
       TMDB_API_KEY: ${TMDB_API_KEY}
       OMNIROUTER_API_KEY: ${OMNIROUTER_API_KEY}
@@ -83,6 +84,20 @@ services:
       - api
     ports:
       - "5173:80"
+
+  # Nuovo frontend (cinevector-newweb) in affiancamento al vecchio, per poterli confrontare fianco a fianco:
+  # stessa API, stesso database, porta host separata.
+  frontend-new:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/FrontendNew.Dockerfile
+      args:
+        VITE_API_BASE_URL: http://localhost:5080
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - "5175:80"
 
   pgadmin:
     image: dpage/pgadmin4

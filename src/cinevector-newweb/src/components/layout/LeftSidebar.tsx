@@ -49,7 +49,7 @@ function NavRow({ item, active, onClick }: { item: NavItem; active: boolean; onC
 
 export function LeftSidebar() {
   const { clusters } = useMovieData();
-  const { activeClusterIds, toggleCluster, similarityThreshold, setSimilarityThreshold, yearRange, setYearRange } = useFilters();
+  const { activeClusterIds, toggleCluster, resetClusters, similarityThreshold, setSimilarityThreshold, yearRange, setYearRange } = useFilters();
   const { settings } = useSettings();
   const [clusterPanelOpen, setClusterPanelOpen] = useState(settings.clusterPanelDefaultOpen);
   const location = useLocation();
@@ -81,13 +81,24 @@ export function LeftSidebar() {
         {isSphereRoute && (
           <>
             <div>
-              <button
-                onClick={() => setClusterPanelOpen((v) => !v)}
-                className="mb-2 flex w-full items-center justify-between px-1 text-[10px] font-bold uppercase tracking-wider text-slate-500 hover:text-slate-300"
-              >
-                <span>Cluster Tematici</span>
-                <ChevronDown size={13} className={`transition-transform ${clusterPanelOpen ? "rotate-180" : ""}`} />
-              </button>
+              <div className="mb-2 flex items-center justify-between px-1">
+                <button
+                  onClick={() => setClusterPanelOpen((v) => !v)}
+                  className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-500 hover:text-slate-300"
+                >
+                  <span>Cluster Tematici</span>
+                  <ChevronDown size={13} className={`transition-transform ${clusterPanelOpen ? "rotate-180" : ""}`} />
+                </button>
+                {clusters.length > 0 && activeClusterIds.size < clusters.length && (
+                  <button
+                    onClick={resetClusters}
+                    className="rounded-full bg-cyan-500/10 px-2 py-0.5 text-[10px] font-semibold text-cyan-300 hover:bg-cyan-500/20"
+                    title="Rimuove l'isolamento e riattiva tutti i cluster sulla sfera"
+                  >
+                    Mostra tutti
+                  </button>
+                )}
+              </div>
               <div className={`space-y-1.5 overflow-hidden transition-[max-height] duration-200 ${clusterPanelOpen ? "max-h-[1000px]" : "max-h-0"}`}>
                 {clusters.map((cluster) => (
                   <SidebarClusterItem

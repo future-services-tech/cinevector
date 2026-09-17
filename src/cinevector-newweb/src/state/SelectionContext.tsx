@@ -1,6 +1,6 @@
 import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
 
-export type ViewMode = "sphere" | "cluster" | "network";
+export type ViewMode = "sphere" | "cluster" | "network" | "posters";
 
 interface SelectionState {
   selectedId: string | null;

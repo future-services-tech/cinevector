@@ -8,6 +8,7 @@ const VIEW_MODES: { id: ViewMode; label: string }[] = [
   { id: "cluster", label: "Cluster" },
   { id: "network", label: "Catalogo" },
   { id: "sphere", label: "Sfera" },
+  { id: "posters", label: "Sfera Film" },
 ];
 
 export function SphereControlsBar() {
