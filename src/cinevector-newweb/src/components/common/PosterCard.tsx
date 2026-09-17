@@ -50,7 +50,7 @@ export function PosterCard({ movie, onClick }: { movie: PosterCardData; onClick?
         </div>
       </div>
       <div className="p-2">
-        <p className="truncate text-xs font-semibold text-white">{movie.title}</p>
+        <p className="truncate text-xs font-semibold text-ink">{movie.title}</p>
         <p className="truncate text-[10px] text-slate-400">
           {movie.year ?? "—"}
           {movie.genres && movie.genres.length > 0 ? ` · ${movie.genres.slice(0, 2).join(", ")}` : ""}

@@ -11,7 +11,7 @@ export function ModalFooter({ movieId, onClose }: { movieId: string; onClose: ()
         <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" /> Streaming 4K disponibile su CineVector
       </span>
       <div className="flex gap-2">
-        <button onClick={onClose} className="glass-pill rounded-lg px-4 py-2 text-xs font-semibold text-slate-200 hover:text-white">
+        <button onClick={onClose} className="glass-pill rounded-lg px-4 py-2 text-xs font-semibold text-slate-200 hover:text-ink">
           Chiudi Scheda
         </button>
         <button

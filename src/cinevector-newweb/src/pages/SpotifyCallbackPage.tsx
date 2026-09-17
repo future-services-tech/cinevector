@@ -50,7 +50,7 @@ export function SpotifyCallbackPage() {
         {status === "success" && (
           <div className="space-y-3">
             <CheckCircle2 size={32} className="mx-auto text-emerald-400" />
-            <p className="text-sm font-semibold text-white">Account Spotify collegato.</p>
+            <p className="text-sm font-semibold text-ink">Account Spotify collegato.</p>
             <p className="text-xs text-slate-400">La ricerca musicale e la colonna sonora reale sono ora attive per tutta l'app.</p>
             <Link to="/music" className="inline-block rounded-lg bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-600 px-4 py-2 text-xs font-bold text-white shadow-neon-cyan">
               Vai a Musica
@@ -61,7 +61,7 @@ export function SpotifyCallbackPage() {
         {status === "error" && (
           <div className="space-y-3">
             <XCircle size={32} className="mx-auto text-rose-400" />
-            <p className="text-sm font-semibold text-white">Collegamento non riuscito.</p>
+            <p className="text-sm font-semibold text-ink">Collegamento non riuscito.</p>
             <p className="text-xs text-slate-400">{message}</p>
             <a href={spotifyLoginUrl()} className="inline-block rounded-lg bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-600 px-4 py-2 text-xs font-bold text-white shadow-neon-cyan">
               Riprova

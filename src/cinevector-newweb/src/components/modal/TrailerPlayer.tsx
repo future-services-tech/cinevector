@@ -54,7 +54,7 @@ export function TrailerPlayer({ posterUrl, tagline, title }: { posterUrl: string
         <div className="pointer-events-none absolute inset-x-4 top-4 flex items-center justify-between">
           <div className="glass-card flex items-center gap-2 rounded-full border border-white/10 px-3 py-1">
             <span className="h-2 w-2 animate-ping rounded-full bg-red-500" />
-            <span className="text-[11px] font-bold uppercase tracking-wide text-white">Official Trailer HD</span>
+            <span className="text-[11px] font-bold uppercase tracking-wide text-ink">Official Trailer HD</span>
           </div>
           <span className="glass-card rounded-md border border-cyan-400/30 px-2.5 py-1 font-mono text-[10px] font-bold text-cyan-300">2160p 60fps</span>
         </div>
@@ -63,7 +63,7 @@ export function TrailerPlayer({ posterUrl, tagline, title }: { posterUrl: string
           onClick={togglePlay}
           title={isPlaying ? "Pausa" : "Avvia Trailer"}
           aria-label={isPlaying ? "Metti in pausa il trailer" : "Riproduci il trailer ufficiale"}
-          className="absolute inset-0 m-auto flex h-20 w-20 items-center justify-center rounded-full border-2 border-cyan-400/80 bg-cyan-500/25 text-white shadow-neon-cyan backdrop-blur-md transition-all duration-300 hover:scale-110 hover:bg-cyan-400 hover:text-slate-950"
+          className="absolute inset-0 m-auto flex h-20 w-20 items-center justify-center rounded-full border-2 border-cyan-400/80 bg-cyan-500/25 text-ink shadow-neon-cyan backdrop-blur-md transition-all duration-300 hover:scale-110 hover:bg-cyan-400 hover:text-slate-950"
         >
           {isPlaying ? <Pause size={30} /> : <Play size={30} className="ml-1" />}
         </button>

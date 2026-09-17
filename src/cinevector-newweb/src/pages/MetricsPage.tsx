@@ -96,7 +96,7 @@ function AnalyticsTab() {
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         <div className="glass-card rounded-xl p-4">
           <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Ricerche (24h)</div>
-          <div className="mt-1 text-2xl font-bold text-white">{data.totalSearches}</div>
+          <div className="mt-1 text-2xl font-bold text-ink">{data.totalSearches}</div>
         </div>
         <div className="glass-card rounded-xl p-4">
           <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Durata media</div>
@@ -259,7 +259,7 @@ export function MetricsPage() {
               <Activity size={16} className="text-slate-950" />
             </div>
             <div>
-              <h1 className="text-lg font-bold text-white">Metriche &amp; Log</h1>
+              <h1 className="text-lg font-bold text-ink">Metriche &amp; Log</h1>
               <p className="text-xs text-slate-400">Latenza di ricerca, tempi query database, analisi d'uso e log applicativi — via OpenTelemetry.</p>
             </div>
           </div>

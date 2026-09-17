@@ -101,11 +101,11 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="relative flex max-h-[85vh] w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-cyan-500/30 bg-slate-900/95 shadow-2xl shadow-cyan-950/60"
+        className="relative flex max-h-[85vh] w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-cyan-500/30 bg-space-900/95 shadow-2xl shadow-cyan-950/60"
       >
         <div className="glass-card flex items-center justify-between border-b border-white/5 px-5 py-4">
-          <h2 className="text-sm font-bold text-white">Impostazioni</h2>
-          <button onClick={onClose} aria-label="Chiudi" className="glass-pill rounded-full p-1.5 text-slate-300 hover:text-white">
+          <h2 className="text-sm font-bold text-ink">Impostazioni</h2>
+          <button onClick={onClose} aria-label="Chiudi" className="glass-pill rounded-full p-1.5 text-slate-300 hover:text-ink">
             <X size={15} />
           </button>
         </div>
@@ -128,6 +128,21 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
         <div className="scrollbar-thin flex-1 space-y-4 overflow-y-auto p-5">
           {tab === "aspetto" && (
             <>
+              <div className="glass-card rounded-xl p-4">
+                <div className="mb-1 text-xs font-bold uppercase tracking-wider text-cyan-300">Tema</div>
+                <SelectRow
+                  label="Aspetto"
+                  description={'"Sistema" segue il tema del sistema operativo e si aggiorna anche mentre l\'app è aperta.'}
+                  value={settings.theme}
+                  options={[
+                    { value: "chiaro", label: "Chiaro" },
+                    { value: "scuro", label: "Scuro" },
+                    { value: "sistema", label: "Sistema" },
+                  ]}
+                  onChange={(v) => updateSettings({ theme: v as AppSettings["theme"] })}
+                />
+              </div>
+
               <div className="glass-card rounded-xl p-4">
                 <div className="mb-1 text-xs font-bold uppercase tracking-wider text-cyan-300">Animazioni ed effetti</div>
                 <ToggleRow
@@ -203,6 +218,35 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
             </div>
           )}
 
+          {tab === "catalogo" && (
+            <div className="glass-card rounded-xl p-4">
+              <div className="mb-1 text-xs font-bold uppercase tracking-wider text-cyan-300">Sfera Film</div>
+              <SelectRow
+                label="Zoom sfera"
+                description="Dimensione della sfera di poster — ingrandiscila se mostri molti film per pagina."
+                value={settings.posterSphereZoom}
+                options={[
+                  { value: "compatta", label: "Compatta" },
+                  { value: "normale", label: "Normale" },
+                  { value: "grande", label: "Grande" },
+                ]}
+                onChange={(v) => updateSettings({ posterSphereZoom: v as AppSettings["posterSphereZoom"] })}
+              />
+              <SelectRow
+                label="Film per pagina"
+                description="Quanti poster caricare per volta sulla sfera — il catalogo cresce nel tempo, va sfogliato a pagine."
+                value={String(settings.posterSpherePageSize)}
+                options={[
+                  { value: "15", label: "15" },
+                  { value: "30", label: "30" },
+                  { value: "50", label: "50" },
+                  { value: "80", label: "80" },
+                ]}
+                onChange={(v) => updateSettings({ posterSpherePageSize: Number(v) })}
+              />
+            </div>
+          )}
+
           {tab === "musica" && (
             <div className="glass-card rounded-xl p-4">
               <div className="mb-1 text-xs font-bold uppercase tracking-wider text-cyan-300">Musica</div>
@@ -238,7 +282,7 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
             </div>
           )}
 
-          <button onClick={resetSettings} className="glass-pill w-full rounded-lg px-4 py-2 text-xs font-semibold text-slate-200 hover:text-white">
+          <button onClick={resetSettings} className="glass-pill w-full rounded-lg px-4 py-2 text-xs font-semibold text-slate-200 hover:text-ink">
             Ripristina predefiniti
           </button>
           <p className="text-center text-[10px] text-slate-500">

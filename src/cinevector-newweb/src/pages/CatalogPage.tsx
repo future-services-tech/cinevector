@@ -107,7 +107,7 @@ export function CatalogPage() {
               <Film size={16} className="text-slate-950" />
             </div>
             <div>
-              <h1 className="text-lg font-bold text-white">Catalogo</h1>
+              <h1 className="text-lg font-bold text-ink">Catalogo</h1>
               <p className="text-xs text-slate-400">Ricerca ibrida: full-text, filtri strutturati combinabili e similarità semantica sugli embedding.</p>
             </div>
           </div>
@@ -289,7 +289,7 @@ export function CatalogPage() {
               </div>
 
               <div className="flex items-end">
-                <button onClick={resetFilters} className="glass-pill w-full rounded-lg px-2.5 py-2 text-xs font-semibold text-slate-200 hover:text-white">
+                <button onClick={resetFilters} className="glass-pill w-full rounded-lg px-2.5 py-2 text-xs font-semibold text-slate-200 hover:text-ink">
                   Reimposta filtri
                 </button>
               </div>

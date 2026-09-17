@@ -115,7 +115,7 @@ export function CrawlerPage() {
               <Bot size={16} className="text-slate-950" />
             </div>
             <div>
-              <h1 className="text-lg font-bold text-white">Crawler &amp; Sync</h1>
+              <h1 className="text-lg font-bold text-ink">Crawler &amp; Sync</h1>
               <p className="text-xs text-slate-400">Avvio ed esecuzione del crawler, pipeline di ingestion e stato dei job.</p>
             </div>
           </div>

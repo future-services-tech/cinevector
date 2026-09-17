@@ -29,7 +29,7 @@ export function ClusterChartView() {
   return (
     <div className="scrollbar-thin flex h-full flex-col overflow-y-auto p-6 pt-24">
       <div className="mb-4">
-        <h2 className="text-sm font-bold text-white">Distribuzione Film per Cluster</h2>
+        <h2 className="text-sm font-bold text-ink">Distribuzione Film per Cluster</h2>
         <p className="text-xs text-slate-400">Quanti film appartengono a ciascun cluster semantico — clicca una barra per isolarlo sulla sfera.</p>
       </div>
 

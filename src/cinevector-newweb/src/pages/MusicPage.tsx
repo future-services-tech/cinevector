@@ -40,7 +40,7 @@ export function MusicPage() {
                 <Music size={16} className="text-slate-950" />
               </div>
               <div>
-                <h1 className="text-lg font-bold text-white">Musica</h1>
+                <h1 className="text-lg font-bold text-ink">Musica</h1>
                 <p className="text-xs text-slate-400">Ricerca nel catalogo pubblico Spotify per titolo, artista o altra chiave — anteprime di 30s.</p>
               </div>
             </div>
@@ -111,14 +111,14 @@ export function MusicPage() {
                       <button
                         onClick={() => toggle(track.previewUrl!)}
                         title={isPlayingThis ? "Pausa anteprima" : "Riproduci anteprima (30s)"}
-                        className="absolute inset-0 m-auto flex h-11 w-11 items-center justify-center rounded-full border-2 border-cyan-400/80 bg-cyan-500/25 text-white opacity-0 shadow-neon-cyan backdrop-blur-md transition-all duration-200 group-hover:opacity-100 hover:scale-110 hover:bg-cyan-400 hover:text-slate-950"
+                        className="absolute inset-0 m-auto flex h-11 w-11 items-center justify-center rounded-full border-2 border-cyan-400/80 bg-cyan-500/25 text-ink opacity-0 shadow-neon-cyan backdrop-blur-md transition-all duration-200 group-hover:opacity-100 hover:scale-110 hover:bg-cyan-400 hover:text-slate-950"
                       >
                         {isPlayingThis ? <Pause size={18} /> : <Play size={18} className="ml-0.5" />}
                       </button>
                     )}
                   </div>
                   <div className="space-y-1 p-2.5">
-                    <p className="truncate text-xs font-semibold text-white">{track.title}</p>
+                    <p className="truncate text-xs font-semibold text-ink">{track.title}</p>
                     <p className="truncate text-[10px] text-slate-400">{track.artists}</p>
                     <div className="flex items-center justify-between pt-1">
                       {track.previewUrl ? (

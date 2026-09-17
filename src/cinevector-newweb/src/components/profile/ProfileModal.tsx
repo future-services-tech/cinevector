@@ -38,11 +38,11 @@ export function ProfileModal({ onClose }: { onClose: () => void }) {
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="relative flex max-h-[85vh] w-full max-w-sm flex-col overflow-hidden rounded-2xl border border-cyan-500/30 bg-slate-900/95 shadow-2xl shadow-cyan-950/60"
+        className="relative flex max-h-[85vh] w-full max-w-sm flex-col overflow-hidden rounded-2xl border border-cyan-500/30 bg-space-900/95 shadow-2xl shadow-cyan-950/60"
       >
         <div className="glass-card flex items-center justify-between border-b border-white/5 px-5 py-4">
-          <h2 className="text-sm font-bold text-white">Profilo</h2>
-          <button onClick={onClose} aria-label="Chiudi" className="glass-pill rounded-full p-1.5 text-slate-300 hover:text-white">
+          <h2 className="text-sm font-bold text-ink">Profilo</h2>
+          <button onClick={onClose} aria-label="Chiudi" className="glass-pill rounded-full p-1.5 text-slate-300 hover:text-ink">
             <X size={15} />
           </button>
         </div>
@@ -53,7 +53,7 @@ export function ProfileModal({ onClose }: { onClose: () => void }) {
               CV
             </div>
             <div>
-              <p className="text-sm font-bold text-white">{MOCK_PROFILE.name}</p>
+              <p className="text-sm font-bold text-ink">{MOCK_PROFILE.name}</p>
               <p className="text-xs text-slate-400">{MOCK_PROFILE.email}</p>
             </div>
             <span className="glass-pill rounded-full border border-cyan-400/30 bg-cyan-500/10 px-2.5 py-1 text-[10px] font-semibold text-cyan-300">
@@ -65,14 +65,14 @@ export function ProfileModal({ onClose }: { onClose: () => void }) {
             <div className="glass-card rounded-xl p-3 text-center">
               <div className="flex items-center justify-center gap-1.5 text-rose-300">
                 <Heart size={13} />
-                <span className="text-lg font-bold text-white">{formatCount(ids.size)}</span>
+                <span className="text-lg font-bold text-ink">{formatCount(ids.size)}</span>
               </div>
               <p className="mt-0.5 text-[10px] uppercase tracking-wider text-slate-500">Preferiti</p>
             </div>
             <div className="glass-card rounded-xl p-3 text-center">
               <div className="flex items-center justify-center gap-1.5 text-cyan-300">
                 <ShieldCheck size={13} />
-                <span className="text-lg font-bold text-white">{formatCount(movies.length)}</span>
+                <span className="text-lg font-bold text-ink">{formatCount(movies.length)}</span>
               </div>
               <p className="mt-0.5 text-[10px] uppercase tracking-wider text-slate-500">Film mappati</p>
             </div>

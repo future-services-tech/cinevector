@@ -1,11 +1,80 @@
 @import "tailwindcss";
 
+/* Sistema di tema chiaro/scuro: [data-theme] su <html> è impostato da ThemeEffect.tsx (risolve anche
+   "sistema" via prefers-color-scheme, con aggiornamento live). Lo scuro è il tema storico dell'app, invariato;
+   il chiaro riusa uno sfondo grigio-azzurro morbido (non bianco puro) apposta per restare leggibile con i
+   grigi "slate" già usati ovunque nei componenti come testo secondario/muto, senza dover riscrivere ogni
+   className dell'app. Il canvas 3D della sfera resta sempre "spazio scuro" in entrambi i temi (colore fisso
+   in SphereCanvas.tsx): è una scelta di design, non un bug, coerente con l'estetica "galassia semantica".*/
+:root {
+  --space-950: #03050a;
+  --space-900: #060913;
+  --space-850: #0a0f1d;
+  --space-800: #0f172a;
+  --space-700: #1e293b;
+  --ink: #f8fafc;
+  /* Scala "slate" 50-600 (testo/pillole/bordi chiari) resa reattiva al tema: 700-950 restano quelle fisse di
+     Tailwind, usate per sfondi/badge intenzionalmente scuri sempre (es. vinile del player, badge di stato). */
+  --slate-50: #f8fafc;
+  --slate-100: #f1f5f9;
+  --slate-200: #e2e8f0;
+  --slate-300: #cbd5e1;
+  --slate-400: #94a3b8;
+  --slate-500: #64748b;
+  --slate-600: #475569;
+  /* cyan-200 è usato solo come colore testo (stati attivi/hover), mai come sfondo: reso reattivo per restare
+     leggibile quando il tint di sfondo dietro (es. bg-cyan-500/20) diventa chiaro invece che quasi-nero. */
+  --cyan-200: #a5f3fc;
+  --glass-card-bg: linear-gradient(135deg, rgba(15, 23, 42, 0.72) 0%, rgba(6, 9, 19, 0.85) 100%);
+  --glass-card-border: rgba(255, 255, 255, 0.08);
+  --glass-card-hover-border: rgba(79, 172, 254, 0.35);
+  --glass-card-hover-bg: linear-gradient(135deg, rgba(20, 30, 55, 0.82) 0%, rgba(10, 15, 30, 0.9) 100%);
+  --glass-pill-bg: rgba(255, 255, 255, 0.04);
+  --glass-pill-border: rgba(255, 255, 255, 0.09);
+  --scrollbar-thumb: rgba(255, 255, 255, 0.15);
+}
+
+:root[data-theme="light"] {
+  --space-950: #ffffff;
+  --space-900: #eef1f6;
+  --space-850: #e4e9f0;
+  --space-800: #dbe1ea;
+  --space-700: #c7cfdb;
+  --ink: #0f172a;
+  /* Stesso ordine di prominenza della scala scura (300 più leggibile di 400, di 500, di 600...) ma
+     invertito in luminosità per restare leggibile sul nuovo sfondo chiaro. */
+  --slate-50: #0b1220;
+  --slate-100: #0f172a;
+  --slate-200: #1e293b;
+  --slate-300: #334155;
+  --slate-400: #64748b;
+  --slate-500: #94a3b8;
+  --slate-600: #cbd5e1;
+  --cyan-200: #0e7490;
+  --glass-card-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.78) 0%, rgba(236, 240, 246, 0.9) 100%);
+  --glass-card-border: rgba(15, 23, 42, 0.1);
+  --glass-card-hover-border: rgba(37, 99, 235, 0.35);
+  --glass-card-hover-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.92) 0%, rgba(226, 232, 240, 0.95) 100%);
+  --glass-pill-bg: rgba(15, 23, 42, 0.035);
+  --glass-pill-border: rgba(15, 23, 42, 0.12);
+  --scrollbar-thumb: rgba(15, 23, 42, 0.18);
+}
+
 @theme {
-  --color-space-950: #03050a;
-  --color-space-900: #060913;
-  --color-space-850: #0a0f1d;
-  --color-space-800: #0f172a;
-  --color-space-700: #1e293b;
+  --color-space-950: var(--space-950);
+  --color-space-900: var(--space-900);
+  --color-space-850: var(--space-850);
+  --color-space-800: var(--space-800);
+  --color-space-700: var(--space-700);
+  --color-ink: var(--ink);
+  --color-slate-50: var(--slate-50);
+  --color-slate-100: var(--slate-100);
+  --color-slate-200: var(--slate-200);
+  --color-slate-300: var(--slate-300);
+  --color-slate-400: var(--slate-400);
+  --color-slate-500: var(--slate-500);
+  --color-slate-600: var(--slate-600);
+  --color-cyan-200: var(--cyan-200);
   --color-cyan-glow: #00f2fe;
   --color-blue-glow: #4facfe;
   --color-purple-glow: #a855f7;
@@ -25,24 +94,25 @@ body,
 }
 
 body {
-  color: #e2e8f0;
+  color: var(--ink);
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .glass-card {
-  background: linear-gradient(135deg, rgba(15, 23, 42, 0.72) 0%, rgba(6, 9, 19, 0.85) 100%);
+  background: var(--glass-card-bg);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--glass-card-border);
 }
 
 .glass-card-hover:hover {
-  border-color: rgba(79, 172, 254, 0.35);
-  background: linear-gradient(135deg, rgba(20, 30, 55, 0.82) 0%, rgba(10, 15, 30, 0.9) 100%);
+  border-color: var(--glass-card-hover-border);
+  background: var(--glass-card-hover-bg);
 }
 
 .glass-pill {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.09);
+  background: var(--glass-pill-bg);
+  border: 1px solid var(--glass-pill-border);
 }
 
 .scrollbar-thin::-webkit-scrollbar {
@@ -51,7 +121,7 @@ body {
 }
 
 .scrollbar-thin::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
+  background: var(--scrollbar-thumb);
   border-radius: 9999px;
 }
 

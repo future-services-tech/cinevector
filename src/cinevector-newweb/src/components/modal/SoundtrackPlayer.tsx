@@ -173,8 +173,10 @@ export function SoundtrackPlayer({
             <div className="relative shrink-0 cursor-pointer" onClick={togglePlay}>
               {/* Solchi concentrici + etichetta a gradiente (non simmetrica) per rendere la rotazione visibile
                   a colpo d'occhio: un anello pieno rotante appare identico a se stesso in ogni angolo. */}
+              {/* bg-slate-950 fisso (non il token space-950 che reagisce al tema): il vinile deve restare
+                  scuro in entrambi i temi, altrimenti in chiaro sparirebbe su sfondo bianco. */}
               <div
-                className={`relative flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border-2 border-cyan-400/60 bg-space-950 shadow-[0_0_15px_rgba(0,242,254,0.35)] ${
+                className={`relative flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border-2 border-cyan-400/60 bg-slate-950 shadow-[0_0_15px_rgba(0,242,254,0.35)] ${
                   isPlaying ? "animate-spin" : ""
                 }`}
                 style={{ animationDuration: "3s" }}
@@ -183,7 +185,7 @@ export function SoundtrackPlayer({
                 <div className="absolute inset-2.5 rounded-full border border-slate-800/80" />
                 <div className="absolute inset-4 rounded-full border border-cyan-500/30" />
                 <div className="flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-tr from-cyan-400 to-purple-600">
-                  <div className="h-2 w-2 rounded-full bg-space-950" />
+                  <div className="h-2 w-2 rounded-full bg-slate-950" />
                 </div>
               </div>
               <span className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-cyan-400 text-[9px] text-slate-950">
@@ -192,7 +194,7 @@ export function SoundtrackPlayer({
             </div>
             <div className="min-w-0">
               <span className="font-mono text-[9px] uppercase text-cyan-400">In Riproduzione</span>
-              <h4 className="truncate text-sm font-bold text-white">
+              <h4 className="truncate text-sm font-bold text-ink">
                 {String(currentTrack.num).padStart(2, "0")}. {currentTrack.title}
               </h4>
               <p className="truncate text-[11px] text-slate-400">{currentTrack.artist}</p>

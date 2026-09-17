@@ -11,7 +11,7 @@ export function NodeTooltip({ node }: { node: MovieNode | null }) {
   return (
     <Html position={position} center distanceFactor={4.2} style={{ pointerEvents: "none" }} zIndexRange={[10, 0]}>
       <div
-        className="glass-card whitespace-nowrap rounded-lg px-3 py-1.5 text-[11px] text-white"
+        className="glass-card whitespace-nowrap rounded-lg px-3 py-1.5 text-[11px] text-ink"
         style={{ border: `1px solid ${node.color}88`, boxShadow: `0 0 16px ${node.color}33` }}
       >
         <div className="font-bold">{node.title}</div>

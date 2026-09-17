@@ -11,7 +11,7 @@ export function ModalHeader({ movie, onClose }: { movie: MovieDetail; onClose: (
         </div>
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <h2 id="modalMovieTitle" className="truncate text-lg font-bold tracking-tight text-white">
+            <h2 id="modalMovieTitle" className="truncate text-lg font-bold tracking-tight text-ink">
               {movie.title}
             </h2>
             <Badge tone="cyan">{movie.clusterLabel}</Badge>
@@ -25,7 +25,7 @@ export function ModalHeader({ movie, onClose }: { movie: MovieDetail; onClose: (
           </p>
         </div>
       </div>
-      <button onClick={onClose} aria-label="Chiudi" className="glass-pill shrink-0 rounded-full p-2 text-slate-300 hover:text-white">
+      <button onClick={onClose} aria-label="Chiudi" className="glass-pill shrink-0 rounded-full p-2 text-slate-300 hover:text-ink">
         <X size={16} />
       </button>
     </div>

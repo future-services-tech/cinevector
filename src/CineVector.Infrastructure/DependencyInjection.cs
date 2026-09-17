@@ -9,6 +9,7 @@ using CineVector.Application.Embeddings;
 using CineVector.Application.Movies;
 using CineVector.Application.People;
 using CineVector.Application.Search;
+using CineVector.Application.Settings;
 using CineVector.Application.Sources;
 using CineVector.Application.Statistics;
 using CineVector.Infrastructure.Clustering;
@@ -19,6 +20,7 @@ using CineVector.Infrastructure.Music.Spotify;
 using CineVector.Infrastructure.People;
 using CineVector.Infrastructure.Persistence;
 using CineVector.Infrastructure.Search;
+using CineVector.Infrastructure.Settings;
 using CineVector.Infrastructure.Sources;
 using CineVector.Infrastructure.Sources.Tmdb;
 using CineVector.Infrastructure.Statistics;
@@ -44,6 +46,7 @@ public static class DependencyInjection
         services.AddScoped<ISourceAdapterFactory, SourceAdapterFactory>();
         services.AddScoped<IClusterRepository, ClusterRepository>();
         services.AddScoped<IStatisticsRepository, StatisticsRepository>();
+        services.AddScoped<IAppSettingsRepository, SettingsRepository>();
 
         AddCrawlCoordination(services, configuration);
         AddTmdbSource(services, configuration);

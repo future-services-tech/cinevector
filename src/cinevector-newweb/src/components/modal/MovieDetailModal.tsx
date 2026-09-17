@@ -43,7 +43,7 @@ export function MovieDetailModal({ movieId, onClose }: { movieId: string; onClos
       <div
         id="modalDialogContent"
         onClick={(e) => e.stopPropagation()}
-        className="scrollbar-thin relative flex max-h-[90vh] w-full max-w-5xl flex-col overflow-y-auto rounded-2xl border border-cyan-500/30 bg-slate-900/95 shadow-2xl shadow-cyan-950/60"
+        className="scrollbar-thin relative flex max-h-[90vh] w-full max-w-5xl flex-col overflow-y-auto rounded-2xl border border-cyan-500/30 bg-space-900/95 shadow-2xl shadow-cyan-950/60"
       >
         {isLoading && (
           <div className="flex h-72 items-center justify-center gap-2 text-sm text-slate-400">
@@ -55,7 +55,7 @@ export function MovieDetailModal({ movieId, onClose }: { movieId: string; onClos
         {!isLoading && (isError || !detail) && (
           <div className="flex h-72 flex-col items-center justify-center gap-3 p-6 text-center text-sm text-slate-400">
             <p>Impossibile caricare i dettagli di questo film.</p>
-            <button onClick={onClose} className="glass-pill rounded-lg px-4 py-2 text-xs font-semibold text-slate-200 hover:text-white">
+            <button onClick={onClose} className="glass-pill rounded-lg px-4 py-2 text-xs font-semibold text-slate-200 hover:text-ink">
               Chiudi
             </button>
           </div>

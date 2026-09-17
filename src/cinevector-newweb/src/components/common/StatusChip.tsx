@@ -5,7 +5,9 @@ const TONE_CLASS: Record<string, string> = {
   purple: "text-purple-300 border-purple-400/30 bg-purple-500/10",
   rose: "text-rose-300 border-rose-400/30 bg-rose-500/10",
   amber: "text-amber-300 border-amber-400/30 bg-amber-500/10",
-  slate: "text-slate-300 border-slate-700 bg-slate-800",
+  // "gray" (non "slate", non reattivo al tema): badge sempre scuro/monocromo a prescindere dal tema chiaro/
+  // scuro dell'app, coerente con la sua funzione di stato "neutro/pending" fisso.
+  slate: "text-gray-300 border-gray-700 bg-gray-800",
 };
 
 const DOT_CLASS: Record<string, string> = {
@@ -13,7 +15,7 @@ const DOT_CLASS: Record<string, string> = {
   purple: "bg-purple-400",
   rose: "bg-rose-400",
   amber: "bg-amber-400",
-  slate: "bg-slate-500",
+  slate: "bg-gray-500",
 };
 
 /** Mappa gli stati dei crawl job (Running/Paused/Failed/Cancelled/Pending/Completed) sugli stessi token

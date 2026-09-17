@@ -123,3 +123,19 @@ export interface PagedResultDto<T> {
   page: number;
   pageSize: number;
 }
+
+export interface AppSettingsDto {
+  theme: string;
+  animationsEnabled: boolean;
+  cardHoverEffects: boolean;
+  carouselEnabled: boolean;
+  carouselSpeedSec: number;
+  sphereDensity: string;
+  haloIntensity: string;
+  clusterPanelDefaultOpen: boolean;
+  notificationsEnabled: boolean;
+  spotifyAutoMatchEnabled: boolean;
+  defaultPlayerVolume: number;
+  posterSphereZoom: string;
+  posterSpherePageSize: number;
+}

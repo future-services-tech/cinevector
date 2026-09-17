@@ -65,7 +65,7 @@ export function SourcesPage() {
               <Database size={16} className="text-slate-950" />
             </div>
             <div>
-              <h1 className="text-lg font-bold text-white">Sorgenti</h1>
+              <h1 className="text-lg font-bold text-ink">Sorgenti</h1>
               <p className="text-xs text-slate-400">Gestione delle fonti di catalogo — TMDb, fonti manuali e ogni adapter compatibile registrato sul backend.</p>
             </div>
           </div>
@@ -125,7 +125,7 @@ export function SourcesPage() {
                 {editingId ? "Salva modifiche" : "Crea fonte"}
               </button>
               {editingId && (
-                <button onClick={cancelEdit} className="glass-pill rounded-lg px-4 py-2 text-xs font-semibold text-slate-200 hover:text-white">
+                <button onClick={cancelEdit} className="glass-pill rounded-lg px-4 py-2 text-xs font-semibold text-slate-200 hover:text-ink">
                   Annulla
                 </button>
               )}

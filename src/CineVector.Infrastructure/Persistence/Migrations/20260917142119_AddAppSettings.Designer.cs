@@ -3,6 +3,7 @@ using System;
 using CineVector.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using NpgsqlTypes;
@@ -13,9 +14,11 @@ using Pgvector;
 namespace CineVector.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260917142119_AddAppSettings")]
+    partial class AddAppSettings
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -76,11 +79,6 @@ namespace CineVector.Infrastructure.Persistence.Migrations
                     b.Property<bool>("SpotifyAutoMatchEnabled")
                         .HasColumnType("boolean");
 
-                    b.Property<string>("Theme")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
-
                     b.HasKey("Id");
 
                     b.ToTable("app_settings", (string)null);
@@ -100,8 +98,7 @@ namespace CineVector.Infrastructure.Persistence.Migrations
                             PosterSpherePageSize = 30,
                             PosterSphereZoom = "normale",
                             SphereDensity = "leggera",
-                            SpotifyAutoMatchEnabled = true,
-                            Theme = "scuro"
+                            SpotifyAutoMatchEnabled = true
                         });
                 });
 

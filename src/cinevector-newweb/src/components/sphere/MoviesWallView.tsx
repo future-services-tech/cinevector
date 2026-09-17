@@ -29,7 +29,7 @@ export function MoviesWallView() {
     <div className="flex h-full flex-col overflow-hidden p-6 pt-24">
       <div className="mb-4 flex shrink-0 items-end justify-between gap-3">
         <div>
-          <h2 className="text-sm font-bold text-white">Catalogo in Movimento</h2>
+          <h2 className="text-sm font-bold text-ink">Catalogo in Movimento</h2>
           <p className="text-xs text-slate-400">
             Sfoglia il catalogo reale in scorrimento continuo — passa il mouse su una riga per fermarla, clicca un film per il dettaglio.
           </p>
