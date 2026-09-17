@@ -7,6 +7,7 @@ using CineVector.Application.Clustering;
 using CineVector.Application.Crawling;
 using CineVector.Application.Embeddings;
 using CineVector.Application.Movies;
+using CineVector.Application.Music;
 using CineVector.Application.People;
 using CineVector.Application.Search;
 using CineVector.Application.Settings;
@@ -16,6 +17,7 @@ using CineVector.Infrastructure.Clustering;
 using CineVector.Infrastructure.Crawling;
 using CineVector.Infrastructure.Embeddings;
 using CineVector.Infrastructure.Movies;
+using CineVector.Infrastructure.Music.ITunes;
 using CineVector.Infrastructure.Music.Spotify;
 using CineVector.Infrastructure.People;
 using CineVector.Infrastructure.Persistence;
@@ -53,6 +55,7 @@ public static class DependencyInjection
         AddEmbeddingProvider(services, configuration);
         AddWikipediaLookup(services);
         AddSpotify(services, configuration);
+        AddITunesLookup(services);
 
         return services;
     }
@@ -101,6 +104,15 @@ public static class DependencyInjection
                 http.BaseAddress = new Uri("https://en.wikipedia.org/");
                 // L'API di Wikipedia richiede uno User-Agent descrittivo e rifiuta richieste anonime/generiche.
                 http.DefaultRequestHeaders.UserAgent.ParseAdd("CineVectorV3/1.0 (progetto didattico; contatto: n/a)");
+            })
+            .AddStandardResilienceHandler();
+    }
+
+    private static void AddITunesLookup(IServiceCollection services)
+    {
+        services.AddHttpClient<IITunesLookupService, ITunesLookupService>(http =>
+            {
+                http.BaseAddress = new Uri("https://itunes.apple.com/");
             })
             .AddStandardResilienceHandler();
     }

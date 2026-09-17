@@ -30,8 +30,10 @@ public class SpotifyApiClient(HttpClient httpClient, SpotifyTokenProvider tokenP
             anyConnected = true;
             httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
+            // "market" è consigliato da Spotify per la ricerca: senza, i risultati non sono filtrati per
+            // disponibilità regionale (rischio di brani non riproducibili/anteprima assente per l'account).
             var response = await httpClient.GetAsync(
-                $"search?q={Uri.EscapeDataString(query)}&type=track&limit={limit}", ct);
+                $"search?q={Uri.EscapeDataString(query)}&type=track&limit={limit}&market=US", ct);
 
             if (response.IsSuccessStatusCode)
             {

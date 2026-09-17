@@ -35,6 +35,9 @@ export function SoundtrackPlayer({
   // Al cambio traccia: azzera il progresso e, se reale, carica/avvia davvero l'audio; se sintetica, ferma
   // un eventuale audio residuo della traccia precedente. Non dipende da isPlaying di proposito: quel valore
   // serve solo a decidere se avviare subito la nuova traccia, non deve far ripartire questo effect da solo.
+  // Dipende anche da currentTrack.id (non solo currentIndex): il match Spotify/iTunes arriva async, dopo il
+  // primo render — quando "tracks" passa da sintetiche a reali l'indice resta 0 ma la traccia sotto è
+  // cambiata, e senza questo l'elemento <audio> restava silenziosamente sulla vecchia (o nessuna) sorgente.
   useEffect(() => {
     setProgressSec(0);
     setDurationSec(currentTrack.totalSec);
@@ -50,7 +53,7 @@ export function SoundtrackPlayer({
       audio.removeAttribute("src");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentIndex]);
+  }, [currentIndex, currentTrack.id]);
 
   useEffect(() => {
     if (audioRef.current) audioRef.current.volume = volume / 100;

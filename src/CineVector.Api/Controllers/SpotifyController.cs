@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using CineVector.Application.Music;
 using CineVector.Contracts.Music;
 using CineVector.Infrastructure.Music.Spotify;
 
@@ -6,7 +7,11 @@ namespace CineVector.Api.Controllers;
 
 [ApiController]
 [Route("api/spotify")]
-public class SpotifyController(SpotifyApiClient client, SpotifyTokenProvider tokenProvider, SpotifyAccountStore accountStore) : ControllerBase
+public class SpotifyController(
+    SpotifyApiClient client,
+    SpotifyTokenProvider tokenProvider,
+    SpotifyAccountStore accountStore,
+    IITunesLookupService itunesLookup) : ControllerBase
 {
     /// <summary>Login one-time dell'amministratore per un profilo/app specifico (GET, non JSON: naviga
     /// direttamente qui dal browser). Da marzo 2026 Spotify richiede un account reale anche per la sola
@@ -93,6 +98,15 @@ public class SpotifyController(SpotifyApiClient client, SpotifyTokenProvider tok
         {
             var raw = await client.SearchTracksAsync(query, effectiveLimit, ct);
             var tracks = (raw?.Tracks?.Items ?? []).Select(ToDto).ToList();
+
+            // Dal 27 nov 2024 Spotify riserva "preview_url" alle app in Extended Quota Mode: per questa app è
+            // sempre null. iTunes fornisce ancora anteprime reali gratis, senza autenticazione — Spotify resta
+            // la fonte di ricerca/match (catalogo migliore), iTunes riempie solo l'audio riproducibile mancante.
+            await Task.WhenAll(tracks.Where(t => t.PreviewUrl is null).Select(async t =>
+            {
+                t.PreviewUrl = await itunesLookup.FindPreviewUrlAsync(t.Artists, t.Title, ct);
+            }));
+
             return Ok(tracks);
         }
         catch (SpotifyNotConnectedException)
