@@ -1,209 +1,371 @@
-# Movie Knowledge Base V3
+# CineVector
 
-Catalogo cinematografico e motore di ricerca avanzata sui metadati dei film (titolo, trama, cast, regia, generi, poster). Nessuna funzionalità di streaming, download o estrazione di URL video: il link "Apri sulla piattaforma" porta sempre e solo alla pagina pubblica della fonte (es. TMDb).
+Catalogo cinematografico con **ricerca semantica**. CineVector raccoglie i metadati dei film da fonti pubbliche (TMDb, OMDb), ne calcola un *embedding* vettoriale e li rende esplorabili in tre modi: una **sfera 3D** in cui i film simili stanno vicini, un **catalogo** con ricerca ibrida (full-text + semantica + filtri) e una **ricerca in linguaggio naturale** («film di fantascienza dal 2020 al 2025»).
 
-Stato attuale: **Fasi 1-5 completate** (solution .NET 10, dominio, PostgreSQL/EF Core, CRUD film, full-text search con filtri strutturati e facet, frontend React con ricerca, crawler TMDb con deduplicazione, tracciamento CrawlJob e gestione del ciclo di vita dei job (pausa/stop/eliminazione, rilevamento job orfani), embedding semantici con pgvector/HNSW, ranking ibrido a tre segnali, ricerca in linguaggio naturale, film simili). Le fasi successive (Redis/worker, sicurezza/osservabilità di produzione) sono descritte in fondo a questo file.
+Non c'è alcuna funzionalità di streaming o download: i link portano sempre e solo alle pagine pubbliche delle fonti.
 
-<img width="1897" height="942" alt="image" src="https://github.com/user-attachments/assets/afcf504c-bf73-49f7-aef7-05ff86fc40c9" />
+![Esplora Galassia 3D: la sfera semantica dei film](docs/screenshots/dashboard-sfera.png)
 
-## Prerequisiti
+## Indice
 
-- .NET SDK 10
-- Node.js 22+
-- Docker Desktop (per PostgreSQL/Redis)
-- Un account [TMDb](https://www.themoviedb.org/settings/api) per la API key (usata dal crawler in Fase 3)
+- [Cosa fa](#cosa-fa)
+- [Schermate](#schermate)
+- [Architettura](#architettura)
+- [Struttura del repository](#struttura-del-repository)
+- [Sviluppo locale](#sviluppo-locale)
+- [Configurazione](#configurazione)
+- [Deploy in produzione (Hostinger + Traefik)](#deploy-in-produzione-hostinger--traefik)
+- [Database e migration](#database-e-migration)
+- [Manutenzione](#manutenzione)
+- [Riferimento API](#riferimento-api)
+- [Come funziona](#come-funziona)
+- [Test](#test)
+- [Sicurezza: leggere prima di pubblicare](#sicurezza-leggere-prima-di-pubblicare)
+- [Risoluzione problemi](#risoluzione-problemi)
 
-## 0. Crawler TMDb (Fase 3)
+## Cosa fa
 
-Il crawler usa l'API ufficiale TMDb (mai scraping HTML), tramite `TmdbSourceAdapter` (`src/CineVector.Infrastructure/Sources/Tmdb`). Il crawl gira in background nel processo `CineVector.Api` stesso (fire-and-forget su un `Task.Run` per richiesta di avvio), non nel Worker. Per usarlo:
+- **Esplora Galassia 3D**: i film sono punti su una sfera, proiettati dal loro embedding (PCA a 3 dimensioni) e colorati per cluster tematico. Quattro viste: *Cluster*, *Catalogo*, *Sfera* e *Sfera Film* (con i poster, zoom libero). Filtri per soglia di similarità e arco temporale.
+- **Catalogo con ricerca ibrida**: full-text PostgreSQL, ricerca semantica opzionale e filtri combinabili (genere, anni, rating minimo, attore, regista, lingua). Le sfaccettature (*facet*) sono calcolate sul risultato filtrato.
+- **Linguaggio naturale**: un parser estrae da una frase generi, intervallo di anni, rating, regista, attore e nazione.
+- **Dettaglio film** con cast e regia (link a Wikipedia), film simili e colonna sonora (Spotify, con anteprime da iTunes come ripiego).
+- **Area operativa**: gestione delle fonti, crawler con pausa/ripresa/stop dei job, metriche di latenza e log applicativi.
+- **Impostazioni** salvate nel database, con tema chiaro, scuro o di sistema e layout responsive per mobile e tablet.
 
-1. Ottieni un **Read Access Token v4** da https://www.themoviedb.org/settings/api e mettilo in `.env` come `TMDB_API_KEY`.
-2. Crea la fonte (una sola volta):
-   ```bash
-   curl -X POST http://localhost:5080/api/sources -H "Content-Type: application/json" \
-     -d '{"name":"TMDb","baseUrl":"https://www.themoviedb.org","enabled":true,"adapterType":"Tmdb"}'
-   ```
-3. Avvia e gestisci un crawl:
-   ```bash
-   curl -X POST http://localhost:5080/api/crawl/{sourceId}/start -d '{"mode":"Popular"}'
-   curl http://localhost:5080/api/crawl/jobs                    # job recenti (con isOrphaned)
-   curl http://localhost:5080/api/crawl/jobs/{jobId}             # stato/avanzamento di un job
-   curl -X POST http://localhost:5080/api/crawl/jobs/{jobId}/pause
-   curl -X POST http://localhost:5080/api/crawl/jobs/{jobId}/resume
-   curl -X POST http://localhost:5080/api/crawl/jobs/{jobId}/cancel
-   curl -X DELETE http://localhost:5080/api/crawl/jobs/{jobId}
-   ```
+## Schermate
 
-Note tecniche:
-- `Tmdb:BaseUrl` in `appsettings.json` (mai `Source.BaseUrl`, modificabile da un admin) è l'unico endpoint contattato dall'adapter TMDb: evita che una fonte manomessa diventi un vettore SSRF. In più, `UrlCanonicalizer` (`src/CineVector.Infrastructure/Crawling/UrlCanonicalizer.cs`) rifiuta a monte qualunque URL scoperto dal crawl che punti a un IP loopback/privato/link-local (127.0.0.0/8, 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 169.254.0.0/16 incluso l'endpoint metadati cloud 169.254.169.254, ...) o a `localhost` — un guard riutilizzabile, pronto per quando un futuro adapter dovesse effettuare richieste dirette verso URL scoperti (limite noto: non risolve i nomi host via DNS, quindi non copre il DNS rebinding).
-- `Tmdb:DiscoverPages` limita quante pagine di `/discover/movie` scaricare per esecuzione (20 film/pagina).
-- Deduplicazione: chiave primaria (SourceId, ExternalId); un film esistente viene riscritto solo se l'hash dei metadati cambia (altrimenti si aggiorna solo `LastSeenAt`). Un titolo+anno coincidente su un'altra fonte viene loggato come possibile duplicato, mai unito automaticamente.
-- **Stati del job**: `Pending → Running → Completed | Failed | Cancelled`, più `Paused` (sospeso tra un URL e l'altro del crawl, riprendibile con `/resume`). Un job non può partire se esiste già un job `Running`/`Paused` per la stessa fonte con lo **stesso criterio** (`QueryMode` + `Query`, es. due `Popular` o due ricerche sullo stesso attore): la richiesta torna `409 Conflict`. Criteri diversi sulla stessa fonte (es. `Popular` insieme a un attore specifico) girano invece in parallelo senza conflitti.
-- **Coordinamento cross-istanza (Redis)**: cancellazione, pausa e rilevamento job orfani sono coordinati tramite Redis (`RedisCrawlCancellationRegistry`, `src/CineVector.Infrastructure/Crawling/RedisCrawlCancellationRegistry.cs`), non più solo in-process — un job avviato su un'istanza API può essere fermato/messo in pausa da una richiesta gestita da un'altra istanza. Ogni istanza che esegue un job registra in Redis una chiave di ownership con TTL breve, rinnovata (heartbeat ogni 5s) finché il job è in corso: se l'istanza muore senza fare pulizia, la chiave scade da sola. `GET /api/crawl/jobs` espone questo caso con `isOrphaned: true` (nessuna istanza, su nessuna macchina, lo sta gestendo davvero): va fermato (`POST .../jobs/{id}/cancel`, che in questo caso riconcilia direttamente lo stato a `Cancelled`) o eliminato (`DELETE .../jobs/{id}`, che rimuove il record e i suoi errori dal DB — l'unica traccia resta nei log applicativi). Verificato manualmente avviando due istanze API sulla stessa rete/Redis: un job avviato sulla prima è stato messo in pausa e poi fermato con successo da richieste indirizzate alla seconda.
-- Il frontend espone questi controlli nella pagina **Crawler & Sync** (bottoni Pausa/Ferma/Elimina per riga, badge "⚠ Zombie" sui job orfani) e ne riassume lo stato anche in Dashboard.
+| | |
+|---|---|
+| ![Catalogo](docs/screenshots/catalogo.png)<br>**Catalogo**: ricerca ibrida e filtri | ![Dettaglio film](docs/screenshots/dettaglio-film.png)<br>**Dettaglio film** |
+| ![Crawler](docs/screenshots/crawler.png)<br>**Crawler & Sync**: fonti e job recenti | ![Fonti](docs/screenshots/fonti.png)<br>**Sorgenti**: gestione delle fonti |
+| ![Metriche](docs/screenshots/metriche.png)<br>**Metriche & Log**: latenze via OpenTelemetry | |
 
-## 0b. Ricerca semantica ed embedding (Fase 4)
+## Architettura
 
-Il provider di embedding è configurabile (`Embedding:Provider`); di default usa **OmniRouter** (schema compatibile OpenAI) con il modello `gemini/gemini-embedding-001`.
-
-- L'output nativo del modello è 3072 dimensioni; pgvector non supporta indici HNSW/IVFFlat oltre le 2000, quindi il vettore viene **troncato a `Embedding:Dimensions` (384) e rinormalizzato (L2)** — tecnica Matryoshka ufficialmente supportata da questo modello.
-- L'embedding si rigenera solo quando il testo derivato dai metadati (`EmbeddingText`, sezione titolo/generi/trama/cast/registi/keyword) cambia, o se non esiste ancora — mai ad ogni richiesta.
-- Il crawler genera automaticamente gli embedding mancanti al termine di ogni esecuzione. Per film esistenti/creati manualmente, o per un primo backfill:
-  ```bash
-  curl -X POST "http://localhost:5080/api/embeddings/backfill?batchSize=50"
-  ```
-- Ricerca semantica: aggiungi `semantic=true` a `/api/search` insieme a `query`:
-  ```bash
-  curl "http://localhost:5080/api/search?query=un+industriale+che+salva+vite+durante+la+persecuzione+nazista&semantic=true"
-  ```
-  Si combina con i filtri strutturati (`genres`, `yearFrom`, ecc.): `mode` nella risposta indica `semantic`, `semantic+structured`, `fulltext`, `fulltext+structured` o `structured`. Se la generazione dell'embedding fallisce (provider non raggiungibile), la ricerca ripiega automaticamente su full-text/strutturata.
-
-## 0c. Ranking ibrido, ricerca in linguaggio naturale, film simili (Fase 5)
-
-**Ranking ibrido**: ogni risultato combina fino a tre segnali tramite `ISearchRankingService` (pesi in `Search:FullTextWeight/SemanticWeight/MetadataWeight`, rinormalizzati sui soli segnali presenti):
-- full-text (`ts_rank`, compresso a [0,1])
-- semantico (similarità coseno, solo se `semantic=true`)
-- "qualità" (rating normalizzato 0-1), sempre presente se il film ha un voto
-
-**Ricerca in linguaggio naturale**: aggiungi `naturalLanguage=true` a `/api/search` — un parser rule-based (`RuleBasedSearchIntentParser`, sostituibile in futuro con un LLM) estrae da `query` generi, intervallo di anni, soglia di rating, regista, attore e nazione, lasciando come `query` residua solo il testo libero (cercato semanticamente):
-```bash
-curl "http://localhost:5080/api/search?query=film+di+fantascienza+dal+2020+al+2025&naturalLanguage=true"
-curl "http://localhost:5080/api/search?query=commedie+romantiche+sulla+seconda+possibilit%C3%A0&naturalLanguage=true"
-```
-I filtri passati esplicitamente (es. `genres=...`) hanno sempre priorità su quelli dedotti dal testo.
-
-**Film simili**: `GET /api/movies/{id}/similar?maxResults=20&minSimilarity=0.3` — similarità coseno sull'embedding con un piccolo re-ranking additivo per generi condivisi e vicinanza d'anno (pesi in `SimilarMovies:*`). Richiede che il film abbia già un embedding (vedi backfill in Fase 4).
-
-## 1. Configurazione ambiente
-
-```bash
-cp .env.example .env
+```mermaid
+flowchart LR
+    U[Browser] -->|HTTPS| T[Traefik]
+    T -->|"/api/*"| A[API ASP.NET Core]
+    T -->|"tutto il resto"| F[Frontend nginx + React]
+    A --> P[(PostgreSQL + pgvector)]
+    A --> R[(Redis)]
+    A -->|embedding| O[OmniRouter / provider OpenAI-compatibile]
+    A -->|crawl| X[TMDb / OMDb]
+    A -->|colonna sonora| S[Spotify / iTunes]
 ```
 
-Compila `.env` con le tue credenziali (password PostgreSQL, `TMDB_API_KEY`, `OMNIROUTER_API_KEY` per l'embedding provider). Il file `.env` non viene mai committato.
+| Componente | Tecnologia | Ruolo |
+|---|---|---|
+| `CineVector.Api` | .NET 10, ASP.NET Core, Serilog, OpenTelemetry | API REST, crawler (gira nel processo dell'API), embedding, ricerca |
+| `cinevector-newweb` | React, Vite, TypeScript, Tailwind, Three.js | Interfaccia web (servita da nginx in produzione) |
+| PostgreSQL | `pgvector/pgvector:pg16` | Dati, full-text, indice vettoriale HNSW |
+| Redis | `redis:7-alpine` | Coordinamento dei crawl (pausa, annullamento, rilevamento job orfani) |
 
-## 2. Avvio di PostgreSQL e Redis
+Il progetto `CineVector.Worker` è un placeholder che non fa nulla di utile: crawl ed embedding girano nell'API. Non fa parte dello stack di produzione.
 
-```bash
-docker compose up -d postgres redis
+**Un solo dominio in produzione.** Traefik instrada `/api/*` all'API e tutto il resto al frontend. Essendo *same-origin*, il frontend chiama `/api` con URL relativi e CORS non serve.
+
+## Struttura del repository
+
+```text
+src/
+├── CineVector.Api/             Controller, Program.cs, appsettings
+├── CineVector.Application/     Servizi applicativi, validazione, mapping
+├── CineVector.Domain/          Entità (Movie, Person, Genre, Source, CrawlJob, ...)
+├── CineVector.Infrastructure/  EF Core, pgvector, repository, adapter TMDb/OMDb/Spotify, migration
+├── CineVector.Search/          Ranking ibrido, parser linguaggio naturale, clustering (PCA + k-means)
+├── CineVector.Contracts/       DTO condivisi
+├── CineVector.Worker/          Placeholder (non usato)
+└── cinevector-newweb/          Frontend React
+
+tests/                          Unit, integrazione e test di ricerca (Testcontainers)
+infrastructure/
+├── docker/                     Dockerfile di Api, Frontend, Worker e configurazione nginx
+└── database/                   schema.sql (script delle migration) e truncate-data.sql
+docker-compose.yml              Sviluppo locale
+docker-compose.prod.yml         Produzione (Traefik)
+docker-compose.dbaccess.yml     Override temporaneo per raggiungere Postgres via tunnel SSH
+.env.example                    Variabili per lo sviluppo
+.env.production.example         Variabili per la produzione
+docs/screenshots/               Immagini di questo README
 ```
 
-PostgreSQL (immagine `pgvector/pgvector:pg16`, con l'estensione `vector` già disponibile) è esposto sulla porta host `5433` per evitare conflitti con eventuali installazioni PostgreSQL locali sulla 5432. Redis è sulla `6380`.
+## Sviluppo locale
 
-## 3. Migration del database
-
-```bash
-dotnet tool update --global dotnet-ef   # se non già installato/aggiornato
-dotnet ef database update \
-  --project src/CineVector.Infrastructure \
-  --startup-project src/CineVector.Api
-```
-
-La connection string di default (`appsettings.json`) punta a `localhost:5433`. Per sviluppo locale fuori Docker, crea un `src/CineVector.Api/appsettings.Local.json` (ignorato da git) con la password reale e avvia con `ASPNETCORE_ENVIRONMENT=Local`.
-
-## 4. Avvio dell'API
+**Prerequisiti**: .NET SDK 10, Node.js 22+, Docker Desktop, una API key [TMDb](https://www.themoviedb.org/settings/api) e una chiave per il provider di embedding.
 
 ```bash
-dotnet run --project src/CineVector.Api
+cp .env.example .env          # compila password, TMDB_API_KEY, OMNIROUTER_API_KEY
+docker compose up -d --build  # postgres, redis, api, worker, frontend
 ```
 
-- Swagger/OpenAPI: `http://localhost:5080/openapi/v1.json` (in ambiente Development)
-- Health check: `GET /health`, `/health/live`, `/health/ready`
-- Log (Serilog) e tracing (OpenTelemetry) sono già configurati e correlati: ogni riga di log include il `TraceId` dell'`Activity` corrente (`TraceIdEnricher`, `src/CineVector.Api/Observability/TraceIdEnricher.cs`), visibile in console, nel visualizzatore log admin (`GET /api/admin/logs`) e nella pagina **Metrics & Logs → Log** del frontend — così una richiesta è tracciabile end-to-end.
-- CRUD film: `GET|POST /api/movies`, `GET|PUT|DELETE /api/movies/{id}`
-- CRUD fonti: `GET|POST /api/sources`, `GET|PUT|DELETE /api/sources/{id}`
-- Crawler: `GET /api/crawl/jobs`, `GET /api/crawl/jobs/{id}`, `POST /api/crawl/start`, `POST /api/crawl/{sourceId}/start`, `POST /api/crawl/{sourceId}/cancel`, `POST /api/crawl/jobs/{id}/cancel`, `POST /api/crawl/jobs/{id}/pause`, `POST /api/crawl/jobs/{id}/resume`, `DELETE /api/crawl/jobs/{id}`
-- Embedding: `POST /api/embeddings/backfill?batchSize=50`
-- Film simili: `GET /api/movies/{id}/similar?maxResults=20&minSimilarity=0.3`
-- Ricerca: `GET|POST /api/search?query=...&genres=...&actors=...&directors=...&yearFrom=...&yearTo=...&ratingFrom=...&ratingTo=...&language=...&sort=...&page=...&pageSize=...`
-  - Full-text PostgreSQL (`tsvector` con pesi: titolo A, generi/regia B, cast/keyword C, trama D; `unaccent` per gli accenti), filtri strutturati, o entrambi combinati (`mode`: `fulltext` / `structured` / `fulltext+structured`)
-  - Risposta include `facets` (generi/anni/lingue) calcolate sul set filtrato
+| Servizio | URL / porta host |
+|---|---|
+| Frontend | http://localhost:5175 |
+| API | http://localhost:5080 (OpenAPI: `/openapi/v1.json`, solo in Development) |
+| PostgreSQL | `localhost:5433` |
+| Redis | `localhost:6380` |
+| pgAdmin (profilo `dev`) | http://localhost:5050 |
 
-## 5. Avvio del frontend
+Applica le migration al database locale:
 
 ```bash
-cd src/cinevector-web
-cp .env.example .env
-npm install
-npm run dev
+dotnet tool update --global dotnet-ef
+dotnet ef database update --project src/CineVector.Infrastructure --startup-project src/CineVector.Api
 ```
 
-Apri `http://localhost:5173`. La lista film e la pagina di dettaglio leggono dall'API su `VITE_API_BASE_URL` (default `http://localhost:5080`).
-
-## 5b. Dashboard sperimentale "CineVector 3D" (cinevector-newweb)
-
-Progetto standalone separato, con dati completamente mock (~1000 film generati deterministicamente): esploratore semantico dei film su una sfera 3D (Three.js/`@react-three/fiber`), con modal di dettaglio (trailer + colonna sonora, entrambi con stato reale, controlli realmente funzionanti). **Non richiede backend né database** — non è collegato a `CineVector.Api`.
+Per lavorare sul frontend con hot reload:
 
 ```bash
 cd src/cinevector-newweb
+cp .env.example .env          # VITE_API_BASE_URL=http://localhost:5080
 npm install
-npm run dev
+npm run dev                   # http://localhost:5174
 ```
 
-Apri `http://localhost:5173` (o la porta indicata in console). Dettagli in `src/cinevector-newweb/README.md`.
+> **Spotify in locale.** Spotify accetta solo un redirect a `http://127.0.0.1:5174/callback` (loopback IPv4, non `localhost`). Apri l'app da `127.0.0.1:5174` e registra quell'URI nella dashboard Spotify.
 
-## 6. Avvio full stack via Docker Compose
+## Configurazione
+
+Le variabili d'ambiente vengono lette da `.env`. Il file non va mai committato.
+
+| Variabile | Obbligatoria in prod | Descrizione |
+|---|---|---|
+| `COMPOSE_PROJECT_NAME` | sì | Prefisso del sottodominio e nome delle risorse Traefik |
+| `TRAEFIK_HOST` | sì | Dominio di base: l'app risponde su `<COMPOSE_PROJECT_NAME>.<TRAEFIK_HOST>` |
+| `POSTGRES_PASSWORD` | sì | Password del database. Evita `;` e `=` |
+| `POSTGRES_DB`, `POSTGRES_USER` | no | Default `cinevector` |
+| `TMDB_API_KEY` | sì | Read Access Token v4 di TMDb |
+| `OMDB_API_KEY` | no | Fonte OMDb |
+| `EMBEDDING__BASEURL` | sì | Endpoint del provider di embedding (OpenAI-compatibile) |
+| `OMNIROUTER_API_KEY` | sì | Chiave del provider. Senza, la ricerca semantica non funziona |
+| `SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET` | no | App Spotify principale |
+| `SPOTIFY_FB_CLIENT_ID`, `SPOTIFY_FB_CLIENT_SECRET` | no | App di riserva, usata se la principale viene limitata |
+
+Altre impostazioni (pesi della ricerca, numero di cluster, ritardo del crawler) stanno in `src/CineVector.Api/appsettings.json` e si sovrascrivono con variabili `Sezione__Chiave`.
+
+## Deploy in produzione (Hostinger + Traefik)
+
+Lo stack di produzione è `docker-compose.prod.yml`. Nessuna porta è pubblicata sull'host: Postgres e Redis sono raggiungibili solo dalla rete interna, e il traffico esterno entra solo da Traefik.
+
+### Prerequisiti
+
+- Un VPS Hostinger con Docker e con **Traefik già attivo** (entrypoint `websecure`, certresolver `letsencrypt`).
+- Un record DNS `A` per `<COMPOSE_PROJECT_NAME>.<TRAEFIK_HOST>` verso l'IP del VPS.
+- Accesso SSH al VPS.
+
+> Il compose usa `build:` dai sorgenti, quindi va lanciato da una copia del repository sul server (via SSH). Incollare solo lo YAML nell'editor del Docker Manager non basta, perché mancherebbe il contesto di build.
+
+### 1. Scarica il codice e configura
 
 ```bash
-docker compose up -d --build
+git clone <URL-del-repository> cinevector && cd cinevector
+cp .env.production.example .env
+nano .env                       # compila almeno le variabili obbligatorie
 ```
 
-Avvia `postgres`, `redis`, `api` (porta 5080), `worker` (nessun endpoint HTTP, per ora inattivo), `frontend` (il vecchio `cinevector-web`, porta 5173, servito da Nginx) e `frontend-new` (`cinevector-newweb`, porta 5175, servito da Nginx) — i due frontend girano in parallelo sulla stessa API/database per poterli confrontare. Il profilo opzionale `dev` aggiunge `pgadmin` (porta 5050):
+`docker compose` legge in automatico il file `.env` della cartella. Se manca una variabile obbligatoria, si ferma con un messaggio che la nomina invece di partire con valori insicuri.
+
+### 2. Avvia solo il database
 
 ```bash
-docker compose --profile dev up -d
+docker compose -f docker-compose.prod.yml up -d postgres
 ```
 
-## 7. Dati di esempio
+### 3. Applica lo schema (a mano)
 
-Non è ancora presente uno script di seed automatico (arriverà con la Fase 3, insieme al crawler TMDb). Nel frattempo un film si crea così:
+L'app **non** esegue le migration da sola: lo schema si applica con `infrastructure/database/schema.sql`. Lo script è **idempotente**: si può rieseguire e applica solo le migration mancanti. Crea anche l'estensione `vector`.
+
+**Opzione A: `psql` dentro il container** (non serve nessun client sul tuo PC)
 
 ```bash
-curl -X POST http://localhost:5080/api/movies \
-  -H "Content-Type: application/json" \
-  -d '{
-    "sourceName": "TMDb",
-    "externalId": "157336",
-    "title": "Interstellar",
-    "year": 2014,
-    "rating": 8.4,
-    "platformUrl": "https://www.themoviedb.org/movie/157336",
-    "genres": ["Science Fiction", "Drama"],
-    "directors": ["Christopher Nolan"]
-  }'
+docker compose -f docker-compose.prod.yml exec -T postgres \
+  psql -U cinevector -d cinevector -v ON_ERROR_STOP=1 < infrastructure/database/schema.sql
 ```
 
-## 8. Test
+**Opzione B: il tuo client SQL (DBeaver, pgAdmin, psql, ...) via tunnel SSH**
+
+```bash
+# sul VPS: pubblica Postgres SOLO su 127.0.0.1 del server
+docker compose -f docker-compose.prod.yml -f docker-compose.dbaccess.yml up -d postgres
+
+# sul tuo PC: apri il tunnel
+ssh -L 5433:127.0.0.1:5433 utente@ip-del-vps
+```
+
+Collega il client a `localhost:5433` (utente, password e database di `.env`), poi apri ed esegui `infrastructure/database/schema.sql`. Finito, chiudi l'esposizione:
+
+```bash
+docker compose -f docker-compose.prod.yml up -d postgres
+```
+
+Verifica: `select count(*) from "__EFMigrationsHistory";` deve restituire **11**.
+
+### 4. Avvia l'intero stack
+
+```bash
+docker compose -f docker-compose.prod.yml up -d --build
+docker compose -f docker-compose.prod.yml ps        # api e frontend devono diventare "healthy"
+```
+
+### 5. Verifica
+
+- `https://<COMPOSE_PROJECT_NAME>.<TRAEFIK_HOST>/` mostra l'interfaccia.
+- `https://<COMPOSE_PROJECT_NAME>.<TRAEFIK_HOST>/api/statistics` restituisce JSON. Con database vuoto tutti i contatori sono a 0.
+
+### 6. Popola i dati
+
+**A. Trasferisci il database di sviluppo** (consigliato se hai già film ed embedding: evita di rifare crawl ed embedding)
+
+Sul PC, dallo stack di sviluppo:
+
+```bash
+docker compose exec -T postgres pg_dump -U cinevector -d cinevector \
+  --data-only --disable-triggers -Fc --exclude-table='"__EFMigrationsHistory"' > cinevector-data.dump
+scp cinevector-data.dump utente@ip-del-vps:~/cinevector/
+```
+
+Sul VPS, dopo aver applicato lo schema:
+
+```bash
+docker compose -f docker-compose.prod.yml exec -T postgres \
+  psql -U cinevector -d cinevector -v ON_ERROR_STOP=1 < infrastructure/database/truncate-data.sql
+docker compose -f docker-compose.prod.yml exec -T postgres \
+  pg_restore -U cinevector -d cinevector --data-only --disable-triggers --exit-on-error < cinevector-data.dump
+rm cinevector-data.dump
+```
+
+Lo svuotamento serve perché le migration inseriscono già una riga di impostazioni. Il restore include film, embedding, cluster, fonti e impostazioni. Il dump contiene dati: non committarlo (`*.dump` è in `.gitignore`) e cancellalo dopo l'uso.
+
+**B. Da zero**: apri **Sorgenti**, crea le fonti (TMDb e OMDb), poi **Crawler & Sync** e avvia un crawl. Quando finisce, genera gli embedding mancanti e ricalcola i cluster:
+
+```bash
+curl -X POST "https://<dominio>/api/embeddings/backfill?batchSize=50"
+curl -X POST "https://<dominio>/api/clusters/recompute"
+```
+
+### 7. Spotify (facoltativo)
+
+Registra su **ogni** app Spotify il Redirect URI esatto (Spotify confronta la stringa letteralmente):
+
+```text
+https://<COMPOSE_PROJECT_NAME>.<TRAEFIK_HOST>/callback
+```
+
+Il compose lo passa già all'API (`Spotify__RedirectUri`).
+
+### Aggiornare l'app
+
+```bash
+git pull
+docker compose -f docker-compose.prod.yml up -d --build
+```
+
+Se il rilascio contiene nuove migration, rigenera lo script (vedi [sotto](#database-e-migration)) e riapplicalo **prima** di riavviare l'API.
+
+## Database e migration
+
+Le migration sono in `src/CineVector.Infrastructure/Persistence/Migrations`. Per la produzione si usa lo script SQL generato da esse. Dopo ogni nuova migration, rigeneralo e committalo:
+
+```bash
+dotnet ef migrations script --idempotent \
+  --project src/CineVector.Infrastructure \
+  --startup-project src/CineVector.Api \
+  --output infrastructure/database/schema.sql
+```
+
+Su Windows il file esce con un BOM UTF-8 iniziale, che alcuni client SQL leggono come carattere non valido: toglilo prima di committare (`sed -i '1s/^\xEF\xBB\xBF//' infrastructure/database/schema.sql`).
+
+## Manutenzione
+
+```bash
+docker compose -f docker-compose.prod.yml ps                 # stato e healthcheck
+docker compose -f docker-compose.prod.yml logs -f api        # log dell'API
+docker compose -f docker-compose.prod.yml restart api
+```
+
+**Backup** del database (consigliato con una pianificazione, per esempio cron):
+
+```bash
+docker compose -f docker-compose.prod.yml exec -T postgres \
+  pg_dump -U cinevector -d cinevector -Fc > backup-$(date +%F).dump
+```
+
+I dati vivono nel volume Docker `postgres_data`: un `docker compose down -v` lo **cancella**. Senza `-v` i dati restano.
+
+I log dei container ruotano da soli (3 file da 10 MB ciascuno).
+
+## Riferimento API
+
+Tutte le rotte stanno sotto `/api`. Fuori da `/api` in produzione risponde il frontend.
+
+| Area | Endpoint |
+|---|---|
+| Film | `GET\|POST /api/movies`, `GET\|PUT\|DELETE /api/movies/{id}`, `GET /api/movies/{id}/similar` |
+| Ricerca | `GET\|POST /api/search` |
+| Fonti | `GET\|POST /api/sources`, `GET\|PUT\|DELETE /api/sources/{id}` |
+| Crawler | `GET /api/crawl/jobs`, `GET /api/crawl/jobs/{id}`, `POST /api/crawl/start`, `POST /api/crawl/{sourceId}/start`, `POST /api/crawl/jobs/{id}/pause\|resume\|cancel`, `DELETE /api/crawl/jobs/{id}` |
+| Embedding | `POST /api/embeddings/backfill?batchSize=50` |
+| Cluster | `GET /api/clusters`, `GET /api/clusters/{id}`, `GET /api/clusters/{id}/movies`, `POST /api/clusters/recompute` |
+| Statistiche | `GET /api/statistics` |
+| Impostazioni | `GET\|PUT /api/settings` |
+| Spotify | `GET /api/spotify/login\|status\|search`, `POST /api/spotify/callback\|disconnect` |
+| Admin | `GET /api/admin/logs`, `/api/admin/metrics/*`, `/api/admin/search-analytics` |
+| Salute | `/health`, `/health/live`, `/health/ready` (solo dalla rete interna, non instradati da Traefik) |
+
+Parametri di `/api/search`: `query`, `semantic`, `naturalLanguage`, `genres`, `actors`, `directors`, `yearFrom`, `yearTo`, `ratingFrom`, `ratingTo`, `language`, `sort`, `page`, `pageSize`. Il campo `mode` della risposta indica cosa è stato usato: `structured`, `fulltext`, `semantic`, o le combinazioni con `+structured`.
+
+## Come funziona
+
+**Embedding.** Il provider è configurabile (`Embedding:Provider`); di default usa OmniRouter con il modello `gemini/gemini-embedding-001`. L'output nativo è di 3072 dimensioni, ma pgvector non indicizza oltre 2000: il vettore viene **troncato a 384 dimensioni e rinormalizzato** (tecnica Matryoshka). Un embedding si rigenera solo quando cambia il testo derivato dai metadati. Se il provider non risponde, la ricerca ripiega su full-text e filtri.
+
+**Ranking ibrido.** Ogni risultato combina fino a tre segnali, con pesi in `Search:*` rinormalizzati sui segnali presenti: full-text (`ts_rank`, tsvector con pesi titolo > generi/regia > cast/keyword > trama e `unaccent`), similarità coseno (solo con `semantic=true`) e qualità (rating normalizzato). Pesi di default: 0,50 semantico, 0,35 full-text, 0,15 metadati.
+
+**Film simili.** Similarità coseno sull'embedding con un piccolo re-ranking per generi condivisi e vicinanza d'anno (`SimilarMovies:*`).
+
+**Linguaggio naturale.** `RuleBasedSearchIntentParser` estrae i filtri dalla frase e lascia il resto come testo libero. I filtri passati esplicitamente hanno sempre priorità.
+
+**Cluster e sfera.** Gli embedding vengono raggruppati con k-means (`Clustering:K`, default 12) e proiettati in 3D con PCA per posizionare i film sulla sfera.
+
+**Crawler.**
+- Usa solo le API ufficiali di TMDb e OMDb (nessuno scraping HTML) e gira in background nel processo dell'API.
+- Deduplica per (fonte, id esterno): un film si riscrive solo se l'hash dei metadati cambia.
+- Un job attraversa `Pending → Running → Completed | Failed | Cancelled`, con `Paused` riprendibile. Due job con lo stesso criterio sulla stessa fonte non possono girare insieme (`409`).
+- Pausa, annullamento e rilevamento dei job orfani passano da Redis, e un job orfano appare con `isOrphaned: true`.
+- L'endpoint contattato è sempre quello di `appsettings.json`, mai il `BaseUrl` della fonte modificabile da UI. `UrlCanonicalizer` rifiuta inoltre URL verso IP privati o loopback (protezione SSRF, senza risoluzione DNS).
+
+**Osservabilità.** Serilog scrive su console con il `TraceId` di ogni richiesta. Le metriche di ricerca e database alimentano la pagina *Metriche & Log* senza bisogno di Prometheus. Gli exporter OpenTelemetry su console sono attivi solo in Development.
+
+## Test
 
 ```bash
 dotnet test
 ```
 
-`CineVector.SearchTests` e `CineVector.IntegrationTests` usano [Testcontainers](https://testcontainers.com/) per avviare un vero PostgreSQL (`pgvector/pgvector:pg16`) durante i test: richiede Docker attivo. `CineVector.IntegrationTests` copre anche il ciclo di vita dei crawl job — `CrawlJobRepositoryTests` (guard per criterio, cascade delete) e `CrawlControllerLifecycleTests` (pausa/riprendi/ferma/elimina, rilevamento job orfani) — istanziando `CrawlController` direttamente con `InMemoryCrawlCancellationRegistry` come test double al posto di Redis; `Start`/`StartAll` (che avviano l'esecuzione reale del pipeline in background) non sono coperti da questi test, solo verificati manualmente end-to-end.
+I progetti `SearchTests` e `IntegrationTests` usano [Testcontainers](https://testcontainers.com/) per avviare un vero PostgreSQL con pgvector: richiedono Docker attivo.
 
-## Struttura della solution
+## Sicurezza: leggere prima di pubblicare
 
-```text
-src/
-├── CineVector.Api/            API ASP.NET Core (controller, Program.cs, appsettings)
-├── CineVector.Application/    Servizi applicativi, validazione, DTO mapping
-├── CineVector.Domain/         Entità di dominio (Movie, Person, Genre, Source, CrawlJob, ...)
-├── CineVector.Infrastructure/ EF Core, PostgreSQL/pgvector, repository, migration
-├── CineVector.Worker/         Progetto worker .NET (template di base, non ancora usato: il crawling gira nell'Api)
-├── CineVector.Search/         Motore di ricerca ibrido (dalla Fase 2)
-├── CineVector.Contracts/      DTO condivisi tra Application e Api
-├── cinevector-web/            Frontend React + Vite + TypeScript
-└── cinevector-newweb/         Dashboard sperimentale standalone "CineVector 3D" (dati mock, nessun backend)
+**L'applicazione non ha autenticazione.** Chiunque raggiunga il dominio può usare anche le rotte operative: avviare o eliminare crawl, creare o cancellare fonti, modificare le impostazioni, lanciare il backfill degli embedding (che consuma la chiave del provider) e leggere i log.
 
-tests/
-├── CineVector.UnitTests/
-├── CineVector.IntegrationTests/
-└── CineVector.SearchTests/
+Prima di renderla pubblica, proteggila almeno con **basic auth su Traefik**: in `docker-compose.prod.yml` ci sono le righe commentate `middlewares` da attivare. Genera l'hash con `htpasswd -nbB utente password`, raddoppia i `$` in `$$`, metti il risultato in `BASIC_AUTH_USERS` nel `.env` e decommenta le righe. In alternativa, limita l'accesso per IP con un middleware `ipallowlist`.
 
-infrastructure/docker/           Dockerfile di Api, Worker, Frontend
-```
+Altre misure già attive:
 
-## Roadmap (fasi successive)
+- Postgres e Redis non sono pubblicati sull'host.
+- L'API gira come utente non privilegiato e nginx invia `X-Content-Type-Options`, `X-Frame-Options` e `Referrer-Policy`.
+- Le variabili obbligatorie bloccano l'avvio se mancano, senza password di default.
+- Le chiavi API stanno solo nel `.env` del server, mai nel repository.
 
-- **Fase 6** — ~~Redis: coordinamento cross-istanza del crawler (pausa/cancellazione/rilevamento zombie)~~ fatto. Ancora da fare: caching Redis (nessuna query/risultato è oggi cachato — non c'è stato un bisogno dimostrato finché l'Api gira come istanza singola), statistiche avanzate.
-- **Fase 7** — ~~SSRF guard (allowlist host/IP su UrlCanonicalizer)~~, ~~osservabilità: correlation id nei log~~ fatti (Serilog + OpenTelemetry erano già presenti). Ancora da fare: ottimizzazione indici (minori: FK inverse sulle tabelle ponte movie_cast/movie_crew/movie_directors/movie_genres/movie_keywords, non urgente), Docker di produzione (utente non-root, `HEALTHCHECK` su api/worker/frontend collegato agli endpoint `/health/*` già esistenti, security header nginx, limiti di risorse, secrets invece di variabili d'ambiente in chiaro).
+## Risoluzione problemi
+
+| Sintomo | Causa probabile |
+|---|---|
+| `required variable ... is missing` all'avvio | Manca una variabile obbligatoria nel `.env` |
+| L'API risponde 500 e nei log manca una tabella | Lo schema non è stato applicato: esegui `schema.sql` |
+| `extension "vector" is not available` | Non stai usando l'immagine `pgvector/pgvector:pg16` |
+| Il dominio risponde 404 da Traefik | DNS non ancora propagato, oppure `COMPOSE_PROJECT_NAME`/`TRAEFIK_HOST` non coincidono con il record DNS |
+| Certificato non valido | Il certresolver `letsencrypt` non è quello configurato in Traefik: cambia il nome nelle label |
+| `/api/...` restituisce la pagina HTML | La label del router API non è attiva: controlla `docker compose ps` e i log di Traefik |
+| Spotify: `INVALID_REDIRECT_URI` | Il Redirect URI nella dashboard Spotify non è identico a `https://<dominio>/callback` |
+| La ricerca semantica non trova nulla | Embedding mancanti: lancia `POST /api/embeddings/backfill` e controlla `OMNIROUTER_API_KEY` |

@@ -4,4 +4,13 @@
 **/dist/
 .venv/
 .git/
+.claude/
+.gstack/
 .env
+.env.*
+docs/
+infrastructure/database/
+src/images/
+src/documents/
+**/*.md
+*.dump

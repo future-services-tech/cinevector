@@ -1,0 +1,121 @@
+# CineVector - stack di PRODUZIONE (Hostinger VPS + Traefik già attivo).
+#
+# Un solo dominio: https://${COMPOSE_PROJECT_NAME}.${TRAEFIK_HOST}
+#   /api/*  -> api       (ASP.NET Core, porta 8080)
+#   tutto il resto -> frontend (nginx + SPA React, porta 80)
+# Essendo same-origin, CORS non serve e il frontend chiama /api con URL relativi.
+#
+# Nessuna porta è pubblicata sull'host: Postgres e Redis sono raggiungibili solo dalla rete interna del
+# progetto; il traffico esterno entra esclusivamente da Traefik (443).
+# Lo schema del database NON viene migrato dall'app: applica a mano infrastructure/database/schema.sql
+# (vedi README, sezione "Deploy su Hostinger").
+#
+# Variabili: copia .env.production.example in .env e compilalo. Quelle marcate ":?" sono obbligatorie:
+# se mancano, `docker compose` si ferma con un errore invece di partire con valori di default insicuri.
+
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-cinevector}
+      POSTGRES_USER: ${POSTGRES_USER:-cinevector}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Imposta POSTGRES_PASSWORD nel file .env}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-cinevector} -d ${POSTGRES_DB:-cinevector}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    logging: *default-logging
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    # Usato solo per annullare i crawl in corso: nessuna persistenza necessaria.
+    command: ["redis-server", "--save", "", "--appendonly", "no", "--maxmemory", "64mb", "--maxmemory-policy", "allkeys-lru"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    mem_limit: 128m
+    logging: *default-logging
+
+  api:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/Api.Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      # Attenzione: la password finisce in una connection string, evita ';' e '=' nel valore.
+      ConnectionStrings__Postgres: Host=postgres;Port=5432;Database=${POSTGRES_DB:-cinevector};Username=${POSTGRES_USER:-cinevector};Password=${POSTGRES_PASSWORD}
+      ConnectionStrings__Redis: redis:6379
+      Embedding__BaseUrl: ${EMBEDDING__BASEURL:?Imposta EMBEDDING__BASEURL nel file .env}
+      # Deve coincidere ESATTAMENTE con un Redirect URI registrato nella dashboard Spotify.
+      Spotify__RedirectUri: https://${COMPOSE_PROJECT_NAME}.${TRAEFIK_HOST:?Imposta TRAEFIK_HOST nel file .env}/callback
+      TMDB_API_KEY: ${TMDB_API_KEY:?Imposta TMDB_API_KEY nel file .env}
+      OMDB_API_KEY: ${OMDB_API_KEY:-}
+      OMNIROUTER_API_KEY: ${OMNIROUTER_API_KEY:?Imposta OMNIROUTER_API_KEY nel file .env}
+      SPOTIFY_CLIENT_ID: ${SPOTIFY_CLIENT_ID:-}
+      SPOTIFY_CLIENT_SECRET: ${SPOTIFY_CLIENT_SECRET:-}
+      SPOTIFY_FB_CLIENT_ID: ${SPOTIFY_FB_CLIENT_ID:-}
+      SPOTIFY_FB_CLIENT_SECRET: ${SPOTIFY_FB_CLIENT_SECRET:-}
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    logging: *default-logging
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-api.rule=Host(`${COMPOSE_PROJECT_NAME}.${TRAEFIK_HOST}`) && PathPrefix(`/api`)
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-api.entrypoints=websecure
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-api.tls.certresolver=letsencrypt
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-api.priority=100
+      - traefik.http.services.${COMPOSE_PROJECT_NAME}-api.loadbalancer.server.port=8080
+      # Facoltativo - proteggere il sito con basic auth (genera l'hash con: htpasswd -nbB utente password,
+      # e raddoppia i '$' come '$$'). Decommenta le 2 righe e la riga "middlewares" sul router del frontend.
+      # - traefik.http.middlewares.${COMPOSE_PROJECT_NAME}-auth.basicauth.users=${BASIC_AUTH_USERS}
+      # - traefik.http.routers.${COMPOSE_PROJECT_NAME}-api.middlewares=${COMPOSE_PROJECT_NAME}-auth
+
+  frontend:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/Frontend.Dockerfile
+      args:
+        # Vuoto = URL relativi: il browser chiama /api sullo stesso dominio.
+        VITE_API_BASE_URL: ""
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO /dev/null http://127.0.0.1/ || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    mem_limit: 128m
+    logging: *default-logging
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-web.rule=Host(`${COMPOSE_PROJECT_NAME}.${TRAEFIK_HOST}`)
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-web.entrypoints=websecure
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-web.tls.certresolver=letsencrypt
+      - traefik.http.routers.${COMPOSE_PROJECT_NAME}-web.priority=1
+      - traefik.http.services.${COMPOSE_PROJECT_NAME}-web.loadbalancer.server.port=80
+      # - traefik.http.routers.${COMPOSE_PROJECT_NAME}-web.middlewares=${COMPOSE_PROJECT_NAME}-auth
+
+volumes:
+  postgres_data:

@@ -1,11 +1,12 @@
 FROM node:22-alpine AS build
 WORKDIR /app
 
-COPY src/cinevector-web/package.json src/cinevector-web/package-lock.json ./
+COPY src/cinevector-newweb/package.json src/cinevector-newweb/package-lock.json ./
 RUN npm ci
 
-COPY src/cinevector-web/ ./
-ARG VITE_API_BASE_URL=http://localhost:5080
+COPY src/cinevector-newweb/ ./
+# Stringa vuota = URL relativi (stesso dominio dell'app, /api instradato dal reverse proxy)
+ARG VITE_API_BASE_URL=
 ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 RUN npm run build
 

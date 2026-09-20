@@ -1,47 +1,37 @@
-# CineVector — CineVector 3D (cinevector-newweb)
+# cinevector-newweb
 
-Dashboard sperimentale standalone: esploratore semantico dei film su una sfera 3D interattiva, con pannello di dettaglio (trailer + colonna sonora). Ricostruisce fedelmente le specifiche di design fornite in `src/documents/dashboard_sfere3d/code.html` e `src/documents/dettaglio_sfere3d/code.html`, ma renderizzate con Three.js/`@react-three/fiber` reale invece del Canvas2D originale del mockup.
+Frontend di CineVector: React 19, Vite, TypeScript, Tailwind CSS 4, React Router, TanStack Query e Three.js (`@react-three/fiber`). Legge i dati dall'API `CineVector.Api`.
 
-**Nessun backend richiesto**: tutti i dati (~1000 film, 8 cluster tematici, cast, colonne sonore) sono generati proceduralmente e deterministicamente a import-time (`src/data/generateMockData.ts`, PRNG seedato) — non è collegato all'API di `CineVector.Api` né a `cinevector-web`. È un progetto indipendente pensato per validare il design della sfera semantica.
+La documentazione completa del progetto, compreso il deploy, è nel [README principale](../../README.md).
 
-## Avvio
+## Sviluppo
 
 ```bash
+cp .env.example .env     # VITE_API_BASE_URL=http://localhost:5080
 npm install
-npm run dev
+npm run dev              # http://localhost:5174
 ```
 
-Apri `http://localhost:5173` (o la porta indicata in console). Routing: `/` mostra la sfera 3D, `/movie/:id` apre sopra di essa il modal di dettaglio del film (deep-link diretto supportato, es. `/movie/blade-runner-2049`).
+Il dev server ascolta su `5174` con `strictPort`, anche su IPv4 `127.0.0.1`: serve al redirect OAuth di Spotify, che accetta solo l'indirizzo loopback IPv4.
 
-## Cosa è realmente funzionante (non solo decorativo, come nel mockup originale)
+## Variabile d'ambiente
 
-- **Sidebar**: toggle dei cluster tematici, soglia di similarità vettoriale e arco temporale filtrano davvero i nodi/archi visibili sulla sfera.
-- **Player colonna sonora**: play/pausa, avanti/indietro, shuffle, repeat, volume e seek sono cablati a uno stato React reale (non placeholder statici).
-- **Player trailer**: nessun video reale disponibile (è un mockup), ma play/pausa e barra di avanzamento sono guidati da stato React reale.
-- **Ricerca, watchlist** (persistita in `localStorage`), pannello di dettaglio nodo, statistiche del footer (cluster più denso, valutazione media, consiglio del giorno) — tutti calcolati dai dati generati, non hardcoded.
+| Variabile | Effetto |
+|---|---|
+| `VITE_API_BASE_URL` | Base URL dell'API, letta **a build time**. Vuota = URL relativi (`/api/...`), come in produzione dietro Traefik. Se non definita, il fallback è `http://localhost:5080`. |
 
-## Struttura
+## Pagine
 
-```
-src/
-  data/            generatore dati mock deterministico (PRNG seedato) + API di lettura (getMovieById, ricerca, ...)
-  types/           modello dati (MovieNode "leggero" per la sfera vs MovieDetail "pesante" on-demand)
-  lib/              helper Three.js (Fibonacci sphere, texture glow, curve degli archi), hook, store
-  state/            React Context: filtri, selezione/hover, watchlist
-  components/
-    sphere/         scena 3D (griglia olografica, nodi, archi semantici, controlli camera)
-    layout/         chrome della dashboard (header, sidebar, pannello destro, footer)
-    modal/          modal di dettaglio film (trailer, colonna sonora, cast, crediti)
-  pages/            DashboardPage (layout + routing), NotFoundPage
-```
+| Rotta | Pagina |
+|---|---|
+| `/` e `/movie/:id` | Esplora Galassia 3D (sfera, cluster, catalogo, sfera film) e dettaglio film |
+| `/catalogo` | Catalogo con ricerca ibrida e filtri |
+| `/sources` | Gestione delle fonti |
+| `/crawler` | Avvio e controllo dei crawl |
+| `/metrics` | Metriche, analisi di ricerca, log, embedding |
+| `/music` | Ricerca musicale Spotify |
+| `/callback` | Ritorno dal login Spotify |
 
-## Stack
+## Build di produzione
 
-React 19 + TypeScript + Vite + Tailwind CSS v4 (`@tailwindcss/vite`, tema via `@theme`) + Three.js / `@react-three/fiber` / `@react-three/drei` + React Router.
-
-## Script
-
-- `npm run dev` — dev server con HMR
-- `npm run build` — type-check (`tsc -b`) + build di produzione (Vite)
-- `npm run lint` — Oxlint
-- `npm run preview` — anteprima della build di produzione
+Il build viene fatto da `infrastructure/docker/Frontend.Dockerfile` e servito da nginx (`infrastructure/docker/nginx.frontend.conf`), con `VITE_API_BASE_URL` vuoto.
