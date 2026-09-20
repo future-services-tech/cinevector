@@ -49,16 +49,22 @@ builder.Services.AddSingleton<IMetricsSnapshotStore, MetricsSnapshotStore>();
 // MetricsSnapshotStore per alimentare la pagina admin senza bisogno di Prometheus/Grafana; l'exporter
 // Console qui è la base standard, sostituibile con OTLP in futuro senza toccare il resto del codice.
 builder.Services.AddOpenTelemetry()
-    .WithMetrics(metrics => metrics
-        .AddMeter(SearchMetrics.MeterName)
-        .AddMeter(DbMetrics.MeterName)
-        .AddAspNetCoreInstrumentation()
-        .AddHttpClientInstrumentation()
-        .AddConsoleExporter())
-    .WithTracing(tracing => tracing
-        .AddAspNetCoreInstrumentation()
-        .AddHttpClientInstrumentation()
-        .AddConsoleExporter());
+    .WithMetrics(metrics =>
+    {
+        metrics
+            .AddMeter(SearchMetrics.MeterName)
+            .AddMeter(DbMetrics.MeterName)
+            .AddAspNetCoreInstrumentation()
+            .AddHttpClientInstrumentation();
+        if (builder.Environment.IsDevelopment()) metrics.AddConsoleExporter();
+    })
+    .WithTracing(tracing =>
+    {
+        tracing
+            .AddAspNetCoreInstrumentation()
+            .AddHttpClientInstrumentation();
+        if (builder.Environment.IsDevelopment()) tracing.AddConsoleExporter();
+    });
 
 var connectionString = builder.Configuration.GetConnectionString("Postgres");
 if (!string.IsNullOrWhiteSpace(connectionString))
@@ -81,7 +87,12 @@ if (app.Environment.IsDevelopment())
 
 app.UseSerilogRequestLogging();
 
-app.UseHttpsRedirection();
+// In produzione il TLS è terminato dal reverse proxy (Traefik): il redirect HTTPS qui genererebbe solo warning.
+if (app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
+
 app.UseCors(corsPolicyName);
 app.UseAuthorization();
 

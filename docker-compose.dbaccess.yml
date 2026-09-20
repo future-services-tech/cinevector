@@ -1,0 +1,12 @@
+# Override TEMPORANEO: pubblica Postgres solo su 127.0.0.1 del server (mai su Internet), così puoi raggiungerlo
+# con il tuo client SQL tramite tunnel SSH, ad esempio per applicare infrastructure/database/schema.sql.
+#
+#   docker compose -f docker-compose.prod.yml -f docker-compose.dbaccess.yml up -d postgres
+#   ssh -L 5433:127.0.0.1:5433 utente@ip-del-vps        # dal tuo PC; poi collega il client a localhost:5433
+#
+# Finito il lavoro, rimuovi l'esposizione ricreando il servizio senza l'override:
+#   docker compose -f docker-compose.prod.yml up -d postgres
+services:
+  postgres:
+    ports:
+      - "127.0.0.1:${DB_LOCAL_PORT:-5433}:5432"

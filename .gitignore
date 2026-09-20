@@ -14,11 +14,15 @@ dist-ssr/
 .env
 .env.*
 !.env.example
+!.env.production.example
 appsettings.Local.json
 appsettings.*.local.json
 
 ## Python venv (residuo non collegato allo stack .NET/React)
 .venv/
+
+## Dump del database (contengono dati)
+*.dump
 
 ## OS / editor
 .DS_Store
