@@ -36,8 +36,11 @@ Non c'è alcuna funzionalità di streaming o download: i link portano sempre e s
 
 | | |
 |---|---|
-| ![Catalogo](docs/screenshots/catalogo.png)<br>**Catalogo**: ricerca ibrida e filtri | ![Dettaglio film](docs/screenshots/dettaglio-film.png)<br>**Dettaglio film** |
-| ![Crawler](docs/screenshots/crawler.png)<br>**Crawler & Sync**: fonti e job recenti | ![Fonti](docs/screenshots/fonti.png)<br>**Sorgenti**: gestione delle fonti |
+| ![Catalogo-full](docs/screenshots/catalogo-full.png)<br>**Catalogo full**: griglia visuale dei films
+| ![Catalogo](docs/screenshots/catalogo.png)<br>**Catalogo**: ricerca ibrida e filtri 
+| ![Dettaglio film](docs/screenshots/dettaglio-film.png)<br>**Dettaglio film** |
+| ![Crawler](docs/screenshots/crawler.png)<br>**Crawler & Sync**: fonti e job recenti 
+| ![Fonti](docs/screenshots/fonti.png)<br>**Sorgenti**: gestione delle fonti |
 | ![Metriche](docs/screenshots/metriche.png)<br>**Metriche & Log**: latenze via OpenTelemetry | |
 
 ## Architettura
@@ -369,3 +372,6 @@ Altre misure già attive:
 | `/api/...` restituisce la pagina HTML | La label del router API non è attiva: controlla `docker compose ps` e i log di Traefik |
 | Spotify: `INVALID_REDIRECT_URI` | Il Redirect URI nella dashboard Spotify non è identico a `https://<dominio>/callback` |
 | La ricerca semantica non trova nulla | Embedding mancanti: lancia `POST /api/embeddings/backfill` e controlla `OMNIROUTER_API_KEY` |
+
+## License
+The source is publicly readable but is not open source. Copyright (c) 2026 Sergio Sisternes. All rights are reserved; see LICENSE.
