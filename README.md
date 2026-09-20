@@ -374,4 +374,4 @@ Altre misure già attive:
 | La ricerca semantica non trova nulla | Embedding mancanti: lancia `POST /api/embeddings/backfill` e controlla `OMNIROUTER_API_KEY` |
 
 ## License
-| The source is publicly readable but is not open source. Copyright (c) 2026 Sergio Sisternes. All rights are reserved; see LICENSE.
+The source is publicly readable but is not open source. Copyright (c) 2026 Sergio Sisternes. All rights are reserved; see LICENSE.
