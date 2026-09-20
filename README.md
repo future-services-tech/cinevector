@@ -37,8 +37,10 @@ Non c'è alcuna funzionalità di streaming o download: i link portano sempre e s
 | | |
 |---|---|
 | ![Catalogo-full](docs/screenshots/catalogo-full.png)<br>**Catalogo full**: griglia visuale dei films
-| ![Catalogo](docs/screenshots/catalogo.png)<br>**Catalogo**: ricerca ibrida e filtri | ![Dettaglio film](docs/screenshots/dettaglio-film.png)<br>**Dettaglio film** |
-| ![Crawler](docs/screenshots/crawler.png)<br>**Crawler & Sync**: fonti e job recenti | ![Fonti](docs/screenshots/fonti.png)<br>**Sorgenti**: gestione delle fonti |
+| ![Catalogo](docs/screenshots/catalogo.png)<br>**Catalogo**: ricerca ibrida e filtri 
+| ![Dettaglio film](docs/screenshots/dettaglio-film.png)<br>**Dettaglio film** |
+| ![Crawler](docs/screenshots/crawler.png)<br>**Crawler & Sync**: fonti e job recenti 
+| ![Fonti](docs/screenshots/fonti.png)<br>**Sorgenti**: gestione delle fonti |
 | ![Metriche](docs/screenshots/metriche.png)<br>**Metriche & Log**: latenze via OpenTelemetry | |
 
 ## Architettura
