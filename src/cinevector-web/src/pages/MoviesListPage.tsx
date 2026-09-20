@@ -4,13 +4,9 @@ import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { search, type SearchSort } from "../api/search";
 import { MovieCard } from "../components/MovieCard";
 import { MovieCarousel } from "../components/MovieCarousel";
-import { SphereImageGrid, type ImageData } from "../components/SphereImageGrid";
-import { MovieQuickView } from "../components/MovieQuickView";
 import { useSettings } from "../lib/settings";
 
 const PAGE_SIZE = 8;
-// La vista spaziale ha bisogno di più poster per risultare piena: pagina più ampia solo in questa modalità.
-const SPHERE_PAGE_SIZE = 30;
 
 const NL_EXAMPLES = [
   "film di fantascienza dal 2020 al 2025",
@@ -41,14 +37,11 @@ export function MoviesListPage() {
   const [semantic, setSemantic] = useState(false);
   const [naturalLanguage, setNaturalLanguage] = useState(false);
   const [sort, setSort] = useState<SearchSort>("Relevance");
-  const [view, setView] = useState<"grid" | "list" | "sphere">("grid");
+  const [view, setView] = useState<"grid" | "list">("grid");
   const [page, setPage] = useState(1);
-  const [quickViewMovieId, setQuickViewMovieId] = useState<number | null>(null);
-
-  const effectivePageSize = view === "sphere" ? SPHERE_PAGE_SIZE : PAGE_SIZE;
 
   const { data, isLoading, isError, error } = useQuery({
-    queryKey: ["search", query, genre, yearFrom, yearTo, ratingFrom, actor, director, language, semantic, naturalLanguage, sort, page, effectivePageSize],
+    queryKey: ["search", query, genre, yearFrom, yearTo, ratingFrom, actor, director, language, semantic, naturalLanguage, sort, page, PAGE_SIZE],
     queryFn: () =>
       search({
         query: query || undefined,
@@ -63,7 +56,7 @@ export function MoviesListPage() {
         naturalLanguage,
         sort,
         page,
-        pageSize: effectivePageSize,
+        pageSize: PAGE_SIZE,
       }),
     placeholderData: keepPreviousData,
   });
@@ -308,9 +301,6 @@ export function MoviesListPage() {
             <button className={view === "list" ? "filter-chip" : "facet-chip"} onClick={() => setView("list")}>
               Lista
             </button>
-            <button className={view === "sphere" ? "filter-chip" : "facet-chip"} onClick={() => setView("sphere")}>
-              Spaziale
-            </button>
           </div>
         </div>
       )}
@@ -326,28 +316,6 @@ export function MoviesListPage() {
               matchScore={isSearchActive ? movie.similarity ?? movie.relevance : undefined}
             />
           ))}
-        </div>
-      )}
-
-      {view === "sphere" && (
-        <div className="panel sphere-view">
-          <SphereImageGrid
-            autoRotate={settings.animationsEnabled}
-            images={(data?.results ?? [])
-              .filter((movie) => !!movie.posterUrl)
-              .map(
-                (movie): ImageData => ({
-                  id: String(movie.id),
-                  src: movie.posterUrl!,
-                  alt: movie.title,
-                  title: movie.title,
-                  description: [movie.year, movie.rating != null ? `★ ${movie.rating.toFixed(1)}` : null]
-                    .filter(Boolean)
-                    .join(" · "),
-                }),
-              )}
-            onSelect={(image) => setQuickViewMovieId(Number(image.id))}
-          />
         </div>
       )}
 
@@ -399,10 +367,6 @@ export function MoviesListPage() {
             Successiva
           </button>
         </div>
-      )}
-
-      {quickViewMovieId != null && (
-        <MovieQuickView movieId={quickViewMovieId} onClose={() => setQuickViewMovieId(null)} />
       )}
     </div>
   );

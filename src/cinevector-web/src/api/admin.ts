@@ -40,6 +40,7 @@ export interface LogEntry {
   level: string;
   message: string;
   exception?: string | null;
+  traceId?: string | null;
 }
 
 export function getSearchLatency(hours = 6) {

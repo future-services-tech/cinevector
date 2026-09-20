@@ -2,7 +2,7 @@
 
 Catalogo cinematografico e motore di ricerca avanzata sui metadati dei film (titolo, trama, cast, regia, generi, poster). Nessuna funzionalità di streaming, download o estrazione di URL video: il link "Apri sulla piattaforma" porta sempre e solo alla pagina pubblica della fonte (es. TMDb).
 
-Stato attuale: **Fasi 1-5 completate** (solution .NET 10, dominio, PostgreSQL/EF Core, CRUD film, full-text search con filtri strutturati e facet, frontend React con ricerca, crawler TMDb con deduplicazione e tracciamento CrawlJob, embedding semantici con pgvector/HNSW, ranking ibrido a tre segnali, ricerca in linguaggio naturale, film simili). Le fasi successive (Redis/worker, dashboard admin, sicurezza/osservabilità di produzione) sono descritte in fondo a questo file.
+Stato attuale: **Fasi 1-5 completate** (solution .NET 10, dominio, PostgreSQL/EF Core, CRUD film, full-text search con filtri strutturati e facet, frontend React con ricerca, crawler TMDb con deduplicazione, tracciamento CrawlJob e gestione del ciclo di vita dei job (pausa/stop/eliminazione, rilevamento job orfani), embedding semantici con pgvector/HNSW, ranking ibrido a tre segnali, ricerca in linguaggio naturale, film simili). Le fasi successive (Redis/worker, sicurezza/osservabilità di produzione) sono descritte in fondo a questo file.
 
 <img width="1897" height="942" alt="image" src="https://github.com/user-attachments/assets/afcf504c-bf73-49f7-aef7-05ff86fc40c9" />
 
@@ -15,7 +15,7 @@ Stato attuale: **Fasi 1-5 completate** (solution .NET 10, dominio, PostgreSQL/EF
 
 ## 0. Crawler TMDb (Fase 3)
 
-Il crawler usa l'API ufficiale TMDb (mai scraping HTML), tramite `TmdbSourceAdapter` (`src/CineVector.Infrastructure/Sources/Tmdb`). Per usarlo:
+Il crawler usa l'API ufficiale TMDb (mai scraping HTML), tramite `TmdbSourceAdapter` (`src/CineVector.Infrastructure/Sources/Tmdb`). Il crawl gira in background nel processo `CineVector.Api` stesso (fire-and-forget su un `Task.Run` per richiesta di avvio), non nel Worker. Per usarlo:
 
 1. Ottieni un **Read Access Token v4** da https://www.themoviedb.org/settings/api e mettilo in `.env` come `TMDB_API_KEY`.
 2. Crea la fonte (una sola volta):
@@ -23,18 +23,24 @@ Il crawler usa l'API ufficiale TMDb (mai scraping HTML), tramite `TmdbSourceAdap
    curl -X POST http://localhost:5080/api/sources -H "Content-Type: application/json" \
      -d '{"name":"TMDb","baseUrl":"https://www.themoviedb.org","enabled":true,"adapterType":"Tmdb"}'
    ```
-3. Avvia un crawl:
+3. Avvia e gestisci un crawl:
    ```bash
-   curl -X POST http://localhost:5080/api/crawl/{sourceId}/start
-   curl http://localhost:5080/api/crawl/jobs/{jobId}   # stato/avanzamento
-   curl -X POST http://localhost:5080/api/crawl/{sourceId}/cancel
+   curl -X POST http://localhost:5080/api/crawl/{sourceId}/start -d '{"mode":"Popular"}'
+   curl http://localhost:5080/api/crawl/jobs                    # job recenti (con isOrphaned)
+   curl http://localhost:5080/api/crawl/jobs/{jobId}             # stato/avanzamento di un job
+   curl -X POST http://localhost:5080/api/crawl/jobs/{jobId}/pause
+   curl -X POST http://localhost:5080/api/crawl/jobs/{jobId}/resume
+   curl -X POST http://localhost:5080/api/crawl/jobs/{jobId}/cancel
+   curl -X DELETE http://localhost:5080/api/crawl/jobs/{jobId}
    ```
 
 Note tecniche:
-- `Tmdb:BaseUrl` in `appsettings.json` (mai `Source.BaseUrl`, modificabile da un admin) è l'unico endpoint contattato: evita che una fonte manomessa diventi un vettore SSRF.
+- `Tmdb:BaseUrl` in `appsettings.json` (mai `Source.BaseUrl`, modificabile da un admin) è l'unico endpoint contattato dall'adapter TMDb: evita che una fonte manomessa diventi un vettore SSRF. In più, `UrlCanonicalizer` (`src/CineVector.Infrastructure/Crawling/UrlCanonicalizer.cs`) rifiuta a monte qualunque URL scoperto dal crawl che punti a un IP loopback/privato/link-local (127.0.0.0/8, 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 169.254.0.0/16 incluso l'endpoint metadati cloud 169.254.169.254, ...) o a `localhost` — un guard riutilizzabile, pronto per quando un futuro adapter dovesse effettuare richieste dirette verso URL scoperti (limite noto: non risolve i nomi host via DNS, quindi non copre il DNS rebinding).
 - `Tmdb:DiscoverPages` limita quante pagine di `/discover/movie` scaricare per esecuzione (20 film/pagina).
 - Deduplicazione: chiave primaria (SourceId, ExternalId); un film esistente viene riscritto solo se l'hash dei metadati cambia (altrimenti si aggiorna solo `LastSeenAt`). Un titolo+anno coincidente su un'altra fonte viene loggato come possibile duplicato, mai unito automaticamente.
-- La cancellazione (`/cancel`) usa un registro di `CancellationTokenSource` in-process: funziona con una singola istanza API. Il coordinamento cross-istanza via Redis arriva in Fase 6.
+- **Stati del job**: `Pending → Running → Completed | Failed | Cancelled`, più `Paused` (sospeso tra un URL e l'altro del crawl, riprendibile con `/resume`). Un job non può partire se esiste già un job `Running`/`Paused` per la stessa fonte con lo **stesso criterio** (`QueryMode` + `Query`, es. due `Popular` o due ricerche sullo stesso attore): la richiesta torna `409 Conflict`. Criteri diversi sulla stessa fonte (es. `Popular` insieme a un attore specifico) girano invece in parallelo senza conflitti.
+- **Coordinamento cross-istanza (Redis)**: cancellazione, pausa e rilevamento job orfani sono coordinati tramite Redis (`RedisCrawlCancellationRegistry`, `src/CineVector.Infrastructure/Crawling/RedisCrawlCancellationRegistry.cs`), non più solo in-process — un job avviato su un'istanza API può essere fermato/messo in pausa da una richiesta gestita da un'altra istanza. Ogni istanza che esegue un job registra in Redis una chiave di ownership con TTL breve, rinnovata (heartbeat ogni 5s) finché il job è in corso: se l'istanza muore senza fare pulizia, la chiave scade da sola. `GET /api/crawl/jobs` espone questo caso con `isOrphaned: true` (nessuna istanza, su nessuna macchina, lo sta gestendo davvero): va fermato (`POST .../jobs/{id}/cancel`, che in questo caso riconcilia direttamente lo stato a `Cancelled`) o eliminato (`DELETE .../jobs/{id}`, che rimuove il record e i suoi errori dal DB — l'unica traccia resta nei log applicativi). Verificato manualmente avviando due istanze API sulla stessa rete/Redis: un job avviato sulla prima è stato messo in pausa e poi fermato con successo da richieste indirizzate alla seconda.
+- Il frontend espone questi controlli nella pagina **Crawler & Sync** (bottoni Pausa/Ferma/Elimina per riga, badge "⚠ Zombie" sui job orfani) e ne riassume lo stato anche in Dashboard.
 
 ## 0b. Ricerca semantica ed embedding (Fase 4)
 
@@ -103,9 +109,10 @@ dotnet run --project src/CineVector.Api
 
 - Swagger/OpenAPI: `http://localhost:5080/openapi/v1.json` (in ambiente Development)
 - Health check: `GET /health`, `/health/live`, `/health/ready`
+- Log (Serilog) e tracing (OpenTelemetry) sono già configurati e correlati: ogni riga di log include il `TraceId` dell'`Activity` corrente (`TraceIdEnricher`, `src/CineVector.Api/Observability/TraceIdEnricher.cs`), visibile in console, nel visualizzatore log admin (`GET /api/admin/logs`) e nella pagina **Metrics & Logs → Log** del frontend — così una richiesta è tracciabile end-to-end.
 - CRUD film: `GET|POST /api/movies`, `GET|PUT|DELETE /api/movies/{id}`
 - CRUD fonti: `GET|POST /api/sources`, `GET|PUT|DELETE /api/sources/{id}`
-- Crawler: `GET /api/crawl/jobs`, `GET /api/crawl/jobs/{id}`, `POST /api/crawl/start`, `POST /api/crawl/{sourceId}/start`, `POST /api/crawl/{sourceId}/cancel`
+- Crawler: `GET /api/crawl/jobs`, `GET /api/crawl/jobs/{id}`, `POST /api/crawl/start`, `POST /api/crawl/{sourceId}/start`, `POST /api/crawl/{sourceId}/cancel`, `POST /api/crawl/jobs/{id}/cancel`, `POST /api/crawl/jobs/{id}/pause`, `POST /api/crawl/jobs/{id}/resume`, `DELETE /api/crawl/jobs/{id}`
 - Embedding: `POST /api/embeddings/backfill?batchSize=50`
 - Film simili: `GET /api/movies/{id}/similar?maxResults=20&minSimilarity=0.3`
 - Ricerca: `GET|POST /api/search?query=...&genres=...&actors=...&directors=...&yearFrom=...&yearTo=...&ratingFrom=...&ratingTo=...&language=...&sort=...&page=...&pageSize=...`
@@ -123,13 +130,25 @@ npm run dev
 
 Apri `http://localhost:5173`. La lista film e la pagina di dettaglio leggono dall'API su `VITE_API_BASE_URL` (default `http://localhost:5080`).
 
+## 5b. Dashboard sperimentale "CineVector 3D" (cinevector-newweb)
+
+Progetto standalone separato, con dati completamente mock (~1000 film generati deterministicamente): esploratore semantico dei film su una sfera 3D (Three.js/`@react-three/fiber`), con modal di dettaglio (trailer + colonna sonora, entrambi con stato reale, controlli realmente funzionanti). **Non richiede backend né database** — non è collegato a `CineVector.Api`.
+
+```bash
+cd src/cinevector-newweb
+npm install
+npm run dev
+```
+
+Apri `http://localhost:5173` (o la porta indicata in console). Dettagli in `src/cinevector-newweb/README.md`.
+
 ## 6. Avvio full stack via Docker Compose
 
 ```bash
 docker compose up -d --build
 ```
 
-Avvia `postgres`, `redis`, `api` (porta 5080), `worker` (nessun endpoint HTTP, per ora inattivo), `frontend` (porta 5173, servito da Nginx). Il profilo opzionale `dev` aggiunge `pgadmin` (porta 5050):
+Avvia `postgres`, `redis`, `api` (porta 5080), `worker` (nessun endpoint HTTP, per ora inattivo), `frontend` (il vecchio `cinevector-web`, porta 5173, servito da Nginx) e `frontend-new` (`cinevector-newweb`, porta 5175, servito da Nginx) — i due frontend girano in parallelo sulla stessa API/database per poterli confrontare. Il profilo opzionale `dev` aggiunge `pgadmin` (porta 5050):
 
 ```bash
 docker compose --profile dev up -d
@@ -160,7 +179,7 @@ curl -X POST http://localhost:5080/api/movies \
 dotnet test
 ```
 
-`CineVector.SearchTests` usa [Testcontainers](https://testcontainers.com/) per avviare un vero PostgreSQL (`pgvector/pgvector:pg16`) durante i test: richiede Docker attivo.
+`CineVector.SearchTests` e `CineVector.IntegrationTests` usano [Testcontainers](https://testcontainers.com/) per avviare un vero PostgreSQL (`pgvector/pgvector:pg16`) durante i test: richiede Docker attivo. `CineVector.IntegrationTests` copre anche il ciclo di vita dei crawl job — `CrawlJobRepositoryTests` (guard per criterio, cascade delete) e `CrawlControllerLifecycleTests` (pausa/riprendi/ferma/elimina, rilevamento job orfani) — istanziando `CrawlController` direttamente con `InMemoryCrawlCancellationRegistry` come test double al posto di Redis; `Start`/`StartAll` (che avviano l'esecuzione reale del pipeline in background) non sono coperti da questi test, solo verificati manualmente end-to-end.
 
 ## Struttura della solution
 
@@ -170,10 +189,11 @@ src/
 ├── CineVector.Application/    Servizi applicativi, validazione, DTO mapping
 ├── CineVector.Domain/         Entità di dominio (Movie, Person, Genre, Source, CrawlJob, ...)
 ├── CineVector.Infrastructure/ EF Core, PostgreSQL/pgvector, repository, migration
-├── CineVector.Worker/         Background worker (crawler/embedding, dalla Fase 3)
+├── CineVector.Worker/         Progetto worker .NET (template di base, non ancora usato: il crawling gira nell'Api)
 ├── CineVector.Search/         Motore di ricerca ibrido (dalla Fase 2)
 ├── CineVector.Contracts/      DTO condivisi tra Application e Api
-└── cinevector-web/            Frontend React + Vite + TypeScript
+├── cinevector-web/            Frontend React + Vite + TypeScript
+└── cinevector-newweb/         Dashboard sperimentale standalone "CineVector 3D" (dati mock, nessun backend)
 
 tests/
 ├── CineVector.UnitTests/
@@ -185,5 +205,5 @@ infrastructure/docker/           Dockerfile di Api, Worker, Frontend
 
 ## Roadmap (fasi successive)
 
-- **Fase 6** — Redis (cache, lock crawler), dashboard admin/crawler, statistiche.
-- **Fase 7** — Sicurezza (SSRF guard, allowlist host), osservabilità (Serilog + correlation id), ottimizzazione indici, test di integrazione/ricerca, Docker di produzione.
+- **Fase 6** — ~~Redis: coordinamento cross-istanza del crawler (pausa/cancellazione/rilevamento zombie)~~ fatto. Ancora da fare: caching Redis (nessuna query/risultato è oggi cachato — non c'è stato un bisogno dimostrato finché l'Api gira come istanza singola), statistiche avanzate.
+- **Fase 7** — ~~SSRF guard (allowlist host/IP su UrlCanonicalizer)~~, ~~osservabilità: correlation id nei log~~ fatti (Serilog + OpenTelemetry erano già presenti). Ancora da fare: ottimizzazione indici (minori: FK inverse sulle tabelle ponte movie_cast/movie_crew/movie_directors/movie_genres/movie_keywords, non urgente), Docker di produzione (utente non-root, `HEALTHCHECK` su api/worker/frontend collegato agli endpoint `/health/*` già esistenti, security header nginx, limiti di risorse, secrets invece di variabili d'ambiente in chiaro).

@@ -1,0 +1,1643 @@
+<!DOCTYPE html><html class="h-full bg-[#060913]" lang="it" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>CineSphere 3D - Esploratore Semantico del Cinema</title>
+<!-- Tailwind CSS CDN with forms & container queries -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration -->
+<script data-purpose="tailwind-config">
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            space: {
+              950: '#03050a',
+              900: '#060913',
+              850: '#0a0f1d',
+              800: '#0f172a',
+              700: '#1e293b'
+            },
+            cyanGlow: '#00f2fe',
+            blueGlow: '#4facfe',
+            purpleGlow: '#a855f7',
+            emeraldGlow: '#10b981',
+            amberGlow: '#f59e0b'
+          },
+          boxShadow: {
+            'neon-cyan': '0 0 20px -3px rgba(0, 242, 254, 0.45)',
+            'neon-blue': '0 0 25px -4px rgba(79, 172, 254, 0.45)',
+            'neon-purple': '0 0 25px -4px rgba(168, 85, 247, 0.45)',
+            'glass-inner': 'inset 0 1px 1px 0 rgba(255, 255, 255, 0.1)'
+          }
+        }
+      }
+    }
+  </script>
+<!-- Three.js CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<!-- Custom Styles: Glassmorphism & Layout Specifics -->
+<style data-purpose="glass-styling">
+    .glass-card {
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.72) 0%, rgba(6, 9, 19, 0.85) 100%);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .glass-card-hover:hover {
+      border-color: rgba(79, 172, 254, 0.35);
+      background: linear-gradient(135deg, rgba(20, 30, 55, 0.82) 0%, rgba(10, 15, 30, 0.9) 100%);
+    }
+    .glass-pill {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.09);
+    }
+    .scrollbar-thin::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+    .scrollbar-thin::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 9999px;
+    }
+  </style>
+<style data-purpose="animations">
+    @keyframes pulseSlow {
+      0%, 100% { opacity: 0.35; transform: scale(1); }
+      50% { opacity: 0.7; transform: scale(1.03); }
+    }
+    .animate-pulse-slow {
+      animation: pulseSlow 4s ease-in-out infinite;
+    }
+  </style>
+</head>
+<body class="h-screen w-screen overflow-hidden text-slate-200 antialiased select-none flex flex-col font-sans">
+<!-- BEGIN: TopHeader -->
+<header class="h-16 border-b border-slate-800/80 glass-card px-5 flex items-center justify-between z-30 flex-shrink-0" data-purpose="main-header">
+<!-- Brand & Platform Identity -->
+<div class="flex items-center space-x-3">
+<div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-cyan-500 via-blue-600 to-indigo-600 p-[1.5px] shadow-neon-blue flex items-center justify-center">
+<div class="w-full h-full bg-space-950 rounded-[10px] flex items-center justify-center">
+<svg class="w-5 h-5 text-cyanGlow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+</div>
+<div>
+<div class="flex items-center space-x-2">
+<span class="font-bold text-base tracking-wide bg-gradient-to-r from-white via-cyan-200 to-blue-400 bg-clip-text text-transparent">CineSphere 3D</span>
+<span class="text-[10px] uppercase font-semibold tracking-wider px-1.5 py-0.5 rounded bg-blue-500/20 text-cyan-300 border border-blue-400/30">v2.4 Vector</span>
+</div>
+<p class="text-[11px] text-slate-400 -mt-0.5">Universo Semantico del Cinema &amp; Cluster AI</p>
+</div>
+</div>
+<!-- Semantic Search Bar -->
+<div class="flex-1 max-w-2xl mx-8" data-purpose="semantic-search-container">
+<div class="relative group">
+<div class="absolute -inset-0.5 bg-gradient-to-r from-cyanGlow/30 to-purpleGlow/30 rounded-xl blur opacity-30 group-hover:opacity-60 transition duration-300"></div>
+<div class="relative flex items-center bg-space-900/90 border border-slate-700/60 rounded-xl px-3.5 py-1.5 focus-within:border-cyan-400/70 shadow-inner">
+<svg class="w-4 h-4 text-slate-400 mr-2.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<input class="bg-transparent text-sm w-full text-white placeholder-slate-500 focus:outline-none focus:ring-0 border-none p-0" id="searchInput" placeholder="Cerca film per tematica semantica (es. intelligenza artificiale, viaggi nel tempo, distopia 80s)..." type="text">
+<div class="flex items-center space-x-1 pl-2 border-l border-slate-800">
+<button class="px-2 py-1 text-[11px] font-medium text-slate-300 hover:text-cyan-300 rounded bg-white/5 hover:bg-white/10 transition flex items-center space-x-1">
+<span class="">Filtri</span>
+<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+<button class="px-3 py-1 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-semibold text-xs rounded-lg shadow-sm transition" id="searchBtn">
+              Trova
+            </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Status & Profile -->
+<div class="flex items-center space-x-4">
+<div class="flex items-center space-x-2 bg-emerald-500/10 border border-emerald-500/30 px-3 py-1 rounded-full text-xs text-emerald-400">
+<span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+<span class="font-mono font-medium">3,450 Film Mappati</span>
+</div>
+<!-- Quick Action Buttons -->
+<div class="flex items-center space-x-1.5 border-l border-slate-800 pl-3">
+<button class="w-8 h-8 rounded-lg glass-pill flex items-center justify-center text-slate-300 hover:text-white hover:bg-white/10 transition" title="Notifiche">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+<button class="w-8 h-8 rounded-lg glass-pill flex items-center justify-center text-slate-300 hover:text-white hover:bg-white/10 transition" title="Impostazioni Spazio Vettoriale">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+<div class="w-8 h-8 rounded-full bg-gradient-to-tr from-cyan-400 to-purple-500 p-[1px] cursor-pointer">
+<div class="w-full h-full rounded-full bg-space-900 flex items-center justify-center font-bold text-xs text-white">CS</div>
+</div>
+</div>
+</div>
+</header>
+<!-- END: TopHeader -->
+<!-- BEGIN: MainContentArea -->
+<main class="flex-1 flex overflow-hidden relative">
+<!-- BEGIN: LeftSidebar -->
+<aside class="w-72 border-r border-slate-800/80 glass-card flex flex-col p-4 z-20 flex-shrink-0 justify-between overflow-y-auto scrollbar-thin" data-purpose="left-navigation">
+<div class="space-y-6">
+<!-- Navigation Section -->
+<div>
+<span class="text-[11px] font-bold text-slate-400 uppercase tracking-widest px-2">Esplorazione</span>
+<nav class="mt-2 space-y-1">
+<a class="flex items-center space-x-3 px-3 py-2 rounded-xl bg-gradient-to-r from-blue-600/30 to-cyan-500/10 text-cyan-300 border border-blue-500/30 font-medium text-sm" href="#">
+<svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="">Esplora Galassia 3D</span>
+</a>
+<a class="flex items-center space-x-3 px-3 py-2 rounded-xl text-slate-300 hover:text-white hover:bg-white/5 transition text-sm" href="#">
+<svg class="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="">Generi &amp; Cluster</span>
+</a>
+<a class="flex items-center space-x-3 px-3 py-2 rounded-xl text-slate-300 hover:text-white hover:bg-white/5 transition text-sm" href="#">
+<svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="">Registi &amp; Autori</span>
+</a>
+<a class="flex items-center space-x-3 px-3 py-2 rounded-xl text-slate-300 hover:text-white hover:bg-white/5 transition text-sm" href="#">
+<svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="">Timeline Storica</span>
+</a>
+<a class="flex items-center space-x-3 px-3 py-2 rounded-xl text-slate-300 hover:text-white hover:bg-white/5 transition text-sm" href="#">
+<svg class="w-4 h-4 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="">I Miei Preferiti</span>
+</a>
+</nav>
+</div>
+<!-- Filter by Genres / Clusters -->
+<div>
+<div class="flex items-center justify-between px-2 mb-2.5">
+<span class="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Cluster Tematici</span>
+<span class="text-[10px] text-cyan-400 hover:underline cursor-pointer">Tutti</span>
+</div>
+<div class="space-y-1.5" id="genreList">
+<!-- Sci-Fi -->
+<button class="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg glass-pill hover:border-cyan-400/50 transition text-left group">
+<div class="flex items-center space-x-2.5">
+<span class="w-2.5 h-2.5 rounded-full bg-cyan-400 shadow-[0_0_8px_#00f2fe]"></span>
+<span class="text-xs font-medium text-slate-200 group-hover:text-cyan-300">Fantascienza</span>
+</div>
+<span class="text-[11px] font-mono text-slate-400">842 film</span>
+</button>
+<!-- Cyberpunk & Cult -->
+<button class="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg glass-pill hover:border-purple-400/50 transition text-left group">
+<div class="flex items-center space-x-2.5">
+<span class="w-2.5 h-2.5 rounded-full bg-purple-400 shadow-[0_0_8px_#c084fc]"></span>
+<span class="text-xs font-medium text-slate-200 group-hover:text-purple-300">Cyberpunk &amp; Cult</span>
+</div>
+<span class="text-[11px] font-mono text-slate-400">430 film</span>
+</button>
+<!-- Thriller & Noir -->
+<button class="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg glass-pill hover:border-blue-400/50 transition text-left group">
+<div class="flex items-center space-x-2.5">
+<span class="w-2.5 h-2.5 rounded-full bg-blue-500 shadow-[0_0_8px_#3b82f6]"></span>
+<span class="text-xs font-medium text-slate-200 group-hover:text-blue-300">Thriller &amp; Noir</span>
+</div>
+<span class="text-[11px] font-mono text-slate-400">615 film</span>
+</button>
+<!-- Drammatico & Autoriale -->
+<button class="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg glass-pill hover:border-amber-400/50 transition text-left group">
+<div class="flex items-center space-x-2.5">
+<span class="w-2.5 h-2.5 rounded-full bg-amber-400 shadow-[0_0_8px_#fbbf24]"></span>
+<span class="text-xs font-medium text-slate-200 group-hover:text-amber-300">Drammatico</span>
+</div>
+<span class="text-[11px] font-mono text-slate-400">920 film</span>
+</button>
+<!-- Animazione & Anime -->
+<button class="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg glass-pill hover:border-emerald-400/50 transition text-left group">
+<div class="flex items-center space-x-2.5">
+<span class="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399]"></span>
+<span class="text-xs font-medium text-slate-200 group-hover:text-emerald-300">Animazione &amp; Anime</span>
+</div>
+<span class="text-[11px] font-mono text-slate-400">380 film</span>
+</button>
+</div>
+</div>
+<!-- Semantic Parameters (Sliders) -->
+<div class="pt-2 border-t border-slate-800/80 space-y-4">
+<div>
+<div class="flex justify-between items-center text-xs mb-1.5">
+<span class="text-slate-400">Soglia Similarità Vettoriale</span>
+<span class="text-cyan-300 font-mono font-semibold" id="simVal">0.78</span>
+</div>
+<input class="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-cyan-400 focus:outline-none" id="similaritySlider" max="0.99" min="0.5" step="0.01" type="range" value="0.78">
+</div>
+<div>
+<div class="flex justify-between items-center text-xs mb-1.5">
+<span class="text-slate-400">Arco Temporale</span>
+<span class="text-blue-300 font-mono font-semibold">1970 – 2025</span>
+</div>
+<div class="grid grid-cols-2 gap-2 text-[11px]">
+<div class="glass-pill px-2.5 py-1 rounded text-center text-slate-300 font-mono">Da: 1970</div>
+<div class="glass-pill px-2.5 py-1 rounded text-center text-slate-300 font-mono">A: 2025</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Quick AI Tip Card -->
+<div class="mt-4 p-3 rounded-xl bg-gradient-to-br from-blue-900/30 to-purple-950/40 border border-blue-500/20 text-xs">
+<div class="flex items-center space-x-1.5 text-cyan-300 font-semibold mb-1">
+<svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M11 3a1 1 0 10-2 0v1a1 1 0 102 0V3zM15.657 5.757a1 1 0 00-1.414-1.414l-.707.707a1 1 0 001.414 1.414l.707-.707zM18 10a1 1 0 01-1 1h-1a1 1 0 110-2h1a1 1 0 011 1zM5.05 6.464A1 1 0 106.464 5.05l-.707-.707a1 1 0 00-1.414 1.414l.707.707zM5 10a1 1 0 01-1 1H3a1 1 0 110-2h1a1 1 0 011 1zM8 16v-1h4v1a2 2 0 11-4 0zM12 14c.015-.34.208-.646.477-.859a4 4 0 10-4.954 0c.27.213.462.519.476.859h4.001z"></path></svg>
+<span class="">Cluster Semantico AI</span>
+</div>
+<p class="text-[11px] text-slate-300 leading-relaxed">I film vicini nello spazio 3D condividono trope narrativi, stili visivi e filosofie tematiche simili.</p>
+</div>
+</aside>
+<!-- END: LeftSidebar -->
+<!-- BEGIN: CentralInteractiveCanvas -->
+<section class="flex-1 relative flex flex-col overflow-hidden bg-space-950" data-purpose="three-viewport-section">
+<!-- Top Canvas Controls Bar -->
+<div class="absolute top-4 left-4 right-4 z-10 flex items-center justify-between pointer-events-none">
+<!-- Left Title Tag -->
+<div class="pointer-events-auto flex items-center space-x-3 glass-card px-3.5 py-2 rounded-xl border border-white/10 shadow-lg">
+<div class="flex items-center space-x-2">
+<span class="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-ping"></span>
+<h2 class="text-xs font-semibold text-white tracking-wide uppercase">CineSphere Semantica 3D</h2>
+</div>
+<span class="text-slate-600">|</span>
+<span class="text-[11px] text-slate-400">Proiezione Cosine Similarity</span>
+</div>
+<!-- Mode Switches (Cluster / Rete / Costellazione) -->
+<div class="pointer-events-auto flex items-center glass-card p-1 rounded-xl border border-white/10 space-x-1 shadow-lg">
+<button class="px-3 py-1 rounded-lg text-xs font-medium bg-gradient-to-r from-cyan-500/20 to-blue-600/30 text-cyan-300 border border-cyan-400/30 transition" id="viewClusterBtn">
+            Cluster
+          </button>
+<button class="px-3 py-1 rounded-lg text-xs font-medium text-slate-400 hover:text-white hover:bg-white/5 transition" id="viewNetworkBtn">
+            Rete
+          </button>
+<button class="px-3 py-1 rounded-lg text-xs font-medium text-slate-400 hover:text-white hover:bg-white/5 transition" id="viewSphereBtn">
+            Sfera
+          </button>
+</div>
+<!-- Camera / Reset Controls -->
+<div class="pointer-events-auto flex items-center space-x-1.5 glass-card p-1 rounded-xl border border-white/10">
+<button class="p-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-white/10 transition" id="resetCamBtn" title="Reset Vista">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+<button class="p-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-white/10 transition" id="toggleSpinBtn" title="Pausa/Avvia Rotazione">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+</div>
+</div>
+<!-- Three.js Canvas Container -->
+<div class="w-full h-full cursor-grab active:cursor-grabbing relative overflow-hidden" data-purpose="threejs-canvas" id="canvas-container">
+<!-- Interactive Tooltip on Node Hover -->
+<div class="absolute pointer-events-none opacity-0 transition-opacity duration-200 glass-card px-3 py-2 rounded-xl border border-cyan-400/40 shadow-neon-blue z-40 transform -translate-x-1/2 -translate-y-full -mt-3 min-w-[170px]" id="movieTooltip">
+<div class="text-[10px] text-cyan-300 font-mono flex items-center justify-between">
+<span id="tooltipGenre" class="">Sci-Fi</span>
+<span id="tooltipScore" class="">IMDb 8.0</span>
+</div>
+<h4 class="text-xs font-bold text-white mt-0.5" id="tooltipTitle">Blade Runner 2049</h4>
+<p class="text-[10px] text-slate-400" id="tooltipMeta">Denis Villeneuve · 2017</p>
+</div>
+<canvas width="1264" height="115" style="display: block; width: 1264px; height: 115px;"></canvas><canvas width="608" height="912" style="display: block; width: 608px; height: 912px;"></canvas></div>
+<!-- Bottom Overlaid Hints and 3D Axis Indicator -->
+<div class="absolute bottom-4 left-4 right-4 pointer-events-none flex items-end justify-between z-10">
+<!-- 3D Gizmo Helper Box -->
+<div class="glass-card px-3 py-2 rounded-xl flex items-center space-x-3 pointer-events-auto border border-white/10">
+<div class="w-7 h-7 relative flex items-center justify-center">
+<!-- Isometric Axis representation -->
+<div class="absolute w-3 h-0.5 bg-red-400 rotate-45 transform origin-left left-3"></div>
+<div class="absolute w-3 h-0.5 bg-green-400 -rotate-45 transform origin-left left-3"></div>
+<div class="absolute w-3 h-0.5 bg-blue-400 -rotate-90 transform origin-left left-3"></div>
+<span class="text-[9px] font-mono font-bold text-white">XYZ</span>
+</div>
+<div class="text-[10px] text-slate-400 flex flex-col">
+<span class="text-slate-300 font-semibold">Coordinate Semantiche</span>
+<span class="">Trascina per ruotare · Scroll per zoom</span>
+</div>
+</div>
+<!-- Mini Cluster Badges Legend -->
+<div class="glass-card px-3 py-1.5 rounded-xl flex items-center space-x-3 pointer-events-auto text-xs border border-white/10">
+<div class="flex items-center space-x-1.5">
+<span class="w-2 h-2 rounded-full bg-cyan-400"></span>
+<span class="text-[11px] text-slate-300">Fantascientifico</span>
+</div>
+<div class="flex items-center space-x-1.5">
+<span class="w-2 h-2 rounded-full bg-purple-400"></span>
+<span class="text-[11px] text-slate-300">Cyberpunk/Noir</span>
+</div>
+<div class="flex items-center space-x-1.5">
+<span class="w-2 h-2 rounded-full bg-amber-400"></span>
+<span class="text-[11px] text-slate-300">Cult/Drammatico</span>
+</div>
+<div class="flex items-center space-x-1.5">
+<span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+<span class="text-[11px] text-slate-300">Anime/Fantastico</span>
+</div>
+</div>
+</div>
+</section>
+<!-- END: CentralInteractiveCanvas -->
+<!-- BEGIN: RightSidebar (Active Movie & Cluster Details) -->
+<aside class="w-84 md:w-96 border-l border-slate-800/80 glass-card flex flex-col z-20 flex-shrink-0 overflow-y-auto scrollbar-thin" data-purpose="right-details-panel">
+<!-- Panel Header -->
+<div class="p-4 border-b border-slate-800/80 flex items-center justify-between">
+<div class="flex items-center space-x-2">
+<span class="w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_8px_#00f2fe]"></span>
+<span class="text-xs font-bold uppercase tracking-wider text-white">Dettaglio Nodo Selezionato</span>
+</div>
+<span class="text-[11px] font-mono px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-300 border border-cyan-400/20">Vector ID #749</span>
+</div>
+<!-- Main Movie Dossier -->
+<div class="p-5 space-y-5">
+<!-- Movie Identity Header -->
+<div>
+<div class="flex items-center space-x-2 mb-1.5">
+<span class="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-400/30" id="cardGenreBadge">
+              Cyberpunk · Sci-Fi
+            </span>
+<span class="text-[11px] text-slate-400 font-mono" id="cardYear">2017</span>
+<span class="text-slate-600">•</span>
+<span class="text-[11px] text-amber-400 font-bold flex items-center">
+              ★ <span class="ml-0.5 text-white" id="cardRating">8.0</span>/10
+            </span>
+</div>
+<h1 class="text-xl font-extrabold text-white tracking-tight leading-snug bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent" id="cardTitle">
+            Blade Runner 2049
+          </h1>
+<p class="text-xs text-cyan-300/90 mt-0.5 font-medium" id="cardDirector">Regia: Denis Villeneuve</p>
+</div>
+<!-- Primary CTA Button: Watch Trailer & Cast -->
+<button class="w-full py-3 px-4 rounded-xl font-bold text-xs uppercase tracking-wider bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-600 hover:from-cyan-300 hover:to-indigo-500 text-slate-950 shadow-neon-cyan hover:shadow-neon-blue transition-all duration-300 flex items-center justify-center space-x-2 transform hover:-translate-y-0.5 group" id="openTrailerModalBtn">
+<svg class="w-4 h-4 text-slate-950 transition-transform group-hover:scale-110" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg>
+<span class="">Guarda Trailer Ufficiale &amp; Cast</span>
+</button>
+<!-- Similarity Meter -->
+<div class="glass-pill p-3 rounded-xl">
+<div class="flex justify-between items-center text-xs mb-1.5">
+<span class="text-slate-300 font-medium">Affinità Semantica Media</span>
+<span class="text-cyan-400 font-mono font-bold text-sm" id="cardAffinity">98.4%</span>
+</div>
+<div class="w-full h-1.5 bg-space-900 rounded-full overflow-hidden">
+<div class="h-full bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full" id="cardAffinityBar" style="width: 98%;"></div>
+</div>
+<div class="flex justify-between text-[10px] text-slate-500 mt-1">
+<span class="">Distanza euclidea: 0.12</span>
+<span class="">Cluster: Neo-Noir Distopico</span>
+</div>
+</div>
+<!-- Synopsis -->
+<div>
+<h3 class="text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">Sinossi Semantica</h3>
+<p class="text-xs text-slate-300/80 leading-relaxed font-normal" id="cardSynopsis">
+            In un futuro decadente, l'agente K della polizia di Los Angeles scopre un segreto sepolto da lungo tempo che potrebbe gettare la società nel caos totale. La sua indagine lo porta a rintracciare Rick Deckard, scomparso da oltre trent'anni.
+          </p>
+</div>
+<!-- Key Semantic Vector Tokens -->
+<div>
+<h3 class="text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Tag Concettuali AI</h3>
+<div class="flex flex-wrap gap-1.5" id="cardTags">
+<span class="text-[11px] px-2.5 py-1 rounded-lg glass-pill text-cyan-300 border-cyan-400/20">Intelligenza Artificiale</span>
+<span class="text-[11px] px-2.5 py-1 rounded-lg glass-pill text-purple-300 border-purple-400/20">Crisi d'Identità</span>
+<span class="text-[11px] px-2.5 py-1 rounded-lg glass-pill text-blue-300 border-blue-400/20">Fotografia Neo-Noir</span>
+<span class="text-[11px] px-2.5 py-1 rounded-lg glass-pill text-emerald-300 border-emerald-400/20">Distopia Urbana</span>
+</div>
+</div>
+<!-- Cluster Neighborhood (Related Movies) -->
+<div class="pt-2 border-t border-slate-800">
+<div class="flex items-center justify-between mb-3">
+<h3 class="text-xs font-semibold text-slate-300 uppercase tracking-wider">Nodi Più Vicini (Cluster)</h3>
+<span class="text-[11px] text-cyan-400">4 collegamenti</span>
+</div>
+<div class="space-y-2" id="relatedList">
+<!-- Node Item 1 -->
+<div class="glass-pill p-2.5 rounded-xl hover:border-cyan-400/40 cursor-pointer transition flex items-center justify-between group" onclick="selectMovieByName('Matrix')">
+<div>
+<div class="text-xs font-bold text-slate-200 group-hover:text-cyan-300 transition">The Matrix (1999)</div>
+<div class="text-[10px] text-slate-400">Lana &amp; Lilly Wachowski · Realtà simulata</div>
+</div>
+<div class="text-right">
+<span class="text-xs font-mono font-bold text-cyan-300">96%</span>
+<span class="block text-[9px] text-slate-500">match</span>
+</div>
+</div>
+<!-- Node Item 2 -->
+<div class="glass-pill p-2.5 rounded-xl hover:border-cyan-400/40 cursor-pointer transition flex items-center justify-between group" onclick="selectMovieByName('Interstellar')">
+<div>
+<div class="text-xs font-bold text-slate-200 group-hover:text-cyan-300 transition">Interstellar (2014)</div>
+<div class="text-[10px] text-slate-400">Christopher Nolan · Spazio-tempo &amp; amore</div>
+</div>
+<div class="text-right">
+<span class="text-xs font-mono font-bold text-blue-400">93%</span>
+<span class="block text-[9px] text-slate-500">match</span>
+</div>
+</div>
+<!-- Node Item 3 -->
+<div class="glass-pill p-2.5 rounded-xl hover:border-cyan-400/40 cursor-pointer transition flex items-center justify-between group" onclick="selectMovieByName('Ghost in the Shell')">
+<div>
+<div class="text-xs font-bold text-slate-200 group-hover:text-cyan-300 transition">Ghost in the Shell (1995)</div>
+<div class="text-[10px] text-slate-400">Mamoru Oshii · Coscienza cibernetica</div>
+</div>
+<div class="text-right">
+<span class="text-xs font-mono font-bold text-purple-400">91%</span>
+<span class="block text-[9px] text-slate-500">match</span>
+</div>
+</div>
+<!-- Node Item 4 -->
+<div class="glass-pill p-2.5 rounded-xl hover:border-cyan-400/40 cursor-pointer transition flex items-center justify-between group" onclick="selectMovieByName('Her')">
+<div>
+<div class="text-xs font-bold text-slate-200 group-hover:text-cyan-300 transition">Her (2013)</div>
+<div class="text-[10px] text-slate-400">Spike Jonze · Connessione emotiva AI</div>
+</div>
+<div class="text-right">
+<span class="text-xs font-mono font-bold text-emerald-400">88%</span>
+<span class="block text-[9px] text-slate-500">match</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Action CTA Buttons -->
+<div class="pt-2 flex flex-col space-y-2">
+<button class="w-full py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-500 text-slate-950 hover:brightness-110 shadow-neon-blue transition flex items-center justify-center space-x-2">
+<svg class="w-4 h-4 text-slate-950" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="">Isola Questo Sub-Cluster</span>
+</button>
+<button class="w-full py-2 rounded-xl text-xs font-medium text-slate-300 hover:text-white glass-pill hover:bg-white/5 transition flex items-center justify-center space-x-1.5">
+<svg class="w-3.5 h-3.5 text-pink-400" fill="currentColor" viewBox="0 0 20 20"><path clip-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" fill-rule="evenodd"></path></svg>
+<span class="">Salva nella Watchlist Semantica</span>
+</button>
+</div>
+</div>
+</aside>
+<!-- END: RightSidebar -->
+</main>
+<!-- END: MainContentArea -->
+<!-- BEGIN: BottomMetricsFooter -->
+<footer class="h-12 border-t border-slate-800/80 glass-card px-6 flex items-center justify-between text-xs text-slate-400 flex-shrink-0 z-30" data-purpose="footer-metrics">
+<div class="flex items-center space-x-6">
+<div class="flex items-center space-x-2">
+<span class="w-2 h-2 rounded-full bg-cyan-400"></span>
+<span class="">Cluster Più Denso: <strong class="text-white font-semibold">Sci-Fi Distopico (842 nodi)</strong></span>
+</div>
+<span class="text-slate-700">|</span>
+<div class="hidden sm:flex items-center space-x-2">
+<span class="">Valutazione Media Cluster: <strong class="text-amber-400 font-mono font-semibold">8.38</strong></span>
+</div>
+<span class="text-slate-700 hidden sm:inline">|</span>
+<div class="hidden md:flex items-center space-x-1.5">
+<span class="text-slate-400">Consiglio del Giorno:</span>
+<span class="text-cyan-300 font-medium cursor-pointer hover:underline" onclick="selectMovieByName('2001: Odissea nello Spazio')">2001: Odissea nello Spazio (Kubrick)</span>
+</div>
+</div>
+<div class="flex items-center space-x-4">
+<div class="flex items-center space-x-2">
+<span class="text-[11px] text-slate-500">Motore Vettoriale: FAISS HNSW-32</span>
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+</div>
+<div class="text-[11px] text-slate-500 font-mono">Latenza: 14ms</div>
+</div>
+</footer>
+<!-- END: BottomMetricsFooter -->
+<!-- BEGIN: Interactive Movie Modal (Trailer & Full Cast) -->
+<div aria-labelledby="modalMovieTitle" aria-modal="true" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 transition-opacity duration-300" id="trailerModal" role="dialog">
+<div class="border border-cyan-500/30 bg-slate-900/95 shadow-2xl shadow-cyan-950/60 rounded-2xl max-w-5xl w-full max-h-[90vh] overflow-y-auto scrollbar-thin flex flex-col relative transition-all duration-300" id="modalDialogContent">
+<!-- Modal Header -->
+<div class="sticky top-0 z-20 px-6 py-4 border-b border-slate-800/90 bg-slate-900/90 backdrop-blur-md flex items-center justify-between">
+<div class="flex items-center space-x-3">
+<div class="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-400/30 flex items-center justify-center text-cyan-300">
+<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M4 6.47L5.76 10H20v8H4V6.47M22 4h-4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4z"></path></svg>
+</div>
+<div>
+<div class="flex items-center space-x-2.5 flex-wrap">
+<h2 class="text-lg font-bold text-white tracking-tight" id="modalMovieTitle">Blade Runner 2049</h2>
+<span class="text-xs px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-400/30 font-medium">Cyberpunk · Neo-Noir</span>
+<span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700 font-mono">4K UHD</span>
+<span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700 font-mono">Dolby Atmos</span>
+<span class="text-xs px-2 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-400/30 font-semibold">★ 8.0/10</span>
+</div>
+<p class="text-xs text-slate-300 mt-0.5">Regia di <span class="text-cyan-300 font-medium" id="modalMovieDirector">Denis Villeneuve</span> · Anno <span class="font-mono text-white" id="modalMovieYear">2017</span> · Durata 164 min</p>
+</div>
+</div>
+<!-- Close Button -->
+<button aria-label="Chiudi finestra dettaglio film" class="w-9 h-9 rounded-xl glass-pill flex items-center justify-center text-slate-400 hover:text-white hover:border-cyan-400/50 hover:bg-white/10 transition group" id="closeTrailerModalBtn">
+<svg class="w-5 h-5 transition-transform group-hover:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+</div>
+<!-- Modal Body Content -->
+<div class="p-6 space-y-8">
+<!-- SECTION 1: Video Trailer Player Section -->
+<div class="relative rounded-xl overflow-hidden border border-cyan-500/30 shadow-2xl bg-black group" data-purpose="trailer-video-player">
+<div class="aspect-video w-full relative overflow-hidden bg-slate-950">
+<img alt="Cinematic 4k movie trailer still frame from a futuristic neo-noir cyberpunk sci-fi film" class="w-full h-full object-cover brightness-90 group-hover:scale-105 transition-transform duration-700 ease-out" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCHC_KAtsrNDZrgRu5tFMY3cNyeNyLlhe6GjxA8ZKS3PWWMtlpr_VKRJLxpKRDnvTW5YAPDoWsz9hZY06huGWdlXmV5CSQdy79zr13DvMUJ1I91C-qE8vaT8NkLv2W7TC2OvQIdGEimPetQZARBoJZqU-tAT9wXrD-os6lu-IO-d4ItM7ON4o8LYSfc8VhiUIX-3AuokYtMlZhGU2OBThn1P_C6F6M4p3XNtpH1LUok-TIx5A0wqyjvRw">
+<!-- Cinematic Letterbox Vignette Overlay -->
+<div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-black/60 pointer-events-none"></div>
+<!-- Top Overlay: Live Tag & Resolution -->
+<div class="absolute top-4 left-4 right-4 flex items-center justify-between pointer-events-none">
+<div class="flex items-center space-x-2 glass-card px-3 py-1 rounded-full border border-white/10">
+<span class="w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
+<span class="text-[11px] font-bold text-white tracking-wide uppercase">Official Trailer HD</span>
+</div>
+<div class="flex items-center space-x-2">
+<span class="glass-card px-2.5 py-1 rounded-md text-[10px] font-mono font-bold text-cyan-300 border border-cyan-400/30">2160p 60fps</span>
+</div>
+</div>
+<!-- Central Glowing Neon Play Button -->
+<button class="absolute inset-0 m-auto w-20 h-20 rounded-full bg-cyan-500/25 border-2 border-cyan-400/80 backdrop-blur-md flex items-center justify-center text-white shadow-neon-cyan hover:scale-110 hover:bg-cyan-400 hover:text-slate-950 transition-all duration-300 group/play cursor-pointer focus:outline-none" title="Avvia Trailer" aria-label="Riproduci trailer ufficiale">
+<svg class="w-8 h-8 ml-1 transform group-hover/play:scale-110 transition-transform" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg>
+</button>
+<!-- Bottom Cinema HUD Controls Bar -->
+<div class="absolute bottom-0 inset-x-0 p-4 bg-gradient-to-t from-slate-950 via-slate-950/80 to-transparent flex flex-col space-y-2">
+<!-- Timeline Scrub Bar -->
+<div class="w-full flex items-center space-x-3">
+<div class="flex-1 h-1.5 bg-white/20 rounded-full overflow-hidden relative cursor-pointer group/bar">
+<div class="h-full w-[48%] bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 rounded-full"></div>
+<div class="absolute left-[48%] top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full shadow-neon-cyan opacity-0 group-hover/bar:opacity-100 transition-opacity"></div>
+</div>
+<span class="text-[11px] font-mono text-cyan-300 whitespace-nowrap">01:24 / 02:49</span>
+</div>
+<!-- Player Controls -->
+<div class="flex items-center justify-between pt-1">
+<div class="flex items-center space-x-4 text-slate-300">
+<button class="hover:text-cyan-300 transition" title="Pausa / Riproduci">
+<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"></path></svg>
+</button>
+<div class="flex items-center space-x-2">
+<button class="hover:text-cyan-300 transition" title="Volume">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+<div class="w-16 h-1 bg-white/20 rounded-full overflow-hidden">
+<div class="h-full w-3/4 bg-cyan-400"></div>
+</div>
+</div>
+</div>
+<!-- Tagline in player -->
+<p class="hidden md:block text-xs italic text-slate-300 text-center tracking-wide">
+                “Il segreto per salvare il loro mondo potrebbe distruggere il nostro.”
+              </p>
+<div class="flex items-center space-x-3 text-slate-300">
+<button type="button" aria-label="Attiva sottotitoli (Closed Captions)" aria-pressed="false" class="px-2 py-0.5 text-[11px] font-mono font-bold rounded bg-white/10 hover:bg-cyan-400/20 hover:text-cyan-300 text-slate-300 border border-slate-700 hover:border-cyan-400/40 transition flex items-center space-x-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400"><svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M19 4H5a2 2 0 00-2 2v12a2 2 0 002 2h14a2 2 0 002-2V6a2 2 0 00-2-2zm-8 7H9.5v-.5h-2v3h2V13H11v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-4a1 1 0 011-1h3a1 1 0 011 1v1zm7 0h-1.5v-.5h-2v3h2V13H18v1a1 1 0 01-1 1h-3a1 1 0 01-1-1v-4a1 1 0 011-1h3a1 1 0 011 1v1z"></path></svg><span class="">CC</span></button><span class="text-[11px] font-mono px-2 py-0.5 rounded bg-white/10 hover:bg-white/20 cursor-pointer text-cyan-300 border border-cyan-400/20">4K UHD</span>
+<button class="hover:text-cyan-300 transition" title="Schermo intero">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- SECTION 2: Cast Completo & Ruoli -->
+<!-- SECTION: Interactive Original Soundtrack & Audio Player -->
+<div class="space-y-4" data-purpose="soundtrack-player-section" id="soundtrackPlayerSection">
+  <div class="flex items-center justify-between pb-2 border-b border-slate-800">
+    <div class="flex items-center space-x-2">
+      <span class="w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_8px_#00f2fe]"></span>
+      <h3 class="text-sm font-bold uppercase tracking-wider text-white flex items-center space-x-2">
+        <svg class="w-4 h-4 text-cyan-400 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12 0c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path>
+        </svg>
+        <span class="">Colonna Sonora Originale &amp; Audio</span>
+      </h3>
+    </div>
+    <div class="flex items-center space-x-2">
+      <span class="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-purple-500/10 text-purple-300 border border-purple-400/20">Synthesizer &amp; Orchestral Cyberpunk</span>
+      <span class="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-300 border border-cyan-400/20">Dolby Atmos Hi-Res</span>
+    <div class="flex items-center space-x-1.5 border-l border-slate-800 pl-2 ml-1"><a href="https://open.spotify.com" target="_blank" rel="noopener noreferrer" class="flex items-center space-x-1.5 px-2.5 py-1 rounded-full glass-pill border border-emerald-400/30 bg-emerald-500/10 text-emerald-400 hover:text-white hover:bg-emerald-500/20 hover:border-emerald-400/60 transition shadow-[0_0_8px_#34d399] text-[10px] font-semibold tracking-wide group" title="Ascolta su Spotify" aria-label="Ascolta l'album completo su Spotify (apre in una nuova scheda)"><svg class="w-3.5 h-3.5 fill-current text-emerald-400 group-hover:scale-110 transition-transform" viewBox="0 0 24 24"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.498 17.306c-.218.358-.683.473-1.042.253-2.859-1.748-6.458-2.143-10.697-1.173-.41.093-.815-.162-.907-.571-.093-.41.162-.815.571-.907 4.639-1.06 8.623-.615 11.82 1.356.359.22.474.684.255 1.042zm1.467-3.262c-.274.447-.859.59-1.306.315-3.273-2.012-8.261-2.595-12.132-1.42-.503.153-1.037-.134-1.19-.637-.152-.503.134-1.037.637-1.19 4.425-1.343 9.932-.693 13.676 1.626.447.275.59.86.315 1.306zm.126-3.41c-3.924-2.33-10.395-2.545-14.137-1.408-.601.183-1.242-.162-1.424-.763-.183-.601.162-1.242.763-1.424 4.305-1.307 11.455-1.055 15.986 1.635.54.32.716 1.023.396 1.564-.32.539-1.024.716-1.584.396z"></path></svg><span class="">Spotify</span></a><a href="https://music.apple.com" target="_blank" rel="noopener noreferrer" class="flex items-center space-x-1.5 px-2.5 py-1 rounded-full glass-pill border border-pink-400/30 bg-pink-500/10 text-pink-300 hover:text-white hover:bg-pink-500/20 hover:border-pink-400/60 transition shadow-[0_0_8px_#c084fc] text-[10px] font-semibold tracking-wide group" title="Ascolta su Apple Music" aria-label="Ascolta l'album completo su Apple Music (apre in una nuova scheda)"><svg class="w-3.5 h-3.5 fill-current text-pink-400 group-hover:scale-110 transition-transform" viewBox="0 0 24 24"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.12 7.74l.01.03v7.35c0 2.21-1.79 4-4 4-2.21 0-4-1.79-4-4s1.79-4 4-4c.48 0 .93.09 1.35.25V9.06l-6 1.44v5.62c0 2.21-1.79 4-4 4-2.21 0-4-1.79-4-4s1.79-4 4-4c.48 0 .93.09 1.35.25V7.12c0-.5.37-.92.86-.98l7.5-1.8c.28-.07.57.01.78.2.22.19.34.46.34.75v2.45h.82z"></path></svg><span class="">Apple Music</span></a></div></div>
+  </div>
+
+  <!-- Audio Player Core Widget -->
+  <div class="glass-card p-4 rounded-xl border border-cyan-500/30 shadow-2xl relative overflow-hidden bg-gradient-to-br from-slate-900/90 to-[#060913]">
+    <div class="grid grid-cols-1 md:grid-cols-12 gap-5 items-center">
+      <!-- Vinyl/Album Art & Pulse visual -->
+      <div class="md:col-span-4 flex items-center space-x-3.5">
+        <div class="relative flex-shrink-0 group cursor-pointer" id="ostVinylDisc">
+          <div class="w-16 h-16 rounded-full bg-slate-950 border-2 border-cyan-400/60 shadow-[0_0_15px_rgba(0,242,254,0.35)] flex items-center justify-center relative overflow-hidden transition-transform duration-700">
+            <!-- Vinyl Grooves -->
+            <div class="absolute inset-1 rounded-full border border-slate-700/60"></div>
+            <div class="absolute inset-2.5 rounded-full border border-slate-800/80"></div>
+            <div class="absolute inset-4 rounded-full border border-cyan-500/30"></div>
+            <div class="w-5 h-5 rounded-full bg-gradient-to-tr from-cyan-400 to-purple-600 flex items-center justify-center">
+              <div class="w-2 h-2 rounded-full bg-slate-950"></div>
+            </div>
+          </div>
+          <span class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-cyan-400 flex items-center justify-center text-slate-950 text-[9px] font-bold shadow-sm">♪</span>
+        </div>
+        <div class="min-w-0 flex-1">
+          <span class="text-[9px] font-mono uppercase text-cyan-400 tracking-wider block">In Riproduzione</span>
+          <h4 class="text-sm font-bold text-white truncate" id="ostCurrentTitle">01. 2049</h4>
+          <p class="text-[11px] text-slate-400 truncate mt-0.5" id="ostCurrentArtist">Hans Zimmer &amp; Benjamin Wallfisch</p>
+          <div class="flex items-center space-x-1.5 mt-1">
+            <span class="text-[9px] px-1.5 py-0.2 rounded bg-cyan-500/20 text-cyan-300 font-mono">FLAC 24-bit / 96kHz</span>
+            <span class="text-[9px] px-1.5 py-0.2 rounded bg-white/5 text-slate-300 font-mono">Spatial Audio</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Interactive Visualizer Waveform & Timeline Controls -->
+      <div class="md:col-span-8 flex flex-col space-y-2.5">
+        <!-- Controls Bar -->
+        <div class="flex items-center justify-between">
+          <!-- Playback buttons -->
+          <div class="flex items-center space-x-2.5">
+            <button class="w-7 h-7 rounded-lg glass-pill flex items-center justify-center text-slate-400 hover:text-white transition" id="ostShuffleBtn" title="Casuale">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4h4l3 5m4 6l3 5h4M4 20h4l8-12h4m-4-3h4v4m0 10h4v4"></path></svg>
+            </button>
+            <button class="w-7 h-7 rounded-lg glass-pill flex items-center justify-center text-slate-400 hover:text-white transition" id="ostPrevBtn" title="Traccia Precedente">
+              <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"></path></svg>
+            </button>
+            <button class="w-9 h-9 rounded-full bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 flex items-center justify-center shadow-neon-cyan hover:scale-105 active:scale-95 transition-all" id="ostPlayBtn" title="Riproduci / Pausa" aria-label="Riproduci traccia 01. 2049">
+              <svg class="w-4 h-4 ml-0.5" id="ostPlayIcon" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg>
+            </button>
+            <button class="w-7 h-7 rounded-lg glass-pill flex items-center justify-center text-slate-400 hover:text-white transition" id="ostNextBtn" title="Traccia Successiva">
+              <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"></path></svg>
+            </button>
+            <button class="w-7 h-7 rounded-lg glass-pill flex items-center justify-center text-slate-400 hover:text-white transition" id="ostRepeatBtn" title="Ripeti">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+            </button>
+          </div>
+
+          <!-- Neon Audio Frequency Bars Visualizer -->
+          <div class="flex items-end space-x-1 h-5 px-2" id="ostFreqBars">
+            <div class="w-1 bg-cyan-400 rounded-full h-2 transition-all duration-300"></div>
+            <div class="w-1 bg-cyan-400 rounded-full h-4 transition-all duration-300"></div>
+            <div class="w-1 bg-blue-400 rounded-full h-5 transition-all duration-300"></div>
+            <div class="w-1 bg-purple-400 rounded-full h-3 transition-all duration-300"></div>
+            <div class="w-1 bg-purple-400 rounded-full h-4 transition-all duration-300"></div>
+            <div class="w-1 bg-pink-400 rounded-full h-2 transition-all duration-300"></div>
+            <div class="w-1 bg-cyan-400 rounded-full h-4 transition-all duration-300"></div>
+            <div class="w-1 bg-blue-400 rounded-full h-3 transition-all duration-300"></div>
+          </div>
+
+          <!-- Volume Control -->
+          <div class="flex items-center space-x-2">
+            <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path></svg>
+            <input class="w-16 h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-cyan-400 focus:outline-none" id="ostVolumeSlider" max="100" min="0" type="range" value="80" role="slider" aria-label="Livello volume" aria-valuemin="0" aria-valuemax="100" aria-valuenow="80">
+          </div>
+        </div>
+
+        <!-- Waveform Seekbar / Progress -->
+        <div class="flex items-center space-x-3">
+          <span class="text-[10px] font-mono text-cyan-300" id="ostCurrentTime">01:42</span>
+          <div class="flex-1 h-2 bg-space-900 rounded-full overflow-hidden relative cursor-pointer group/audiobar" id="ostProgressContainer" role="slider" tabindex="0" aria-label="Avanzamento traccia audio" aria-valuemin="0" aria-valuemax="217" aria-valuenow="102" aria-valuetext="1 minuto e 42 secondi su 3 minuti e 37 secondi">
+            <div class="h-full w-[46%] bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 rounded-full" id="ostProgressBar"></div>
+            <div class="absolute left-[46%] top-1/2 -translate-y-1/2 w-2.5 h-2.5 bg-white rounded-full shadow-neon-cyan opacity-0 group-hover/audiobar:opacity-100 transition-opacity" id="ostProgressScrubber"></div>
+          </div>
+          <span class="text-[10px] font-mono text-slate-400" id="ostTotalDuration">03:37</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Compact Cyber Tracklist -->
+    <div class="mt-4 pt-3 border-t border-slate-800/80">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Tracklist Principale Selezionata</span>
+        <span class="text-[10px] text-cyan-400 font-mono">6 Tracce · 14:46 min totali</span>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2" id="ostTracklistGrid"><div role="button" tabindex="0" aria-label="Traccia 1: 2049 di Hans Zimmer e Benjamin Wallfisch, durata 3 minuti e 37 secondi, attualmente in riproduzione" class="glass-pill p-2.5 rounded-lg border border-cyan-400/50 bg-cyan-950/20 flex items-center justify-between cursor-pointer hover:border-cyan-400 transition group ost-track-item" data-index="0" data-title="2049" data-artist="Hans Zimmer &amp; Benjamin Wallfisch" data-duration="03:37"><div class="flex items-center space-x-2 min-w-0"><span class="w-5 text-[10px] font-mono text-cyan-300 font-bold group-hover:hidden">01</span><svg class="w-4 h-4 text-cyan-400 hidden group-hover:block flex-shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg><div class="min-w-0"><p class="text-xs font-semibold text-cyan-300 truncate">2049</p><p class="text-[10px] text-slate-300 truncate">Hans Zimmer, B. Wallfisch</p></div></div><div class="flex items-center space-x-1.5 flex-shrink-0"><span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping"></span><span class="text-[10px] font-mono text-cyan-300">3:37</span></div></div><div role="button" tabindex="0" aria-label="Traccia 2: Sapper's Tree di Hans Zimmer e Benjamin Wallfisch, durata 1 minuto e 36 secondi" class="glass-pill p-2.5 rounded-lg border border-slate-800 hover:border-cyan-400/40 flex items-center justify-between cursor-pointer transition group ost-track-item" data-index="1" data-title="Sapper's Tree" data-artist="Hans Zimmer &amp; Benjamin Wallfisch" data-duration="01:36"><div class="flex items-center space-x-2 min-w-0"><span class="w-5 text-[10px] font-mono text-slate-400 group-hover:hidden">02</span><svg class="w-4 h-4 text-cyan-400 hidden group-hover:block flex-shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg><div class="min-w-0"><p class="text-xs font-medium text-slate-200 group-hover:text-cyan-300 truncate">Sapper's Tree</p><p class="text-[10px] text-slate-300 truncate">Atmospheric Ambient</p></div></div><span class="text-[10px] font-mono text-slate-300">1:36</span></div><div role="button" tabindex="0" aria-label="Traccia 3: Flight to LAPD di Hans Zimmer e Benjamin Wallfisch, durata 1 minuto e 47 secondi" class="glass-pill p-2.5 rounded-lg border border-slate-800 hover:border-cyan-400/40 flex items-center justify-between cursor-pointer transition group ost-track-item" data-index="2" data-title="Flight to LAPD" data-artist="Hans Zimmer &amp; Benjamin Wallfisch" data-duration="01:47"><div class="flex items-center space-x-2 min-w-0"><span class="w-5 text-[10px] font-mono text-slate-400 group-hover:hidden">03</span><svg class="w-4 h-4 text-cyan-400 hidden group-hover:block flex-shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg><div class="min-w-0"><p class="text-xs font-medium text-slate-200 group-hover:text-cyan-300 truncate">Flight to LAPD</p><p class="text-[10px] text-slate-300 truncate">Analog CS-80 Synth</p></div></div><span class="text-[10px] font-mono text-slate-300">1:47</span></div><div role="button" tabindex="0" aria-label="Traccia 4: Rain di Hans Zimmer e Benjamin Wallfisch, durata 2 minuti e 26 secondi" class="glass-pill p-2.5 rounded-lg border border-slate-800 hover:border-cyan-400/40 flex items-center justify-between cursor-pointer transition group ost-track-item" data-index="3" data-title="Rain" data-artist="Hans Zimmer &amp; Benjamin Wallfisch" data-duration="02:26"><div class="flex items-center space-x-2 min-w-0"><span class="w-5 text-[10px] font-mono text-slate-400 group-hover:hidden">04</span><svg class="w-4 h-4 text-cyan-400 hidden group-hover:block flex-shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg><div class="min-w-0"><p class="text-xs font-medium text-slate-200 group-hover:text-cyan-300 truncate">Rain</p><p class="text-[10px] text-slate-300 truncate">Melancholy Piano &amp; Strings</p></div></div><span class="text-[10px] font-mono text-slate-300">2:26</span></div><div role="button" tabindex="0" aria-label="Traccia 5: Mesa di Hans Zimmer e Benjamin Wallfisch, durata 3 minuti e 10 secondi" class="glass-pill p-2.5 rounded-lg border border-slate-800 hover:border-cyan-400/40 flex items-center justify-between cursor-pointer transition group ost-track-item" data-index="4" data-title="Mesa" data-artist="Hans Zimmer &amp; Benjamin Wallfisch" data-duration="03:10"><div class="flex items-center space-x-2 min-w-0"><span class="w-5 text-[10px] font-mono text-slate-400 group-hover:hidden">05</span><svg class="w-4 h-4 text-cyan-400 hidden group-hover:block flex-shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg><div class="min-w-0"><p class="text-xs font-medium text-slate-200 group-hover:text-cyan-300 truncate">Mesa</p><p class="text-[10px] text-slate-300 truncate">Heavy Brass &amp; Percussion</p></div></div><span class="text-[10px] font-mono text-slate-300">3:10</span></div><div role="button" tabindex="0" aria-label="Traccia 6: Tears in the Rain di Hans Zimmer e Benjamin Wallfisch, durata 2 minuti e 10 secondi" class="glass-pill p-2.5 rounded-lg border border-slate-800 hover:border-cyan-400/40 flex items-center justify-between cursor-pointer transition group ost-track-item" data-index="5" data-title="Tears in the Rain" data-artist="Hans Zimmer &amp; Benjamin Wallfisch" data-duration="02:10"><div class="flex items-center space-x-2 min-w-0"><span class="w-5 text-[10px] font-mono text-slate-400 group-hover:hidden">06</span><svg class="w-4 h-4 text-cyan-400 hidden group-hover:block flex-shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg><div class="min-w-0"><p class="text-xs font-medium text-slate-200 group-hover:text-cyan-300 truncate">Tears in the Rain</p><p class="text-[10px] text-slate-300 truncate">Vangelis Tribute Theme</p></div></div><span class="text-[10px] font-mono text-slate-300">2:10</span></div></div>
+    </div>
+  </div>
+</div><div class="space-y-4" data-purpose="cast-and-crew-section">
+<div class="flex items-center justify-between pb-2 border-b border-slate-800">
+<div class="flex items-center space-x-2">
+<span class="w-2 h-2 rounded-full bg-purple-400 shadow-[0_0_8px_#a855f7]"></span>
+<h3 class="text-sm font-bold uppercase tracking-wider text-white">Cast Principale &amp; Personaggi</h3>
+</div>
+<span class="text-xs text-slate-400 font-mono">7 Interpreti Accreditati</span>
+</div>
+<!-- Cast Cards Grid -->
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+<!-- Actor 1: Ryan Gosling -->
+<div class="glass-pill p-3.5 rounded-xl border border-slate-700/60 hover:border-cyan-400/40 transition group">
+<div class="flex items-center space-x-3">
+<div class="w-11 h-11 rounded-full bg-gradient-to-tr from-cyan-500 to-blue-600 p-[1.5px] flex-shrink-0">
+<div class="w-full h-full rounded-full bg-slate-900 flex items-center justify-center font-bold text-xs text-cyan-300">
+                  RG
+                </div>
+</div>
+<div class="min-w-0 flex-1">
+<div class="flex items-center justify-between">
+<h4 class="text-xs font-bold text-white truncate group-hover:text-cyan-300 transition">Ryan Gosling</h4>
+</div>
+<p class="text-[11px] text-cyan-400 font-medium truncate">Agente K / Joe</p>
+<span class="inline-block mt-1 text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-300 border border-cyan-400/20 font-semibold">Ruolo Principale</span>
+</div>
+</div>
+</div>
+<!-- Actor 2: Harrison Ford -->
+<div class="glass-pill p-3.5 rounded-xl border border-slate-700/60 hover:border-cyan-400/40 transition group">
+<div class="flex items-center space-x-3">
+<div class="w-11 h-11 rounded-full bg-gradient-to-tr from-amber-400 to-orange-600 p-[1.5px] flex-shrink-0">
+<div class="w-full h-full rounded-full bg-slate-900 flex items-center justify-center font-bold text-xs text-amber-300">
+                  HF
+                </div>
+</div>
+<div class="min-w-0 flex-1">
+<div class="flex items-center justify-between">
+<h4 class="text-xs font-bold text-white truncate group-hover:text-amber-300 transition">Harrison Ford</h4>
+</div>
+<p class="text-[11px] text-amber-400 font-medium truncate">Rick Deckard</p>
+<span class="inline-block mt-1 text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-400/20 font-semibold">Ruolo Principale</span>
+</div>
+</div>
+</div>
+<!-- Actor 3: Ana de Armas -->
+<div class="glass-pill p-3.5 rounded-xl border border-slate-700/60 hover:border-pink-400/40 transition group">
+<div class="flex items-center space-x-3">
+<div class="w-11 h-11 rounded-full bg-gradient-to-tr from-pink-500 to-purple-600 p-[1.5px] flex-shrink-0">
+<div class="w-full h-full rounded-full bg-slate-900 flex items-center justify-center font-bold text-xs text-pink-300">
+                  AA
+                </div>
+</div>
+<div class="min-w-0 flex-1">
+<div class="flex items-center justify-between">
+<h4 class="text-xs font-bold text-white truncate group-hover:text-pink-300 transition">Ana de Armas</h4>
+</div>
+<p class="text-[11px] text-pink-400 font-medium truncate">Joi</p>
+<span class="inline-block mt-1 text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-pink-500/10 text-pink-300 border border-pink-400/20 font-semibold">Intelligenza Olografica</span>
+</div>
+</div>
+</div>
+<!-- Actor 4: Sylvia Hoeks -->
+<div class="glass-pill p-3.5 rounded-xl border border-slate-700/60 hover:border-purple-400/40 transition group">
+<div class="flex items-center space-x-3">
+<div class="w-11 h-11 rounded-full bg-gradient-to-tr from-purple-500 to-indigo-600 p-[1.5px] flex-shrink-0">
+<div class="w-full h-full rounded-full bg-slate-900 flex items-center justify-center font-bold text-xs text-purple-300">
+                  SH
+                </div>
+</div>
+<div class="min-w-0 flex-1">
+<div class="flex items-center justify-between">
+<h4 class="text-xs font-bold text-white truncate group-hover:text-purple-300 transition">Sylvia Hoeks</h4>
+</div>
+<p class="text-[11px] text-purple-400 font-medium truncate">Luv</p>
+<span class="inline-block mt-1 text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-white/5 text-slate-400 border border-white/10 font-semibold">Ruolo di Supporto</span>
+</div>
+</div>
+</div>
+<!-- Actor 5: Robin Wright -->
+<div class="glass-pill p-3.5 rounded-xl border border-slate-700/60 hover:border-blue-400/40 transition group">
+<div class="flex items-center space-x-3">
+<div class="w-11 h-11 rounded-full bg-gradient-to-tr from-blue-500 to-cyan-600 p-[1.5px] flex-shrink-0">
+<div class="w-full h-full rounded-full bg-slate-900 flex items-center justify-center font-bold text-xs text-blue-300">
+                  RW
+                </div>
+</div>
+<div class="min-w-0 flex-1">
+<div class="flex items-center justify-between">
+<h4 class="text-xs font-bold text-white truncate group-hover:text-blue-300 transition">Robin Wright</h4>
+</div>
+<p class="text-[11px] text-blue-400 font-medium truncate">Tenente Joshi</p>
+<span class="inline-block mt-1 text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-white/5 text-slate-400 border border-white/10 font-semibold">Ruolo di Supporto</span>
+</div>
+</div>
+</div>
+<!-- Actor 6: Jared Leto -->
+<div class="glass-pill p-3.5 rounded-xl border border-slate-700/60 hover:border-emerald-400/40 transition group">
+<div class="flex items-center space-x-3">
+<div class="w-11 h-11 rounded-full bg-gradient-to-tr from-emerald-500 to-teal-600 p-[1.5px] flex-shrink-0">
+<div class="w-full h-full rounded-full bg-slate-900 flex items-center justify-center font-bold text-xs text-emerald-300">
+                  JL
+                </div>
+</div>
+<div class="min-w-0 flex-1">
+<div class="flex items-center justify-between">
+<h4 class="text-xs font-bold text-white truncate group-hover:text-emerald-300 transition">Jared Leto</h4>
+</div>
+<p class="text-[11px] text-emerald-400 font-medium truncate">Niander Wallace</p>
+<span class="inline-block mt-1 text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-white/5 text-slate-400 border border-white/10 font-semibold">Ruolo di Supporto</span>
+</div>
+</div>
+</div>
+<!-- Actor 7: Dave Bautista -->
+<div class="glass-pill p-3.5 rounded-xl border border-slate-700/60 hover:border-red-400/40 transition group">
+<div class="flex items-center space-x-3">
+<div class="w-11 h-11 rounded-full bg-gradient-to-tr from-rose-500 to-red-600 p-[1.5px] flex-shrink-0">
+<div class="w-full h-full rounded-full bg-slate-900 flex items-center justify-center font-bold text-xs text-rose-300">
+                  DB
+                </div>
+</div>
+<div class="min-w-0 flex-1">
+<div class="flex items-center justify-between">
+<h4 class="text-xs font-bold text-white truncate group-hover:text-rose-300 transition">Dave Bautista</h4>
+</div>
+<p class="text-[11px] text-rose-400 font-medium truncate">Sapper Morton</p>
+<span class="inline-block mt-1 text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-white/5 text-slate-400 border border-white/10 font-semibold">Ruolo di Supporto</span>
+</div>
+</div>
+</div>
+<!-- Technical Highlight Card -->
+<div class="glass-pill p-3.5 rounded-xl border border-cyan-500/30 bg-cyan-950/20 flex flex-col justify-center">
+<div class="text-[10px] uppercase font-bold text-cyan-400 tracking-wider mb-1">Riconoscimenti Tecnici</div>
+<p class="text-xs font-bold text-white">2 Premi Oscar®</p>
+<p class="text-[10px] text-slate-400 mt-0.5">Miglior Fotografia &amp; Migliori Effetti Speciali</p>
+</div>
+</div>
+</div>
+<!-- SECTION 3: Technical Crew / Crediti Tecnici -->
+<div class="p-4 rounded-xl glass-card border border-white/10 flex flex-wrap gap-6 items-center justify-between">
+<div>
+<span class="text-[10px] uppercase tracking-wider font-semibold text-slate-400 block">Regia</span>
+<span class="text-xs font-bold text-white">Denis Villeneuve</span>
+</div>
+<div class="border-l border-slate-800 pl-6">
+<span class="text-[10px] uppercase tracking-wider font-semibold text-slate-400 block">Direttore della Fotografia</span>
+<span class="text-xs font-bold text-cyan-300">Roger Deakins <span class="text-[10px] text-amber-400 font-normal">(Premio Oscar)</span></span>
+</div>
+<div class="border-l border-slate-800 pl-6">
+<span class="text-[10px] uppercase tracking-wider font-semibold text-slate-400 block">Colonna Sonora Originale</span>
+<span class="text-xs font-bold text-purple-300">Hans Zimmer &amp; Benjamin Wallfisch</span>
+</div>
+<div class="border-l border-slate-800 pl-6">
+<span class="text-[10px] uppercase tracking-wider font-semibold text-slate-400 block">Sceneggiatura</span>
+<span class="text-xs font-bold text-slate-200">Hampton Fancher &amp; Michael Green</span>
+</div>
+</div>
+</div>
+<!-- Modal Footer Actions -->
+<div class="px-6 py-4 border-t border-slate-800/80 bg-slate-900/60 flex items-center justify-between">
+<div class="text-xs text-slate-400 flex items-center space-x-2">
+<span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+<span class="">Streaming 4K disponibile sui canali collegati FAISS</span>
+</div>
+<div class="flex items-center space-x-3">
+<button class="px-4 py-2 rounded-xl text-xs font-medium text-slate-300 hover:text-white glass-pill hover:bg-white/10 transition" id="modalCloseActionBtn">
+          Chiudi Scheda
+        </button>
+<button class="px-5 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-600 text-slate-950 hover:brightness-110 shadow-neon-blue transition flex items-center space-x-1.5">
+<svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z"></path></svg>
+<span class="">Salva nei Preferiti</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- END: Interactive Movie Modal -->
+<!-- BEGIN: Logic & Three.js Canvas Implementation -->
+<script data-purpose="threejs-interactive-sphere">
+    // Mock Database for Films
+    const MOVIES_DATABASE = [
+      {
+        id: "m1",
+        title: "Blade Runner 2049",
+        director: "Denis Villeneuve",
+        year: 2017,
+        rating: "8.0",
+        genre: "Fantascienza · Cyberpunk",
+        affinity: "98.4%",
+        color: 0x00f2fe,
+        synopsis: "In un futuro decadente, l'agente K scopre un segreto sepolto da decenni che minaccia l'equilibrio tra umani e replicanti. La sua missione lo condurrà a Rick Deckard.",
+        tags: ["Intelligenza Artificiale", "Crisi d'Identità", "Fotografia Neo-Noir", "Distopia Urbana"],
+        position: [60, 45, 110]
+      },
+      {
+        id: "m2",
+        title: "The Matrix",
+        director: "Lana & Lilly Wachowski",
+        year: 1999,
+        rating: "8.7",
+        genre: "Cyberpunk · Cult",
+        affinity: "96.1%",
+        color: 0xa855f7,
+        synopsis: "Un hacker scopre che la sua intera realtà è in verità una complessa simulazione digitale creata da macchine senzienti per schiavizzare la specie umana.",
+        tags: ["Simulazione", "Cyberpunk", "Messia Tecnologico", "Arti Marziali"],
+        position: [90, 60, 80]
+      },
+      {
+        id: "m3",
+        title: "Interstellar",
+        director: "Christopher Nolan",
+        year: 2014,
+        rating: "8.7",
+        genre: "Fantascienza · Spazio",
+        affinity: "93.5%",
+        color: 0x4facfe,
+        synopsis: "Un team di esploratori sfrutta un cunicolo spaziale appena scoperto per superare i limiti dei viaggi umani e cercare un pianeta per salvare l'umanità.",
+        tags: ["Spazio-Tempo", "Relatività", "Amore Filiale", "Fisica Teorica"],
+        position: [30, 110, 40]
+      },
+      {
+        id: "m4",
+        title: "Inception",
+        director: "Christopher Nolan",
+        year: 2010,
+        rating: "8.8",
+        genre: "Thriller & Sci-Fi",
+        affinity: "94.2%",
+        color: 0x38bdf8,
+        synopsis: "Un ladro esperto nell'estrazione di segreti dal subconscio durante il sonno riceve l'opportunità di compiere il processo inverso: innestare un'idea.",
+        tags: ["Sogno Lucido", "Subconscio", "Heist Psicologico", "Architettura Mentale"],
+        position: [110, 20, 50]
+      },
+      {
+        id: "m5",
+        title: "2001: Odissea nello Spazio",
+        director: "Stanley Kubrick",
+        year: 1968,
+        rating: "8.3",
+        genre: "Fantascienza Filosofica",
+        affinity: "92.0%",
+        color: 0x00f2fe,
+        synopsis: "Un misterioso monolito conduce l'umanità dai suoi albori fino a una missione spaziale verso Giove, guidata dal supercomputer HAL 9000.",
+        tags: ["Evoluzione Umana", "Cosmo", "IA Senziente", "Filosofia Cosmica"],
+        position: [40, -90, 80]
+      },
+      {
+        id: "m6",
+        title: "Ghost in the Shell",
+        director: "Mamoru Oshii",
+        year: 1995,
+        rating: "7.9",
+        genre: "Anime · Cyberpunk",
+        affinity: "91.8%",
+        color: 0xc084fc,
+        synopsis: "Il Maggiore Motoko Kusanagi guida la Sezione 9 nella caccia al 'Burattinaio', un hacker che viola le menti cibernetiche dei cittadini.",
+        tags: ["Coscienza", "Cyborg", "Filosofia Esistenziale", "Estetica Tokyo 90s"],
+        position: [100, 80, -30]
+      },
+      {
+        id: "m7",
+        title: "Dune (Part One & Two)",
+        director: "Denis Villeneuve",
+        year: 2021,
+        rating: "8.5",
+        genre: "Epica Sci-Fi",
+        affinity: "89.4%",
+        color: 0xf59e0b,
+        synopsis: "Paul Atreides deve viaggiare sul pianeta più pericoloso dell'universo per assicurare il futuro della sua casata e di un intero popolo.",
+        tags: ["Politica Galattica", "Misticismo", "Pianeta Arrakis", "Ecologia"],
+        position: [-60, 95, 60]
+      },
+      {
+        id: "m8",
+        title: "Pulp Fiction",
+        director: "Quentin Tarantino",
+        year: 1994,
+        rating: "8.9",
+        genre: "Cult · Crime",
+        affinity: "85.2%",
+        color: 0xfbbf24,
+        synopsis: "Le vite di due sicari, della moglie di un boss, di un pugile in fuga e di una coppia di rapinatori si intrecciano in racconti imprevedibili.",
+        tags: ["Narrativa Non-Lineare", "Dialoghi Iconici", "Neo-Noir", "Crime Pop"],
+        position: [-90, -70, 70]
+      },
+      {
+        id: "m9",
+        title: "La Città Incantata",
+        director: "Hayao Miyazaki",
+        year: 2001,
+        rating: "8.6",
+        genre: "Animazione & Fantastico",
+        affinity: "87.0%",
+        color: 0x10b981,
+        synopsis: "Chihiro, intrappolata in una stazione termale per spiriti e divinità, deve trovare il coraggio di liberare i genitori trasformati in maiali.",
+        tags: ["Spiriti", "Mondo Onirico", "Studio Ghibli", "Rito di Passaggio"],
+        position: [-80, 50, -90]
+      },
+      {
+        id: "m10",
+        title: "Parasite",
+        director: "Bong Joon-ho",
+        year: 2019,
+        rating: "8.5",
+        genre: "Drammatico · Thriller",
+        affinity: "86.4%",
+        color: 0x34d399,
+        synopsis: "La povera famiglia Kim orchestra con astuzia un piano per farsi assumere uno a uno dalla ricchissima famiglia Park, innescando una spirale imprevista.",
+        tags: ["Lotta di Classe", "Architettura Spaziale", "Black Comedy", "Suspense"],
+        position: [-100, -30, -50]
+      },
+      {
+        id: "m11",
+        title: "Her",
+        director: "Spike Jonze",
+        year: 2013,
+        rating: "8.0",
+        genre: "Sci-Fi Romantico",
+        affinity: "88.2%",
+        color: 0xec4899,
+        synopsis: "In un futuro prossimo, un uomo solitario sviluppa una relazione sentimentale profonda con un sistema operativo dotato di intelligenza emotiva.",
+        tags: ["Solitudine Moderna", "Amore Digitale", "Futuro Gentile", "Voce Intima"],
+        position: [20, 40, 120]
+      },
+      {
+        id: "m12",
+        title: "Il Cavaliere Oscuro",
+        director: "Christopher Nolan",
+        year: 2008,
+        rating: "9.0",
+        genre: "Thriller · Crime Cult",
+        affinity: "90.1%",
+        color: 0x60a5fa,
+        synopsis: "Batman alza la posta nella sua guerra al crimine. Con l'aiuto del tenente Gordon e del procuratore Dent cerca di fermare il caotico Joker.",
+        tags: ["Caos vs Ordine", "Dilemma Morale", "Gotham City", "Supereroi Realistici"],
+        position: [70, -80, -60]
+      }
+    ];
+
+    // Three.js Scene Setup
+    const container = document.getElementById('canvas-container');
+    let scene, camera, renderer, sphereGroup, pointCloud, linesMesh;
+    let movieMeshes = [];
+    let isRotating = true;
+    let hoveredMesh = null;
+    let selectedMesh = null;
+
+    // Interaction Variables
+    let isDragging = false;
+    let previousMousePosition = { x: 0, y: 0 };
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
+
+    const tooltip = document.getElementById('movieTooltip');
+    const tooltipTitle = document.getElementById('tooltipTitle');
+    const tooltipGenre = document.getElementById('tooltipGenre');
+    const tooltipScore = document.getElementById('tooltipScore');
+    const tooltipMeta = document.getElementById('tooltipMeta');
+
+    function initThree() {
+      // Scene
+      scene = new THREE.Scene();
+      scene.fog = new THREE.FogExp2(0x060913, 0.0022);
+
+      // Camera
+      camera = new THREE.PerspectiveCamera(48, container.clientWidth / container.clientHeight, 0.1, 1000);
+      camera.position.set(0, 0, 310);
+
+      // Renderer
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      renderer.setSize(container.clientWidth, container.clientHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      container.appendChild(renderer.domElement);
+
+      // Container group for rotation
+      sphereGroup = new THREE.Group();
+      scene.add(sphereGroup);
+
+      // 1. Ambient & Directional Lights
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.65);
+      scene.add(ambientLight);
+
+      const bluePoint = new THREE.PointLight(0x00f2fe, 2, 400);
+      bluePoint.position.set(150, 150, 120);
+      scene.add(bluePoint);
+
+      const purplePoint = new THREE.PointLight(0xa855f7, 2, 400);
+      purplePoint.position.set(-150, -120, -120);
+      scene.add(purplePoint);
+
+      // 2. Translucent Inner Sphere Mesh (Wireframe vibe)
+      const sphereGeo = new THREE.SphereGeometry(130, 36, 36);
+      const sphereMat = new THREE.MeshBasicMaterial({
+        color: 0x1e293b,
+        wireframe: true,
+        transparent: true,
+        opacity: 0.14
+      });
+      const wireSphere = new THREE.Mesh(sphereGeo, sphereMat);
+      sphereGroup.add(wireSphere);
+
+      // 3. Dense Ambient Dust Particles (Starfield Sphere)
+      const particleCount = 1400;
+      const particleGeo = new THREE.BufferGeometry();
+      const particlePositions = new Float32Array(particleCount * 3);
+      const particleColors = new Float32Array(particleCount * 3);
+
+      for (let i = 0; i < particleCount; i++) {
+        // Distribute within shell
+        const radius = 90 + Math.random() * 55;
+        const theta = Math.random() * Math.PI * 2;
+        const phi = Math.acos((Math.random() * 2) - 1);
+
+        const x = radius * Math.sin(phi) * Math.cos(theta);
+        const y = radius * Math.sin(phi) * Math.sin(theta);
+        const z = radius * Math.cos(phi);
+
+        particlePositions[i * 3] = x;
+        particlePositions[i * 3 + 1] = y;
+        particlePositions[i * 3 + 2] = z;
+
+        // Subtle gradient shades between ciano and deep purple
+        const c1 = new THREE.Color(0x00f2fe);
+        const c2 = new THREE.Color(0x8b5cf6);
+        const mixedColor = c1.lerp(c2, Math.random());
+
+        particleColors[i * 3] = mixedColor.r * 0.6;
+        particleColors[i * 3 + 1] = mixedColor.g * 0.6;
+        particleColors[i * 3 + 2] = mixedColor.b * 0.8;
+      }
+
+      particleGeo.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
+      particleGeo.setAttribute('color', new THREE.BufferAttribute(particleColors, 3));
+
+      const particleMat = new THREE.PointsMaterial({
+        size: 1.6,
+        vertexColors: true,
+        transparent: true,
+        opacity: 0.75,
+        blending: THREE.AdditiveBlending
+      });
+      pointCloud = new THREE.Points(particleGeo, particleMat);
+      sphereGroup.add(pointCloud);
+
+      // 4. Create Key Interactive Movie Nodes
+      createMovieNodes();
+
+      // 5. Create Connection Lines between close nodes (Cluster Links)
+      createClusterConnections();
+
+      // Add Events
+      window.addEventListener('resize', onWindowResize);
+      setupCanvasInteractions();
+    }
+
+    function createMovieNodes() {
+      MOVIES_DATABASE.forEach((movie) => {
+        // Outer glowing halo
+        const haloGeo = new THREE.SphereGeometry(4.2, 16, 16);
+        const haloMat = new THREE.MeshBasicMaterial({
+          color: movie.color,
+          transparent: true,
+          opacity: 0.35
+        });
+        const haloMesh = new THREE.Mesh(haloGeo, haloMat);
+
+        // Core node
+        const coreGeo = new THREE.SphereGeometry(2.4, 16, 16);
+        const coreMat = new THREE.MeshStandardMaterial({
+          color: 0xffffff,
+          emissive: movie.color,
+          emissiveIntensity: 0.9,
+          roughness: 0.2
+        });
+        const coreMesh = new THREE.Mesh(coreGeo, coreMat);
+        
+        const nodeGroup = new THREE.Group();
+        nodeGroup.position.set(...movie.position);
+        nodeGroup.add(haloMesh);
+        nodeGroup.add(coreMesh);
+
+        // Reference movie data inside mesh
+        nodeGroup.userData = { movie: movie, halo: haloMesh, core: coreMesh };
+
+        sphereGroup.add(nodeGroup);
+        movieMeshes.push(nodeGroup);
+      });
+    }
+
+    function createClusterConnections() {
+      const linePositions = [];
+      const lineColors = [];
+
+      for (let i = 0; i < MOVIES_DATABASE.length; i++) {
+        for (let j = i + 1; j < MOVIES_DATABASE.length; j++) {
+          const p1 = new THREE.Vector3(...MOVIES_DATABASE[i].position);
+          const p2 = new THREE.Vector3(...MOVIES_DATABASE[j].position);
+          const distance = p1.distanceTo(p2);
+
+          // Connect movies with semantic proximity
+          if (distance < 110) {
+            linePositions.push(p1.x, p1.y, p1.z);
+            linePositions.push(p2.x, p2.y, p2.z);
+
+            const col1 = new THREE.Color(MOVIES_DATABASE[i].color);
+            const col2 = new THREE.Color(MOVIES_DATABASE[j].color);
+
+            lineColors.push(col1.r, col1.g, col1.b);
+            lineColors.push(col2.r, col2.g, col2.b);
+          }
+        }
+      }
+
+      const lineGeo = new THREE.BufferGeometry();
+      lineGeo.setAttribute('position', new THREE.Float32BufferAttribute(linePositions, 3));
+      lineGeo.setAttribute('color', new THREE.Float32BufferAttribute(lineColors, 3));
+
+      const lineMat = new THREE.LineBasicMaterial({
+        vertexColors: true,
+        transparent: true,
+        opacity: 0.38,
+        blending: THREE.AdditiveBlending
+      });
+
+      linesMesh = new THREE.LineSegments(lineGeo, lineMat);
+      sphereGroup.add(linesMesh);
+    }
+
+    function onWindowResize() {
+      camera.aspect = container.clientWidth / container.clientHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(container.clientWidth, container.clientHeight);
+    }
+
+    // Interactivity: Drag rotation, Hover Tooltip, Click Selection
+    function setupCanvasInteractions() {
+      const dom = renderer.domElement;
+
+      dom.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        previousMousePosition = { x: e.clientX, y: e.clientY };
+      });
+
+      dom.addEventListener('mousemove', (e) => {
+        const rect = dom.getBoundingClientRect();
+        mouse.x = ((e.clientX - rect.left) / container.clientWidth) * 2 - 1;
+        mouse.y = -((e.clientY - rect.top) / container.clientHeight) * 2 + 1;
+
+        if (isDragging) {
+          const deltaX = e.clientX - previousMousePosition.x;
+          const deltaY = e.clientY - previousMousePosition.y;
+
+          sphereGroup.rotation.y += deltaX * 0.005;
+          sphereGroup.rotation.x += deltaY * 0.005;
+
+          previousMousePosition = { x: e.clientX, y: e.clientY };
+        } else {
+          checkHover(e);
+        }
+      });
+
+      window.addEventListener('mouseup', () => {
+        isDragging = false;
+      });
+
+      // Canvas Click to select node
+      dom.addEventListener('click', (e) => {
+        raycaster.setFromCamera(mouse, camera);
+        const intersectableCores = movieMeshes.map(g => g.userData.core);
+        const intersects = raycaster.intersectObjects(intersectableCores);
+
+        if (intersects.length > 0) {
+          const clickedNode = intersects[0].object.parent;
+          selectMovie(clickedNode.userData.movie);
+        }
+      });
+
+      // Zoom via Mousewheel
+      dom.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        camera.position.z += e.deltaY * 0.15;
+        camera.position.z = Math.max(160, Math.min(450, camera.position.z));
+      }, { passive: false });
+    }
+
+    function checkHover(event) {
+      raycaster.setFromCamera(mouse, camera);
+      const cores = movieMeshes.map(g => g.userData.core);
+      const intersects = raycaster.intersectObjects(cores);
+
+      if (intersects.length > 0) {
+        const group = intersects[0].object.parent;
+        const movie = group.userData.movie;
+
+        if (hoveredMesh !== group) {
+          if (hoveredMesh) hoveredMesh.userData.halo.scale.set(1, 1, 1);
+          hoveredMesh = group;
+          group.userData.halo.scale.set(1.5, 1.5, 1.5);
+        }
+
+        // Show Tooltip
+        tooltipTitle.textContent = movie.title;
+        tooltipGenre.textContent = movie.genre.split('·')[0];
+        tooltipScore.textContent = `★ ${movie.rating}`;
+        tooltipMeta.textContent = `${movie.director} · ${movie.year}`;
+
+        const rect = container.getBoundingClientRect();
+        tooltip.style.left = `${event.clientX - rect.left}px`;
+        tooltip.style.top = `${event.clientY - rect.top}px`;
+        tooltip.style.opacity = '1';
+        container.style.cursor = 'pointer';
+      } else {
+        if (hoveredMesh) {
+          hoveredMesh.userData.halo.scale.set(1, 1, 1);
+          hoveredMesh = null;
+        }
+        tooltip.style.opacity = '0';
+        container.style.cursor = isDragging ? 'grabbing' : 'grab';
+      }
+    }
+
+    // UI Update upon selecting movie
+    function selectMovie(movie) {
+      document.getElementById('cardTitle').textContent = movie.title;
+      document.getElementById('cardDirector').textContent = `Regia: ${movie.director}`;
+      document.getElementById('cardYear').textContent = movie.year;
+      document.getElementById('cardRating').textContent = movie.rating;
+      document.getElementById('cardGenreBadge').textContent = movie.genre;
+      document.getElementById('cardSynopsis').textContent = movie.synopsis;
+      document.getElementById('cardAffinity').textContent = movie.affinity;
+      document.getElementById('cardAffinityBar').style.width = movie.affinity;
+
+      // Update Modal Elements to match movie
+      const modalMovieTitle = document.getElementById('modalMovieTitle');
+      const modalMovieDirector = document.getElementById('modalMovieDirector');
+      const modalMovieYear = document.getElementById('modalMovieYear');
+      if (modalMovieTitle) modalMovieTitle.textContent = movie.title;
+      if (modalMovieDirector) modalMovieDirector.textContent = movie.director;
+      if (modalMovieYear) modalMovieYear.textContent = movie.year;
+
+      // Update Tags
+      const tagsContainer = document.getElementById('cardTags');
+      tagsContainer.innerHTML = '';
+      movie.tags.forEach(tag => {
+        const badge = document.createElement('span');
+        badge.className = "text-[11px] px-2.5 py-1 rounded-lg glass-pill text-cyan-300 border-cyan-400/20";
+        badge.textContent = tag;
+        tagsContainer.appendChild(badge);
+      });
+
+      // Smooth Camera / Sphere Orientation to focus on node
+      const targetPos = new THREE.Vector3(...movie.position);
+      rotateSphereToward(targetPos);
+    }
+
+    // Public method to be called from related list clicks or search
+    window.selectMovieByName = function(name) {
+      const match = MOVIES_DATABASE.find(m => m.title.toLowerCase().includes(name.toLowerCase()));
+      if (match) {
+        selectMovie(match);
+      }
+    };
+
+    function rotateSphereToward(targetVector) {
+      // Gentle orientation animation towards target vector
+      const norm = targetVector.clone().normalize();
+      const currentRotY = sphereGroup.rotation.y;
+      sphereGroup.rotation.y = -Math.atan2(norm.x, norm.z);
+      sphereGroup.rotation.x = Math.asin(norm.y) * 0.4;
+    }
+
+    // Controls Action Listeners
+    document.getElementById('resetCamBtn').addEventListener('click', () => {
+      camera.position.set(0, 0, 310);
+      sphereGroup.rotation.set(0, 0, 0);
+    });
+
+    const toggleSpinBtn = document.getElementById('toggleSpinBtn');
+    toggleSpinBtn.addEventListener('click', () => {
+      isRotating = !isRotating;
+      toggleSpinBtn.classList.toggle('text-cyan-400', isRotating);
+    });
+
+    // View Switching
+    const viewClusterBtn = document.getElementById('viewClusterBtn');
+    const viewNetworkBtn = document.getElementById('viewNetworkBtn');
+    const viewSphereBtn = document.getElementById('viewSphereBtn');
+
+    function setActiveViewBtn(btn) {
+      [viewClusterBtn, viewNetworkBtn, viewSphereBtn].forEach(b => {
+        b.className = "px-3 py-1 rounded-lg text-xs font-medium text-slate-400 hover:text-white hover:bg-white/5 transition";
+      });
+      btn.className = "px-3 py-1 rounded-lg text-xs font-medium bg-gradient-to-r from-cyan-500/20 to-blue-600/30 text-cyan-300 border border-cyan-400/30 transition";
+    }
+
+    viewClusterBtn.addEventListener('click', () => {
+      setActiveViewBtn(viewClusterBtn);
+      linesMesh.visible = true;
+      pointCloud.material.size = 1.6;
+    });
+
+    viewNetworkBtn.addEventListener('click', () => {
+      setActiveViewBtn(viewNetworkBtn);
+      linesMesh.visible = true;
+      pointCloud.material.size = 2.4;
+    });
+
+    viewSphereBtn.addEventListener('click', () => {
+      setActiveViewBtn(viewSphereBtn);
+      linesMesh.visible = false;
+      pointCloud.material.size = 1.0;
+    });
+
+    // Slider for Semantic Similarity
+    const slider = document.getElementById('similaritySlider');
+    const simVal = document.getElementById('simVal');
+    slider.addEventListener('input', (e) => {
+      simVal.textContent = e.target.value;
+      const opacityFactor = (e.target.value - 0.5) * 2;
+      linesMesh.material.opacity = Math.max(0.1, 0.65 - opacityFactor * 0.4);
+    });
+
+    // Search Trigger
+    const searchInput = document.getElementById('searchInput');
+    document.getElementById('searchBtn').addEventListener('click', () => {
+      if (searchInput.value.trim().length > 0) {
+        window.selectMovieByName(searchInput.value.trim());
+      }
+    });
+    searchInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && searchInput.value.trim().length > 0) {
+        window.selectMovieByName(searchInput.value.trim());
+      }
+    });
+
+    // Modal Interaction Handlers
+    const trailerModal = document.getElementById('trailerModal');
+    const openTrailerModalBtn = document.getElementById('openTrailerModalBtn');
+    const closeTrailerModalBtn = document.getElementById('closeTrailerModalBtn');
+    const modalCloseActionBtn = document.getElementById('modalCloseActionBtn');
+    const modalDialogContent = document.getElementById('modalDialogContent');
+
+    function openModal() {
+      if (trailerModal) {
+        trailerModal.classList.remove('hidden');
+        trailerModal.classList.remove('opacity-0', 'pointer-events-none');
+      }
+    }
+
+    function closeModal() {
+      if (trailerModal) {
+        trailerModal.classList.add('opacity-0', 'pointer-events-none');
+        setTimeout(() => {
+          trailerModal.classList.add('hidden');
+        }, 200);
+      }
+    }
+
+    if (openTrailerModalBtn) {
+      openTrailerModalBtn.addEventListener('click', openModal);
+    }
+    if (closeTrailerModalBtn) {
+      closeTrailerModalBtn.addEventListener('click', closeModal);
+    }
+    if (modalCloseActionBtn) {
+      modalCloseActionBtn.addEventListener('click', closeModal);
+    }
+
+    // Close when clicking outside of modal container
+    if (trailerModal) {
+      trailerModal.addEventListener('click', (e) => {
+        if (!modalDialogContent.contains(e.target)) {
+          closeModal();
+        }
+      });
+    }
+
+    // ESC key listener to close modal
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeModal();
+      }
+    });
+
+    // Main Render Loop
+    function animate() {
+      requestAnimationFrame(animate);
+
+      // Auto rotation when idle and enabled
+      if (isRotating && !isDragging) {
+        sphereGroup.rotation.y += 0.0016;
+      }
+
+      // Sparkle nodes slightly
+      const time = Date.now() * 0.002;
+      movieMeshes.forEach((mesh, index) => {
+        const pulse = 1 + Math.sin(time + index) * 0.15;
+        if (mesh !== hoveredMesh) {
+          mesh.userData.halo.scale.set(pulse, pulse, pulse);
+        }
+      });
+
+      renderer.render(scene, camera);
+    }
+
+    // Initialize application
+    window.addEventListener('DOMContentLoaded', () => {
+      initThree();
+      animate();
+    });
+  </script>
+<!-- END: Logic & Three.js Canvas Implementation -->
+
+
+<script data-purpose="soundtrack-player-logic" class="">
+  (function() {
+    let isPlaying = false;
+    let currentTrackIndex = 0;
+    let progressPercent = 46;
+    let progressTimer = null;
+
+    const tracks = [
+      { id: 0, num: '01', title: '2049', artist: 'Hans Zimmer & Benjamin Wallfisch', duration: '03:37', totalSec: 217 },
+      { id: 1, num: '02', title: "Sapper's Tree", artist: 'Hans Zimmer & Benjamin Wallfisch', duration: '01:36', totalSec: 96 },
+      { id: 2, num: '03', title: 'Flight to LAPD', artist: 'Hans Zimmer & Benjamin Wallfisch', duration: '01:47', totalSec: 107 },
+      { id: 3, num: '04', title: 'Rain', artist: 'Hans Zimmer & Benjamin Wallfisch', duration: '02:26', totalSec: 146 },
+      { id: 4, num: '05', title: 'Mesa', artist: 'Hans Zimmer & Benjamin Wallfisch', duration: '03:10', totalSec: 190 },
+      { id: 5, num: '06', title: 'Tears in the Rain', artist: 'Hans Zimmer & Benjamin Wallfisch', duration: '02:10', totalSec: 130 }
+    ];
+
+    const playBtn = document.getElementById('ostPlayBtn');
+    const playIcon = document.getElementById('ostPlayIcon');
+    const prevBtn = document.getElementById('ostPrevBtn');
+    const nextBtn = document.getElementById('ostNextBtn');
+    const vinyl = document.getElementById('ostVinylDisc');
+    const freqBars = document.getElementById('ostFreqBars');
+    const currentTitle = document.getElementById('ostCurrentTitle');
+    const currentArtist = document.getElementById('ostCurrentArtist');
+    const totalDuration = document.getElementById('ostTotalDuration');
+    const currentTime = document.getElementById('ostCurrentTime');
+    const progressBar = document.getElementById('ostProgressBar');
+    const progressScrubber = document.getElementById('ostProgressScrubber');
+    const progressContainer = document.getElementById('ostProgressContainer');
+
+    function updateVisualizer(playing) {
+      if (!freqBars) return;
+      const bars = freqBars.children;
+      if (playing) {
+        for (let i = 0; i < bars.length; i++) {
+          const randomH = Math.floor(Math.random() * 16) + 4;
+          bars[i].style.height = randomH + 'px';
+        }
+      } else {
+        for (let i = 0; i < bars.length; i++) {
+          bars[i].style.height = '6px';
+        }
+      }
+    }
+
+    let visualizerInterval = null;
+
+    function togglePlay() {
+      isPlaying = !isPlaying;
+      if (isPlaying) {
+        playIcon.innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>';
+        if (vinyl) vinyl.classList.add('animate-spin');
+        visualizerInterval = setInterval(() => updateVisualizer(true), 250);
+        startProgressTicker();
+      } else {
+        playIcon.innerHTML = '<path d="M8 5v14l11-7z"/>';
+        if (vinyl) vinyl.classList.remove('animate-spin');
+        clearInterval(visualizerInterval);
+        clearInterval(progressTimer);
+        updateVisualizer(false);
+      }
+    }
+
+    function startProgressTicker() {
+      clearInterval(progressTimer);
+      progressTimer = setInterval(() => {
+        if (progressPercent < 100) {
+          progressPercent += 0.5;
+          if (progressBar) progressBar.style.width = progressPercent + '%';
+          if (progressScrubber) progressScrubber.style.left = progressPercent + '%';
+          const currentTrack = tracks[currentTrackIndex];
+          const curSec = Math.floor((progressPercent / 100) * currentTrack.totalSec);
+          const m = Math.floor(curSec / 60);
+          const s = curSec % 60;
+          if (currentTime) currentTime.textContent = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        } else {
+          progressPercent = 0;
+          selectTrack((currentTrackIndex + 1) % tracks.length);
+        }
+      }, 500);
+    }
+
+    function selectTrack(index) {
+      currentTrackIndex = index;
+      const trk = tracks[currentTrackIndex];
+      if (currentTitle) currentTitle.textContent = `${trk.num}. ${trk.title}`;
+      if (currentArtist) currentArtist.textContent = trk.artist;
+      if (totalDuration) totalDuration.textContent = trk.duration;
+      if (currentTime) currentTime.textContent = '00:00';
+      progressPercent = 0;
+      if (progressBar) progressBar.style.width = '0%';
+      if (progressScrubber) progressScrubber.style.left = '0%';
+
+      // Highlight selected track item in UI
+      const trackItems = document.querySelectorAll('.ost-track-item');
+      trackItems.forEach((item, idx) => {
+        if (idx === index) {
+          item.className = 'glass-pill p-2.5 rounded-lg border border-cyan-400/50 bg-cyan-950/20 flex items-center justify-between cursor-pointer transition group ost-track-item';
+        } else {
+          item.className = 'glass-pill p-2.5 rounded-lg border border-slate-800 hover:border-cyan-400/40 flex items-center justify-between cursor-pointer transition group ost-track-item';
+        }
+      });
+
+      if (!isPlaying) {
+        togglePlay();
+      }
+    }
+
+    if (playBtn) playBtn.addEventListener('click', togglePlay);
+    if (prevBtn) prevBtn.addEventListener('click', () => {
+      const newIndex = (currentTrackIndex - 1 + tracks.length) % tracks.length;
+      selectTrack(newIndex);
+    });
+    if (nextBtn) nextBtn.addEventListener('click', () => {
+      const newIndex = (currentTrackIndex + 1) % tracks.length;
+      selectTrack(newIndex);
+    });
+
+    // Track items click binding
+    const trackItems = document.querySelectorAll('.ost-track-item');
+    trackItems.forEach((elem) => {
+      elem.addEventListener('click', function() {
+        const idx = parseInt(this.getAttribute('data-index'), 10);
+        selectTrack(idx);
+      });
+    });
+
+    // Waveform click to seek
+    if (progressContainer) {
+      progressContainer.addEventListener('click', (e) => {
+        const rect = progressContainer.getBoundingClientRect();
+        const clickPos = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+        progressPercent = clickPos * 100;
+        if (progressBar) progressBar.style.width = progressPercent + '%';
+        if (progressScrubber) progressScrubber.style.left = progressPercent + '%';
+      });
+    }
+  })();
+</script>
+
+</body></html>

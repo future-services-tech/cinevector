@@ -25,6 +25,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, IConfiguration
     public DbSet<CrawlError> CrawlErrors => Set<CrawlError>();
     public DbSet<MovieCluster> MovieClusters => Set<MovieCluster>();
     public DbSet<SearchLog> SearchLogs => Set<SearchLog>();
+    public DbSet<AppSettings> Settings => Set<AppSettings>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

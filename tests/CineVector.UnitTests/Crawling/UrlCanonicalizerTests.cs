@@ -41,4 +41,33 @@ public class UrlCanonicalizerTests
 
         Assert.Equal(a, b);
     }
+
+    [Theory]
+    [InlineData("http://localhost/movie/123")]
+    [InlineData("http://LOCALHOST/movie/123")]
+    [InlineData("http://127.0.0.1/movie/123")]
+    [InlineData("http://127.1.2.3/movie/123")]
+    [InlineData("http://10.0.0.5/movie/123")]
+    [InlineData("http://172.16.5.1/movie/123")]
+    [InlineData("http://172.31.255.255/movie/123")]
+    [InlineData("http://192.168.1.1/movie/123")]
+    [InlineData("http://169.254.169.254/latest/meta-data")]
+    [InlineData("http://0.0.0.0/movie/123")]
+    [InlineData("http://[::1]/movie/123")]
+    [InlineData("http://[fe80::1]/movie/123")]
+    [InlineData("http://[fc00::1]/movie/123")]
+    public void Canonicalize_RejectsPrivateAndLoopbackHosts(string input)
+    {
+        Assert.Null(_canonicalizer.Canonicalize(input));
+    }
+
+    [Theory]
+    [InlineData("http://172.15.255.255/movie/123")] // appena fuori dal blocco 172.16.0.0/12
+    [InlineData("http://172.32.0.1/movie/123")]
+    [InlineData("http://1.2.3.4/movie/123")]
+    [InlineData("http://8.8.8.8/movie/123")]
+    public void Canonicalize_AllowsPublicIpHosts(string input)
+    {
+        Assert.NotNull(_canonicalizer.Canonicalize(input));
+    }
 }

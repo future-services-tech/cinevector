@@ -4,7 +4,7 @@ using Serilog.Events;
 
 namespace CineVector.Api.Observability;
 
-public record LogEntrySnapshot(DateTimeOffset Timestamp, string Level, string Message, string? Exception);
+public record LogEntrySnapshot(DateTimeOffset Timestamp, string Level, string Message, string? Exception, string? TraceId);
 
 public interface IInMemoryLogSink
 {
@@ -20,11 +20,16 @@ public class InMemoryLogSink : ILogEventSink, IInMemoryLogSink
 
     public void Emit(LogEvent logEvent)
     {
+        var traceId = logEvent.Properties.TryGetValue("TraceId", out var traceIdValue)
+            ? traceIdValue.ToString().Trim('"')
+            : null;
+
         var entry = new LogEntrySnapshot(
             logEvent.Timestamp,
             logEvent.Level.ToString(),
             logEvent.RenderMessage(),
-            logEvent.Exception?.ToString());
+            logEvent.Exception?.ToString(),
+            traceId == "-" ? null : traceId);
 
         _entries.Enqueue(entry);
 

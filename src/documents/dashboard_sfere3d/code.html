@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+
+<html class="h-full bg-[#060913]" lang="it"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CineSphere 3D - Esploratore Semantico del Cinema</title>
+<!-- Tailwind CSS CDN with forms & container queries -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration -->
+<script data-purpose="tailwind-config">
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            space: {
+              950: '#03050a',
+              900: '#060913',
+              850: '#0a0f1d',
+              800: '#0f172a',
+              700: '#1e293b'
+            },
+            cyanGlow: '#00f2fe',
+            blueGlow: '#4facfe',
+            purpleGlow: '#a855f7',
+            emeraldGlow: '#10b981',
+            amberGlow: '#f59e0b'
+          },
+          boxShadow: {
+            'neon-cyan': '0 0 20px -3px rgba(0, 242, 254, 0.45)',
+            'neon-blue': '0 0 25px -4px rgba(79, 172, 254, 0.45)',
+            'neon-purple': '0 0 25px -4px rgba(168, 85, 247, 0.45)',
+            'glass-inner': 'inset 0 1px 1px 0 rgba(255, 255, 255, 0.1)'
+          }
+        }
+      }
+    }
+  </script>
+<!-- Custom Styles: Glassmorphism & Layout Specifics -->
+<style data-purpose="glass-styling">
+    .glass-card {
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.72) 0%, rgba(6, 9, 19, 0.85) 100%);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .glass-card-hover:hover {
+      border-color: rgba(79, 172, 254, 0.35);
+      background: linear-gradient(135deg, rgba(20, 30, 55, 0.82) 0%, rgba(10, 15, 30, 0.9) 100%);
+    }
+    .glass-pill {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.09);
+    }
+    .scrollbar-thin::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+    .scrollbar-thin::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 9999px;
+    }
+  </style>
+<style data-purpose="animations">
+    @keyframes pulseSlow {
+      0%, 100% { opacity: 0.35; transform: scale(1); }
+      50% { opacity: 0.7; transform: scale(1.03); }
+    }
+    .animate-pulse-slow {
+      animation: pulseSlow 4s ease-in-out infinite;
+    }
+    @keyframes ringRadar {
+      0% { transform: scale(0.85); opacity: 0.8; }
+      100% { transform: scale(1.6); opacity: 0; }
+    }
+    .radar-ring {
+      animation: ringRadar 2.2s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
+    }
+  </style>
+</head>
+<body class="h-screen w-screen overflow-hidden text-slate-200 antialiased select-none flex flex-col font-sans">
+<!-- BEGIN: TopHeader -->
+<header class="h-16 border-b border-slate-800/80 glass-card px-5 flex items-center justify-between z-30 flex-shrink-0" data-purpose="main-header">
+<!-- Brand & Platform Identity -->
+<div class="flex items-center space-x-3">
+<div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-cyan-500 via-blue-600 to-indigo-600 p-[1.5px] shadow-neon-blue flex items-center justify-center">
+<div class="w-full h-full bg-space-950 rounded-[10px] flex items-center justify-center">
+<svg class="w-5 h-5 text-cyanGlow" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+</div>
+<div>
+<div class="flex items-center space-x-2">
+<span class="font-bold text-base tracking-wide bg-gradient-to-r from-white via-cyan-200 to-blue-400 bg-clip-text text-transparent">CineSphere 3D</span>
+<span class="text-[10px] uppercase font-semibold tracking-wider px-1.5 py-0.5 rounded bg-blue-500/20 text-cyan-300 border border-blue-400/30">v2.4 Vector</span>
+</div>
+<p class="text-[11px] text-slate-400 -mt-0.5">Universo Semantico del Cinema &amp; Cluster AI</p>
+</div>
+</div>
+<!-- Semantic Search Bar -->
+<div class="flex-1 max-w-2xl mx-8" data-purpose="semantic-search-container">
+<div class="relative group">
+<div class="absolute -inset-0.5 bg-gradient-to-r from-cyanGlow/30 to-purpleGlow/30 rounded-xl blur opacity-30 group-hover:opacity-60 transition duration-300"></div>
+<div class="relative flex items-center bg-space-900/90 border border-slate-700/60 rounded-xl px-3.5 py-1.5 focus-within:border-cyan-400/70 shadow-inner">
+<svg class="w-4 h-4 text-slate-400 mr-2.5 flex-shrink-0" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<label class="sr-only" for="searchInput">Cerca film per tematica o parole chiave</label><input class="bg-transparent text-sm w-full text-white placeholder-slate-500 focus:outline-none focus:ring-0 border-none p-0" id="searchInput" placeholder="Cerca film per tematica semantica (es. intelligenza artificiale, viaggi nel tempo, distopia 80s)..." type="text"/>
+<div class="flex items-center space-x-1 pl-2 border-l border-slate-800">
+<button class="px-2 py-1 text-[11px] font-medium text-slate-300 hover:text-cyan-300 rounded bg-white/5 hover:bg-white/10 transition flex items-center space-x-1">
+<span class="">Filtri</span>
+<svg class="w-3 h-3" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+<button class="px-3 py-1 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-semibold text-xs rounded-lg shadow-sm transition focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:outline-none" id="searchBtn">
+              Trova
+            </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Status & Profile -->
+<div class="flex items-center space-x-4">
+<div class="flex items-center space-x-2 bg-emerald-500/10 border border-emerald-500/30 px-3 py-1 rounded-full text-xs text-emerald-400">
+<span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+<span class="font-mono font-medium">3,450 Film Mappati</span>
+</div>
+<!-- Quick Action Buttons -->
+<div class="flex items-center space-x-1.5 border-l border-slate-800 pl-3">
+<button aria-label="Notifiche" class="w-8 h-8 rounded-lg glass-pill flex items-center justify-center text-slate-300 hover:text-white hover:bg-white/10 transition focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:outline-none" title="Notifiche">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+<button aria-label="Impostazioni Spazio Vettoriale" class="w-8 h-8 rounded-lg glass-pill flex items-center justify-center text-slate-300 hover:text-white hover:bg-white/10 transition focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:outline-none" title="Impostazioni Spazio Vettoriale">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+<div aria-label="Profilo utente CineSphere" class="w-8 h-8 rounded-full bg-gradient-to-tr from-cyan-400 to-purple-500 p-[1px] cursor-pointer focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:outline-none" role="button" tabindex="0">
+<div class="w-full h-full rounded-full bg-space-900 flex items-center justify-center font-bold text-xs text-white">CS</div>
+</div>
+</div>
+</div>
+</header>
+<!-- END: TopHeader -->
+<!-- BEGIN: MainContentArea -->
+<main class="flex-1 flex overflow-hidden relative">
+<!-- BEGIN: LeftSidebar -->
+<aside class="w-72 border-r border-slate-800/80 glass-card flex flex-col p-4 z-20 flex-shrink-0 justify-between overflow-y-auto scrollbar-thin" data-purpose="left-navigation">
+<div class="space-y-6">
+<!-- Navigation Section -->
+<div>
+<span class="text-[11px] font-bold text-slate-400 uppercase tracking-widest px-2">Esplorazione</span>
+<nav class="mt-2 space-y-1">
+<a class="flex items-center space-x-3 px-3 py-2 rounded-xl bg-gradient-to-r from-blue-600/30 to-cyan-500/10 text-cyan-300 border border-blue-500/30 font-medium text-sm" href="#">
+<svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="">Esplora Galassia 3D</span>
+</a>
+<a class="flex items-center space-x-3 px-3 py-2 rounded-xl text-slate-300 hover:text-white hover:bg-white/5 transition text-sm" href="#">
+<svg class="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="">Generi &amp; Cluster</span>
+</a>
+<a class="flex items-center space-x-3 px-3 py-2 rounded-xl text-slate-300 hover:text-white hover:bg-white/5 transition text-sm" href="#">
+<svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="">Registi &amp; Autori</span>
+</a>
+<a class="flex items-center space-x-3 px-3 py-2 rounded-xl text-slate-300 hover:text-white hover:bg-white/5 transition text-sm" href="#">
+<svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="">Timeline Storica</span>
+</a>
+<a class="flex items-center space-x-3 px-3 py-2 rounded-xl text-slate-300 hover:text-white hover:bg-white/5 transition text-sm" href="#">
+<svg class="w-4 h-4 text-pink-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="">I Miei Preferiti</span>
+</a>
+</nav>
+</div>
+<!-- Filter by Genres / Clusters -->
+<div>
+<div class="flex items-center justify-between px-2 mb-2.5">
+<span class="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Cluster Tematici</span>
+<span class="text-[10px] text-cyan-400 hover:underline cursor-pointer">Tutti</span>
+</div>
+<div class="space-y-1.5" id="genreList">
+<!-- Sci-Fi -->
+<button class="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg glass-pill hover:border-cyan-400/50 transition text-left group">
+<div class="flex items-center space-x-2.5">
+<span class="w-2.5 h-2.5 rounded-full bg-cyan-400 shadow-[0_0_8px_#00f2fe]"></span>
+<span class="text-xs font-medium text-slate-200 group-hover:text-cyan-300">Fantascienza</span>
+</div>
+<span class="text-[11px] font-mono text-slate-400">842 film</span>
+</button>
+<!-- Cyberpunk & Cult -->
+<button class="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg glass-pill hover:border-purple-400/50 transition text-left group">
+<div class="flex items-center space-x-2.5">
+<span class="w-2.5 h-2.5 rounded-full bg-purple-400 shadow-[0_0_8px_#c084fc]"></span>
+<span class="text-xs font-medium text-slate-200 group-hover:text-purple-300">Cyberpunk &amp; Cult</span>
+</div>
+<span class="text-[11px] font-mono text-slate-400">430 film</span>
+</button>
+<!-- Thriller & Noir -->
+<button class="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg glass-pill hover:border-blue-400/50 transition text-left group">
+<div class="flex items-center space-x-2.5">
+<span class="w-2.5 h-2.5 rounded-full bg-blue-500 shadow-[0_0_8px_#3b82f6]"></span>
+<span class="text-xs font-medium text-slate-200 group-hover:text-blue-300">Thriller &amp; Noir</span>
+</div>
+<span class="text-[11px] font-mono text-slate-400">615 film</span>
+</button>
+<!-- Drammatico & Autoriale -->
+<button class="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg glass-pill hover:border-amber-400/50 transition text-left group">
+<div class="flex items-center space-x-2.5">
+<span class="w-2.5 h-2.5 rounded-full bg-amber-400 shadow-[0_0_8px_#fbbf24]"></span>
+<span class="text-xs font-medium text-slate-200 group-hover:text-amber-300">Drammatico</span>
+</div>
+<span class="text-[11px] font-mono text-slate-400">920 film</span>
+</button>
+<!-- Animazione & Anime -->
+<button class="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg glass-pill hover:border-emerald-400/50 transition text-left group">
+<div class="flex items-center space-x-2.5">
+<span class="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399]"></span>
+<span class="text-xs font-medium text-slate-200 group-hover:text-emerald-300">Animazione &amp; Anime</span>
+</div>
+<span class="text-[11px] font-mono text-slate-400">380 film</span>
+</button>
+</div>
+</div>
+<!-- Semantic Parameters (Sliders) -->
+<div class="pt-2 border-t border-slate-800/80 space-y-4">
+<div>
+<div class="flex justify-between items-center text-xs mb-1.5">
+<span class="text-slate-400">Soglia Similarità Vettoriale</span>
+<span class="text-cyan-300 font-mono font-semibold" id="simVal">0.78</span>
+</div>
+<input aria-label="Soglia Similarità Vettoriale" aria-valuemax="0.99" aria-valuemin="0.50" aria-valuenow="0.78" class="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-cyan-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:outline-none" id="similaritySlider" max="0.99" min="0.5" role="slider" step="0.01" type="range" value="0.78"/>
+</div>
+<div>
+<div class="flex justify-between items-center text-xs mb-1.5">
+<span class="text-slate-400">Arco Temporale</span>
+<span class="text-blue-300 font-mono font-semibold">1970 – 2025</span>
+</div>
+<div class="grid grid-cols-2 gap-2 text-[11px]">
+<div class="glass-pill px-2.5 py-1 rounded text-center text-slate-300 font-mono">Da: 1970</div>
+<div class="glass-pill px-2.5 py-1 rounded text-center text-slate-300 font-mono">A: 2025</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Quick AI Tip Card -->
+<div class="mt-4 p-3 rounded-xl bg-gradient-to-br from-blue-900/30 to-purple-950/40 border border-blue-500/20 text-xs">
+<div class="flex items-center space-x-1.5 text-cyan-300 font-semibold mb-1">
+<svg class="w-3.5 h-3.5" fill="currentColor" viewbox="0 0 20 20"><path d="M11 3a1 1 0 10-2 0v1a1 1 0 102 0V3zM15.657 5.757a1 1 0 00-1.414-1.414l-.707.707a1 1 0 001.414 1.414l.707-.707zM18 10a1 1 0 01-1 1h-1a1 1 0 110-2h1a1 1 0 011 1zM5.05 6.464A1 1 0 106.464 5.05l-.707-.707a1 1 0 00-1.414 1.414l.707.707zM5 10a1 1 0 01-1 1H3a1 1 0 110-2h1a1 1 0 011 1zM8 16v-1h4v1a2 2 0 11-4 0zM12 14c.015-.34.208-.646.477-.859a4 4 0 10-4.954 0c.27.213.462.519.476.859h4.001z"></path></svg>
+<span class="">Cluster Semantico AI</span>
+</div>
+<p class="text-[11px] text-slate-300 leading-relaxed">I film vicini nello spazio 3D condividono trope narrativi, stili visivi e filosofie tematiche simili.</p>
+</div>
+</aside>
+<!-- END: LeftSidebar -->
+<!-- BEGIN: CentralInteractiveCanvas -->
+<section aria-label="Mappa semantica tridimensionale delle relazioni tra film" class="flex-1 relative flex flex-col overflow-hidden bg-space-950" data-purpose="three-viewport-section" role="region">
+<!-- Top Canvas Controls Bar -->
+<div class="absolute top-4 left-4 right-4 z-10 flex items-center justify-between pointer-events-none">
+<!-- Left Title Tag -->
+<div class="pointer-events-auto flex items-center space-x-3 glass-card px-3.5 py-2 rounded-xl border border-white/10 shadow-lg">
+<div class="flex items-center space-x-2">
+<span class="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-ping"></span>
+<h2 class="text-xs font-semibold text-white tracking-wide uppercase">CineSphere Semantica 3D</h2>
+</div>
+<span class="text-slate-600">|</span>
+<span class="text-[11px] text-slate-400">Proiezione Cosine Similarity</span>
+<span class="text-slate-600 hidden md:inline">|</span>
+<div class="hidden md:flex items-center space-x-1 font-mono text-[10px] text-cyan-300/90" id="currentCoordTag">
+<span>X:</span><span id="coordX">+0.42</span>
+<span>Y:</span><span id="coordY">-1.08</span>
+<span>Z:</span><span id="coordZ">+0.89</span>
+</div>
+</div>
+<!-- Mode Switches (Cluster / Rete / Costellazione) -->
+<div class="pointer-events-auto flex items-center glass-card p-1 rounded-xl border border-white/10 space-x-1 shadow-lg">
+<button class="px-3 py-1 rounded-lg text-xs font-medium text-slate-400 hover:text-white hover:bg-white/5 transition" id="viewClusterBtn">
+            Cluster
+          </button>
+<button class="px-3 py-1 rounded-lg text-xs font-medium text-slate-400 hover:text-white hover:bg-white/5 transition" id="viewNetworkBtn">
+            Rete
+          </button>
+<button class="px-3 py-1 rounded-lg text-xs font-medium bg-gradient-to-r from-cyan-500/20 to-blue-600/30 text-cyan-300 border border-cyan-400/30 transition" id="viewSphereBtn">
+            Sfera
+          </button>
+<button aria-label="Vista Elenco Semantica Accessibile" class="px-3 py-1 rounded-lg text-xs font-medium text-slate-300 hover:text-white hover:bg-white/10 transition focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:outline-none" id="viewListAccessibleBtn">Vista Elenco (Accessibile)</button></div>
+<!-- Camera / Reset Controls -->
+<div class="pointer-events-auto flex items-center space-x-1.5 glass-card p-1 rounded-xl border border-white/10">
+<button aria-label="Ripristina vista iniziale della camera 3D" class="p-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-white/10 transition focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:outline-none" id="resetCamBtn" title="Reset Vista">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+<button aria-label="Avvia o metti in pausa rotazione automatica della sfera 3D" class="p-1.5 rounded-lg text-cyan-400 hover:text-white hover:bg-white/10 transition focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:outline-none" id="toggleSpinBtn" title="Pausa/Avvia Rotazione">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+</div>
+</div>
+<!-- Three.js Canvas Container -->
+<div aria-label="Spazio interattivo 3D. Usa il mouse per ruotare la sfera semantica o consulta la vista elenco alternativa" class="w-full h-full cursor-grab active:cursor-grabbing relative overflow-hidden focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:outline-none" data-purpose="threejs-canvas" id="canvas-container" tabindex="0">
+<canvas class="w-full h-full block absolute inset-0" id="sphereCanvas"></canvas>
+<!-- Interactive Floating Tooltip on Node Hover -->
+<div class="absolute pointer-events-none opacity-0 transition-opacity duration-200 glass-card px-3 py-2 rounded-xl border border-cyan-400/40 shadow-neon-blue z-40 transform -translate-x-1/2 -translate-y-full -mt-3 min-w-[170px]" id="movieTooltip">
+<div class="text-[10px] text-cyan-300 font-mono flex items-center justify-between">
+<span class="" id="tooltipGenre">Sci-Fi</span>
+<span class="" id="tooltipScore">IMDb 8.0</span>
+</div>
+<h4 class="text-xs font-bold text-white mt-0.5" id="tooltipTitle">Blade Runner 2049</h4>
+<p class="text-[10px] text-slate-400" id="tooltipMeta">Denis Villeneuve · 2017</p>
+</div>
+</div>
+<!-- Bottom Overlaid Hints and 3D Axis Indicator -->
+<div class="absolute bottom-4 left-4 right-4 pointer-events-none flex items-end justify-between z-10">
+<!-- 3D Gizmo Helper Box -->
+<div class="glass-card px-3 py-2 rounded-xl flex items-center space-x-3 pointer-events-auto border border-white/10">
+<div class="w-7 h-7 relative flex items-center justify-center">
+<!-- Isometric Axis representation -->
+<div class="absolute w-3 h-0.5 bg-red-400 rotate-45 transform origin-left left-3"></div>
+<div class="absolute w-3 h-0.5 bg-green-400 -rotate-45 transform origin-left left-3"></div>
+<div class="absolute w-3 h-0.5 bg-blue-400 -rotate-90 transform origin-left left-3"></div>
+<span class="text-[9px] font-mono font-bold text-white">XYZ</span>
+</div>
+<div class="text-[10px] text-slate-400 flex flex-col">
+<span class="text-slate-300 font-semibold">Coordinate Semantiche</span>
+<span class="">Trascina per ruotare · Scroll per zoom</span>
+</div>
+</div>
+<!-- Mini Cluster Badges Legend -->
+<div class="glass-card px-3 py-1.5 rounded-xl flex items-center space-x-3 pointer-events-auto text-xs border border-white/10">
+<div class="flex items-center space-x-1.5">
+<span class="w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_8px_#00f2fe]"></span>
+<span class="text-[11px] text-slate-300">Fantascientifico</span>
+</div>
+<div class="flex items-center space-x-1.5">
+<span class="w-2 h-2 rounded-full bg-purple-400 shadow-[0_0_8px_#c084fc]"></span>
+<span class="text-[11px] text-slate-300">Cyberpunk/Noir</span>
+</div>
+<div class="flex items-center space-x-1.5">
+<span class="w-2 h-2 rounded-full bg-amber-400 shadow-[0_0_8px_#fbbf24]"></span>
+<span class="text-[11px] text-slate-300">Cult/Drammatico</span>
+</div>
+<div class="flex items-center space-x-1.5">
+<span class="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399]"></span>
+<span class="text-[11px] text-slate-300">Anime/Fantastico</span>
+</div>
+</div>
+</div>
+</section>
+<!-- END: CentralInteractiveCanvas -->
+<!-- BEGIN: RightSidebar (Active Movie & Cluster Details) -->
+<aside class="w-84 md:w-96 border-l border-slate-800/80 glass-card flex flex-col z-20 flex-shrink-0 overflow-y-auto scrollbar-thin" data-purpose="right-details-panel">
+<!-- Panel Header -->
+<div class="p-4 border-b border-slate-800/80 flex items-center justify-between">
+<div class="flex items-center space-x-2">
+<span class="w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_8px_#00f2fe]"></span>
+<span class="text-xs font-bold uppercase tracking-wider text-white">Dettaglio Nodo Selezionato</span>
+</div>
+<span class="text-[11px] font-mono px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-300 border border-cyan-400/20" id="vectorIdBadge">Vector ID #749</span>
+</div>
+<!-- Main Movie Dossier -->
+<div class="p-5 space-y-5">
+<!-- Movie Identity Header -->
+<div>
+<div class="flex items-center space-x-2 mb-1.5">
+<span class="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-400/30" id="cardGenreBadge">
+              Cyberpunk · Sci-Fi
+            </span>
+<span class="text-[11px] text-slate-400 font-mono" id="cardYear">2017</span>
+<span class="text-slate-600">•</span>
+<span class="text-[11px] text-amber-400 font-bold flex items-center">
+              ★ <span class="ml-0.5 text-white" id="cardRating">8.0</span>/10
+            </span>
+</div>
+<h1 class="text-xl font-extrabold text-white tracking-tight leading-snug bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent" id="cardTitle">
+            Blade Runner 2049
+          </h1>
+<p class="text-xs text-cyan-300/90 mt-0.5 font-medium" id="cardDirector">Regia: Denis Villeneuve</p>
+</div>
+<!-- Similarity Meter -->
+<div class="glass-pill p-3 rounded-xl">
+<div class="flex justify-between items-center text-xs mb-1.5">
+<span class="text-slate-300 font-medium">Affinità Semantica Media</span>
+<span class="text-cyan-400 font-mono font-bold text-sm" id="cardAffinity">98.4%</span>
+</div>
+<div class="w-full h-1.5 bg-space-900 rounded-full overflow-hidden">
+<div class="h-full bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full" id="cardAffinityBar" style="width: 98.4%;"></div>
+</div>
+<div class="flex justify-between text-[10px] text-slate-300 mt-1 font-medium"><span class="">Distanza euclidea: 0.12</span><span class="">Cluster: Neo-Noir Distopico</span></div>
+</div>
+<!-- Synopsis -->
+<div>
+<h3 class="text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">Sinossi Semantica</h3>
+<p class="text-xs text-slate-300/80 leading-relaxed font-normal" id="cardSynopsis">
+            In un futuro decadente, l'agente K della polizia di Los Angeles scopre un segreto sepolto da lungo tempo che potrebbe gettare la società nel caos totale. La sua indagine lo porta a rintracciare Rick Deckard, scomparso da oltre trent'anni.
+          </p>
+</div>
+<!-- Key Semantic Vector Tokens -->
+<div>
+<h3 class="text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Tag Concettuali AI</h3>
+<div class="flex flex-wrap gap-1.5" id="cardTags">
+<span class="text-[11px] px-2.5 py-1 rounded-lg glass-pill text-cyan-300 border-cyan-400/20">Intelligenza Artificiale</span>
+<span class="text-[11px] px-2.5 py-1 rounded-lg glass-pill text-purple-300 border-purple-400/20">Crisi d'Identità</span>
+<span class="text-[11px] px-2.5 py-1 rounded-lg glass-pill text-blue-300 border-blue-400/20">Fotografia Neo-Noir</span>
+<span class="text-[11px] px-2.5 py-1 rounded-lg glass-pill text-emerald-300 border-emerald-400/20">Distopia Urbana</span>
+</div>
+</div>
+<!-- Cluster Neighborhood (Related Movies) -->
+<div class="pt-2 border-t border-slate-800">
+<div class="flex items-center justify-between mb-3">
+<h3 class="text-xs font-semibold text-slate-300 uppercase tracking-wider">Nodi Più Vicini (Cluster)</h3>
+<span class="text-[11px] text-cyan-400" id="relatedCountTag">4 collegamenti</span>
+</div>
+<div class="space-y-2" id="relatedList"><div aria-label="Seleziona film The Matrix (1999)" class="glass-pill p-2.5 rounded-xl hover:border-cyan-400/40 cursor-pointer transition flex items-center justify-between group focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:outline-none" onclick="selectMovieByName('Matrix')" role="button" tabindex="0"><div><div class="text-xs font-bold text-slate-200 group-hover:text-cyan-300 transition">The Matrix (1999)</div><div class="text-[10px] text-slate-300">Lana &amp; Lilly Wachowski · Realtà simulata</div></div><div class="text-right"><span class="text-xs font-mono font-bold text-cyan-300">96%</span><span class="block text-[9px] text-slate-400 font-medium">match</span></div></div><div aria-label="Seleziona film Interstellar (2014)" class="glass-pill p-2.5 rounded-xl hover:border-cyan-400/40 cursor-pointer transition flex items-center justify-between group focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:outline-none" onclick="selectMovieByName('Interstellar')" role="button" tabindex="0"><div><div class="text-xs font-bold text-slate-200 group-hover:text-cyan-300 transition">Interstellar (2014)</div><div class="text-[10px] text-slate-300">Christopher Nolan · Spazio-tempo &amp; amore</div></div><div class="text-right"><span class="text-xs font-mono font-bold text-blue-400">93%</span><span class="block text-[9px] text-slate-400 font-medium">match</span></div></div><div aria-label="Seleziona film Ghost in the Shell (1995)" class="glass-pill p-2.5 rounded-xl hover:border-cyan-400/40 cursor-pointer transition flex items-center justify-between group focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:outline-none" onclick="selectMovieByName('Ghost in the Shell')" role="button" tabindex="0"><div><div class="text-xs font-bold text-slate-200 group-hover:text-cyan-300 transition">Ghost in the Shell (1995)</div><div class="text-[10px] text-slate-300">Mamoru Oshii · Coscienza cibernetica</div></div><div class="text-right"><span class="text-xs font-mono font-bold text-purple-400">91%</span><span class="block text-[9px] text-slate-400 font-medium">match</span></div></div><div aria-label="Seleziona film Her (2013)" class="glass-pill p-2.5 rounded-xl hover:border-cyan-400/40 cursor-pointer transition flex items-center justify-between group focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:outline-none" onclick="selectMovieByName('Her')" role="button" tabindex="0"><div><div class="text-xs font-bold text-slate-200 group-hover:text-cyan-300 transition">Her (2013)</div><div class="text-[10px] text-slate-300">Spike Jonze · Connessione emotiva AI</div></div><div class="text-right"><span class="text-xs font-mono font-bold text-emerald-400">88%</span><span class="block text-[9px] text-slate-400 font-medium">match</span></div></div></div>
+</div>
+<!-- Action CTA Buttons -->
+<div class="pt-2 flex flex-col space-y-2">
+<button class="w-full py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-500 text-slate-950 hover:brightness-110 shadow-neon-blue transition flex items-center justify-center space-x-2 focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:outline-none">
+<svg class="w-4 h-4 text-slate-950" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="">Isola Questo Sub-Cluster</span>
+</button>
+<button class="w-full py-2 rounded-xl text-xs font-medium text-slate-300 hover:text-white glass-pill hover:bg-white/5 transition flex items-center justify-center space-x-1.5 focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:outline-none">
+<svg class="w-3.5 h-3.5 text-pink-400" fill="currentColor" viewbox="0 0 20 20"><path clip-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" fill-rule="evenodd"></path></svg>
+<span class="">Salva nella Watchlist Semantica</span>
+</button>
+</div>
+</div>
+</aside>
+<!-- END: RightSidebar -->
+</main>
+<!-- END: MainContentArea -->
+<!-- BEGIN: BottomMetricsFooter -->
+<footer class="h-12 border-t border-slate-800/80 glass-card px-6 flex items-center justify-between text-xs text-slate-400 flex-shrink-0 z-30" data-purpose="footer-metrics">
+<div class="flex items-center space-x-6">
+<div class="flex items-center space-x-2">
+<span class="w-2 h-2 rounded-full bg-cyan-400"></span>
+<span class="">Cluster Più Denso: <strong class="text-white font-semibold">Sci-Fi Distopico (842 nodi)</strong></span>
+</div>
+<span class="text-slate-700">|</span>
+<div class="hidden sm:flex items-center space-x-2">
+<span class="">Valutazione Media Cluster: <strong class="text-amber-400 font-mono font-semibold">8.38</strong></span>
+</div>
+<span class="text-slate-700 hidden sm:inline">|</span>
+<div class="hidden md:flex items-center space-x-1.5">
+<span class="text-slate-400">Consiglio del Giorno:</span>
+<span class="text-cyan-300 font-medium cursor-pointer hover:underline" onclick="selectMovieByName('2001: Odissea nello Spazio')">2001: Odissea nello Spazio (Kubrick)</span>
+</div>
+</div>
+<div class="flex items-center space-x-4"><div class="flex items-center space-x-2"><span class="text-[11px] text-slate-300 font-medium">Motore Vettoriale: FAISS HNSW-32</span><span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span></div><div class="text-[11px] text-slate-300 font-mono font-medium">Latenza: 14ms</div></div>
+</footer>
+<!-- END: BottomMetricsFooter -->
+<!-- BEGIN: Interactive Holographic 3D Semantic Sphere Engine -->
+<script data-purpose="holographic-sphere-engine">
+(function() {
+  // Movie Database with Semantic Vector Coordinates
+  const MOVIES_DATABASE = [
+    {
+      id: "m1",
+      vectorId: "Vector ID #749",
+      title: "Blade Runner 2049",
+      director: "Denis Villeneuve",
+      year: 2017,
+      rating: "8.0",
+      genre: "Cyberpunk · Sci-Fi",
+      affinity: "98.4%",
+      color: "#00f2fe",
+      rgbaColor: "rgba(0, 242, 254, 1)",
+      cluster: "Neo-Noir Distopico",
+      synopsis: "In un futuro decadente, l'agente K della polizia di Los Angeles scopre un segreto sepolto da lungo tempo che potrebbe gettare la società nel caos totale. La sua indagine lo porta a rintracciare Rick Deckard, scomparso da oltre trent'anni.",
+      tags: ["Intelligenza Artificiale", "Crisi d'Identità", "Fotografia Neo-Noir", "Distopia Urbana"],
+      phi: 0.15,
+      theta: 0.25,
+      isKey: true,
+      size: 9
+    },
+    {
+      id: "m2",
+      vectorId: "Vector ID #812",
+      title: "The Matrix",
+      director: "Lana & Lilly Wachowski",
+      year: 1999,
+      rating: "8.7",
+      genre: "Cyberpunk · Cult",
+      affinity: "96.1%",
+      color: "#c084fc",
+      rgbaColor: "rgba(192, 132, 252, 1)",
+      cluster: "Cyberpunk & Cult",
+      synopsis: "Un hacker scopre che la sua intera realtà è in verità una complessa simulazione digitale creata da macchine senzienti per schiavizzare la specie umana.",
+      tags: ["Simulazione", "Cyberpunk", "Messia Tecnologico", "Arti Marziali"],
+      phi: 0.55,
+      theta: 1.1,
+      isKey: true,
+      size: 7.5
+    },
+    {
+      id: "m3",
+      vectorId: "Vector ID #420",
+      title: "Interstellar",
+      director: "Christopher Nolan",
+      year: 2014,
+      rating: "8.7",
+      genre: "Fantascienza · Spazio",
+      affinity: "93.5%",
+      color: "#4facfe",
+      rgbaColor: "rgba(79, 172, 254, 1)",
+      cluster: "Hard Sci-Fi",
+      synopsis: "Un team di esploratori sfrutta un cunicolo spaziale appena scoperto per superare i limiti dei viaggi umani e cercare un pianeta per salvare l'umanità.",
+      tags: ["Spazio-Tempo", "Relatività", "Amore Filiale", "Fisica Teorica"],
+      phi: -0.45,
+      theta: 0.85,
+      isKey: true,
+      size: 7.5
+    },
+    {
+      id: "m4",
+      vectorId: "Vector ID #633",
+      title: "Inception",
+      director: "Christopher Nolan",
+      year: 2010,
+      rating: "8.8",
+      genre: "Thriller & Sci-Fi",
+      affinity: "94.2%",
+      color: "#38bdf8",
+      rgbaColor: "rgba(56, 189, 248, 1)",
+      cluster: "Mind-Bending",
+      synopsis: "Un ladro esperto nell'estrazione di segreti dal subconscio durante il sonno riceve l'opportunità di compiere il processo inverso: innestare un'idea.",
+      tags: ["Sogno Lucido", "Subconscio", "Heist Psicologico", "Architettura Mentale"],
+      phi: 0.35,
+      theta: -0.9,
+      isKey: true,
+      size: 7
+    },
+    {
+      id: "m5",
+      vectorId: "Vector ID #105",
+      title: "2001: Odissea nello Spazio",
+      director: "Stanley Kubrick",
+      year: 1968,
+      rating: "8.3",
+      genre: "Fantascienza Filosofica",
+      affinity: "92.0%",
+      color: "#00f2fe",
+      rgbaColor: "rgba(0, 242, 254, 1)",
+      cluster: "Cosmic Masterpiece",
+      synopsis: "Un misterioso monolito conduce l'umanità dai suoi albori fino a una missione spaziale verso Giove, guidata dal supercomputer HAL 9000.",
+      tags: ["Evoluzione Umana", "Cosmo", "IA Senziente", "Filosofia Cosmica"],
+      phi: -0.85,
+      theta: 0.3,
+      isKey: true,
+      size: 7.5
+    },
+    {
+      id: "m6",
+      vectorId: "Vector ID #904",
+      title: "Ghost in the Shell",
+      director: "Mamoru Oshii",
+      year: 1995,
+      rating: "7.9",
+      genre: "Anime · Cyberpunk",
+      affinity: "91.8%",
+      color: "#c084fc",
+      rgbaColor: "rgba(192, 132, 252, 1)",
+      cluster: "Anime Cyberpunk",
+      synopsis: "Il Maggiore Motoko Kusanagi guida la Sezione 9 nella caccia al 'Burattinaio', un hacker che viola le menti cibernetiche dei cittadini.",
+      tags: ["Coscienza", "Cyborg", "Filosofia Esistenziale", "Estetica Tokyo 90s"],
+      phi: 0.82,
+      theta: -0.35,
+      isKey: true,
+      size: 7
+    },
+    {
+      id: "m7",
+      vectorId: "Vector ID #515",
+      title: "Dune",
+      director: "Denis Villeneuve",
+      year: 2021,
+      rating: "8.5",
+      genre: "Epica Sci-Fi",
+      affinity: "89.4%",
+      color: "#fbbf24",
+      rgbaColor: "rgba(251, 191, 36, 1)",
+      cluster: "Epica Spaziale",
+      synopsis: "Paul Atreides deve viaggiare sul pianeta più pericoloso dell'universo per assicurare il futuro della sua casata e di un intero popolo.",
+      tags: ["Politica Galattica", "Misticismo", "Pianeta Arrakis", "Ecologia"],
+      phi: -0.3,
+      theta: -1.4,
+      isKey: true,
+      size: 6.5
+    },
+    {
+      id: "m8",
+      vectorId: "Vector ID #219",
+      title: "Pulp Fiction",
+      director: "Quentin Tarantino",
+      year: 1994,
+      rating: "8.9",
+      genre: "Cult · Crime",
+      affinity: "85.2%",
+      color: "#f59e0b",
+      rgbaColor: "rgba(245, 158, 11, 1)",
+      cluster: "Cult Postmoderno",
+      synopsis: "Le vite di due sicari, della moglie di un boss, di un pugile in fuga e di una coppia di rapinatori si intrecciano in racconti imprevedibili.",
+      tags: ["Narrativa Non-Lineare", "Dialoghi Iconici", "Neo-Noir", "Crime Pop"],
+      phi: -1.05,
+      theta: 1.8,
+      isKey: true,
+      size: 6.5
+    },
+    {
+      id: "m9",
+      vectorId: "Vector ID #377",
+      title: "La Città Incantata",
+      director: "Hayao Miyazaki",
+      year: 2001,
+      rating: "8.6",
+      genre: "Animazione & Fantastico",
+      affinity: "87.0%",
+      color: "#34d399",
+      rgbaColor: "rgba(52, 211, 153, 1)",
+      cluster: "Onirico Ghibli",
+      synopsis: "Chihiro, intrappolata in una stazione termale per spiriti e divinità, deve trovare il coraggio di liberare i genitori trasformati in maiali.",
+      tags: ["Spiriti", "Mondo Onirico", "Studio Ghibli", "Rito di Passaggio"],
+      phi: 0.95,
+      theta: 2.1,
+      isKey: true,
+      size: 6.5
+    },
+    {
+      id: "m10",
+      vectorId: "Vector ID #670",
+      title: "Parasite",
+      director: "Bong Joon-ho",
+      year: 2019,
+      rating: "8.5",
+      genre: "Drammatico · Thriller",
+      affinity: "86.4%",
+      color: "#10b981",
+      rgbaColor: "rgba(16, 185, 129, 1)",
+      cluster: "Lotta di Classe",
+      synopsis: "La povera famiglia Kim orchestra con astuzia un piano per farsi assumere uno a uno dalla ricchissima famiglia Park, innescando una spirale imprevista.",
+      tags: ["Lotta di Classe", "Architettura Spaziale", "Black Comedy", "Suspense"],
+      phi: -0.7,
+      theta: -2.3,
+      isKey: true,
+      size: 6.5
+    },
+    {
+      id: "m11",
+      vectorId: "Vector ID #580",
+      title: "Her",
+      director: "Spike Jonze",
+      year: 2013,
+      rating: "8.0",
+      genre: "Sci-Fi Romantico",
+      affinity: "88.2%",
+      color: "#ec4899",
+      rgbaColor: "rgba(236, 72, 153, 1)",
+      cluster: "Amore Digitale",
+      synopsis: "In un futuro prossimo, un uomo solitario sviluppa una relazione sentimentale profonda con un sistema operativo dotato di intelligenza emotiva.",
+      tags: ["Solitudine Moderna", "Amore Digitale", "Futuro Gentile", "Voce Intima"],
+      phi: 0.2,
+      theta: 2.3,
+      isKey: true,
+      size: 6.5
+    }
+  ];
+
+  // Generate supplementary semantic cloud particles (80+ background points)
+  const CLOUD_NODES = [];
+  const palette = ['#00f2fe', '#4facfe', '#c084fc', '#fbbf24', '#34d399', '#38bdf8'];
+  for (let i = 0; i < 95; i++) {
+    const phi = (Math.random() - 0.5) * Math.PI;
+    const theta = Math.random() * Math.PI * 2;
+    const col = palette[Math.floor(Math.random() * palette.length)];
+    CLOUD_NODES.push({
+      phi,
+      theta,
+      color: col,
+      size: 1.5 + Math.random() * 2.2,
+      flickerOffset: Math.random() * 10
+    });
+  }
+
+  // Connections between Blade Runner 2049 (center key) and neighborhood
+  const CONNECTIONS = [
+    { from: "m1", to: "m2", affinity: "96%" },
+    { from: "m1", to: "m3", affinity: "93%" },
+    { from: "m1", to: "m4", affinity: "94%" },
+    { from: "m1", to: "m6", affinity: "91%" },
+    { from: "m1", to: "m11", affinity: "88%" },
+    { from: "m2", to: "m6", affinity: "90%" },
+    { from: "m3", to: "m5", affinity: "92%" },
+    { from: "m7", to: "m1", affinity: "89%" }
+  ];
+
+  const canvas = document.getElementById('sphereCanvas');
+  const container = document.getElementById('canvas-container');
+  const ctx = canvas.getContext('2d');
+
+  // Interactive Sphere State
+  let rotX = 0.22;
+  let rotY = 0.45;
+  let targetRotX = 0.22;
+  let targetRotY = 0.45;
+  let isRotating = true;
+  let isDragging = false;
+  let lastMouse = { x: 0, y: 0 };
+  let sphereRadius = 240;
+  let currentViewMode = 'sfera'; // 'cluster' | 'rete' | 'sfera'
+  let activeMovie = MOVIES_DATABASE[0];
+  let hoveredMovie = null;
+
+  // Resize canvas high-DPI
+  function resizeCanvas() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const rect = container.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.scale(dpr, dpr);
+    sphereRadius = Math.min(rect.width, rect.height) * 0.38;
+  }
+  window.addEventListener('resize', resizeCanvas);
+
+  // 3D Projection math
+  function project(phi, theta, radius, rx, ry, cx, cy) {
+    // Spherical to 3D Cartesian
+    const cosPhi = Math.cos(phi);
+    const x0 = radius * cosPhi * Math.sin(theta);
+    const y0 = radius * Math.sin(phi);
+    const z0 = radius * cosPhi * Math.cos(theta);
+
+    // Rotation around Y
+    const x1 = x0 * Math.cos(ry) + z0 * Math.sin(ry);
+    const z1 = -x0 * Math.sin(ry) + z0 * Math.cos(ry);
+
+    // Rotation around X
+    const y2 = y0 * Math.cos(rx) - z1 * Math.sin(rx);
+    const z2 = y0 * Math.sin(rx) + z1 * Math.cos(rx);
+
+    // Perspective projection
+    const fov = 650;
+    const scale = fov / (fov + z2);
+    const px = cx + x1 * scale;
+    const py = cy - y2 * scale;
+
+    return { x: px, y: py, z: z2, scale, visible: z2 > -radius * 0.9 };
+  }
+
+  // Draw wireframe latitude and longitude lines
+  function drawHolographicGrid(cx, cy, radius, rx, ry) {
+    ctx.save();
+    ctx.lineWidth = 1;
+
+    // Latitudes
+    const latitudes = [-1.1, -0.7, -0.35, 0, 0.35, 0.7, 1.1];
+    latitudes.forEach((lat, index) => {
+      ctx.beginPath();
+      let first = true;
+      const isEquator = Math.abs(lat) < 0.05;
+      ctx.strokeStyle = isEquator ? 'rgba(0, 242, 254, 0.28)' : 'rgba(79, 172, 254, 0.12)';
+      if (isEquator) ctx.lineWidth = 1.2;
+
+      for (let t = 0; t <= Math.PI * 2 + 0.1; t += 0.15) {
+        const p = project(lat, t, radius, rx, ry, cx, cy);
+        if (p.z > 0) { // Render predominantly frontal half with softer back
+          if (first) {
+            ctx.moveTo(p.x, p.y);
+            first = false;
+          } else {
+            ctx.lineTo(p.x, p.y);
+          }
+        } else {
+          first = true;
+        }
+      }
+      ctx.stroke();
+    });
+
+    // Longitudes
+    const steps = 10;
+    for (let i = 0; i < steps; i++) {
+      const lon = (i / steps) * Math.PI * 2;
+      ctx.beginPath();
+      ctx.strokeStyle = 'rgba(168, 85, 247, 0.12)';
+      let first = true;
+      for (let lat = -Math.PI / 2; lat <= Math.PI / 2; lat += 0.1) {
+        const p = project(lat, lon, radius, rx, ry, cx, cy);
+        if (p.z > -radius * 0.3) {
+          if (first) {
+            ctx.moveTo(p.x, p.y);
+            first = false;
+          } else {
+            ctx.lineTo(p.x, p.y);
+          }
+        } else {
+          first = true;
+        }
+      }
+      ctx.stroke();
+    }
+
+    // Outer faint atmospheric glow circle
+    const grad = ctx.createRadialGradient(cx, cy, radius * 0.7, cx, cy, radius * 1.15);
+    grad.addColorStop(0, 'rgba(0, 242, 254, 0.03)');
+    grad.addColorStop(0.7, 'rgba(79, 172, 254, 0.04)');
+    grad.addColorStop(1, 'rgba(6, 9, 19, 0)');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius * 1.15, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.restore();
+  }
+
+  // Animation & Rendering Loop
+  let time = 0;
+  function render() {
+    time += 0.016;
+    const rect = container.getBoundingClientRect();
+    const cx = rect.width / 2;
+    const cy = rect.height / 2;
+
+    ctx.clearRect(0, 0, rect.width, rect.height);
+
+    // Auto rotate if enabled and not dragging
+    if (isRotating && !isDragging) {
+      targetRotY += 0.0035;
+    }
+    rotX += (targetRotX - rotX) * 0.1;
+    rotY += (targetRotY - rotY) * 0.1;
+
+    // Update dynamic coordinates on top badge
+    const xCoord = (Math.sin(rotY) * Math.cos(rotX)).toFixed(2);
+    const yCoord = (-Math.sin(rotX)).toFixed(2);
+    const zCoord = (Math.cos(rotY) * Math.cos(rotX)).toFixed(2);
+    document.getElementById('coordX').textContent = (xCoord >= 0 ? '+' : '') + xCoord;
+    document.getElementById('coordY').textContent = (yCoord >= 0 ? '+' : '') + yCoord;
+    document.getElementById('coordZ').textContent = (zCoord >= 0 ? '+' : '') + zCoord;
+
+    // 1. Draw Wireframe & Globe Atmosphere
+    drawHolographicGrid(cx, cy, sphereRadius, rotX, rotY);
+
+    // 2. Draw Background Cloud Particles (stars/trope dust)
+    CLOUD_NODES.forEach((n) => {
+      const p = project(n.phi, n.theta, sphereRadius * 0.98, rotX, rotY, cx, cy);
+      const alpha = Math.max(0.08, (p.z + sphereRadius) / (sphereRadius * 2));
+      ctx.fillStyle = n.color;
+      ctx.globalAlpha = alpha * 0.65;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, Math.max(0.8, n.size * p.scale), 0, Math.PI * 2);
+      ctx.fill();
+    });
+    ctx.globalAlpha = 1.0;
+
+    // Calculate projected positions for Key Movies
+    const projectedMovies = MOVIES_DATABASE.map(m => {
+      const p = project(m.phi, m.theta, sphereRadius, rotX, rotY, cx, cy);
+      return { movie: m, proj: p };
+    });
+
+    // 3. Draw Vector Connections between nodes (Arches & Lines)
+    if (currentViewMode !== 'sfera_minimal') {
+      CONNECTIONS.forEach(conn => {
+        const pFrom = projectedMovies.find(p => p.movie.id === conn.from);
+        const pTo = projectedMovies.find(p => p.movie.id === conn.to);
+        if (pFrom && pTo) {
+          const zAvg = (pFrom.proj.z + pTo.proj.z) / 2;
+          const lineAlpha = Math.max(0.12, (zAvg + sphereRadius) / (sphereRadius * 2));
+
+          ctx.save();
+          ctx.beginPath();
+          ctx.moveTo(pFrom.proj.x, pFrom.proj.y);
+
+          // Subtle curve arching outwards for 3D depth
+          const midX = (pFrom.proj.x + pTo.proj.x) / 2;
+          const midY = (pFrom.proj.y + pTo.proj.y) / 2 - 12 * pFrom.proj.scale;
+          ctx.quadraticCurveTo(midX, midY, pTo.proj.x, pTo.proj.y);
+
+          const grad = ctx.createLinearGradient(pFrom.proj.x, pFrom.proj.y, pTo.proj.x, pTo.proj.y);
+          grad.addColorStop(0, pFrom.movie.rgbaColor.replace('1)', `${lineAlpha * 0.7})`));
+          grad.addColorStop(1, pTo.movie.rgbaColor.replace('1)', `${lineAlpha * 0.7})`));
+          ctx.strokeStyle = grad;
+          ctx.lineWidth = currentViewMode === 'rete' ? 1.8 : 1.2;
+          ctx.stroke();
+
+          // Small moving energy pulse packet along connection
+          const tPacket = (time * 0.8 + (pFrom.proj.x % 5)) % 1;
+          const qx = (1 - tPacket) * (1 - tPacket) * pFrom.proj.x + 2 * (1 - tPacket) * tPacket * midX + tPacket * tPacket * pTo.proj.x;
+          const qy = (1 - tPacket) * (1 - tPacket) * pFrom.proj.y + 2 * (1 - tPacket) * tPacket * midY + tPacket * tPacket * pTo.proj.y;
+          ctx.fillStyle = '#acedff';
+          ctx.beginPath();
+          ctx.arc(qx, qy, 1.5 * pFrom.proj.scale, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.restore();
+        }
+      });
+    }
+
+    // Sort key movie nodes by Z-index for correct painter's rendering
+    projectedMovies.sort((a, b) => a.proj.z - b.proj.z);
+
+    // 4. Render Movie Nodes and Holographic Tags
+    projectedMovies.forEach(({ movie, proj }) => {
+      const isSelected = activeMovie && activeMovie.id === movie.id;
+      const isHovered = hoveredMovie && hoveredMovie.id === movie.id;
+      const depthAlpha = Math.max(0.25, (proj.z + sphereRadius) / (sphereRadius * 2));
+      const radiusScaled = Math.max(3, (movie.size || 6) * proj.scale);
+
+      ctx.save();
+
+      // Outer Halo / Radar Glow
+      const glowGrad = ctx.createRadialGradient(proj.x, proj.y, radiusScaled * 0.4, proj.x, proj.y, radiusScaled * 3.2);
+      glowGrad.addColorStop(0, movie.rgbaColor.replace('1)', `${0.75 * depthAlpha}`));
+      glowGrad.addColorStop(1, movie.rgbaColor.replace('1)', '0)'));
+      ctx.fillStyle = glowGrad;
+      ctx.beginPath();
+      ctx.arc(proj.x, proj.y, radiusScaled * 3.2, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Selected / Hero radar rings (Target lock on Blade Runner 2049)
+      if (isSelected || isHovered) {
+        ctx.strokeStyle = movie.color;
+        ctx.lineWidth = 1.4;
+        ctx.beginPath();
+        const pulseR = radiusScaled * 2.2 + Math.sin(time * 5) * 3;
+        ctx.arc(proj.x, proj.y, pulseR, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // Crosshairs tick marks
+        ctx.beginPath();
+        ctx.moveTo(proj.x - pulseR - 4, proj.y); ctx.lineTo(proj.x - pulseR + 2, proj.y);
+        ctx.moveTo(proj.x + pulseR - 2, proj.y); ctx.lineTo(proj.x + pulseR + 4, proj.y);
+        ctx.moveTo(proj.x, proj.y - pulseR - 4); ctx.lineTo(proj.x, proj.y - pulseR + 2);
+        ctx.moveTo(proj.x, proj.y + pulseR - 2); ctx.lineTo(proj.x, proj.y + pulseR + 4);
+        ctx.stroke();
+      }
+
+      // Core Solid Spherical Node
+      ctx.beginPath();
+      ctx.arc(proj.x, proj.y, radiusScaled, 0, Math.PI * 2);
+      ctx.fillStyle = isSelected ? '#ffffff' : movie.color;
+      ctx.shadowColor = movie.color;
+      ctx.shadowBlur = 12;
+      ctx.fill();
+      ctx.shadowBlur = 0;
+
+      // Inner white specular dot
+      ctx.beginPath();
+      ctx.arc(proj.x - radiusScaled * 0.25, proj.y - radiusScaled * 0.25, radiusScaled * 0.35, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+      ctx.fill();
+
+      // 5. Floating Holographic Labels for Frontal Nodes
+      if (proj.z > -sphereRadius * 0.45) {
+        ctx.font = isSelected ? "bold 11px Inter, sans-serif" : "500 10px Inter, sans-serif";
+        const labelText = movie.title.toUpperCase() + (isSelected ? " ★" : ` ${movie.affinity.split('.')[0]}%`);
+        const textWidth = ctx.measureText(labelText).width;
+        const padX = 6;
+        const padY = 3;
+        const lx = proj.x + radiusScaled + 6;
+        const ly = proj.y - 4;
+
+        // Label pill background
+        ctx.fillStyle = isSelected ? 'rgba(3, 5, 10, 0.88)' : 'rgba(6, 9, 19, 0.72)';
+        ctx.strokeStyle = isSelected ? movie.color : 'rgba(255, 255, 255, 0.15)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.roundRect ? ctx.roundRect(lx, ly - 11, textWidth + padX * 2, 18, 6) : ctx.rect(lx, ly - 11, textWidth + padX * 2, 18);
+        ctx.fill();
+        ctx.stroke();
+
+        // Label text
+        ctx.fillStyle = isSelected ? '#00f2fe' : '#e2e8f0';
+        ctx.fillText(labelText, lx + padX, ly + 2);
+      }
+
+      ctx.restore();
+    });
+
+    requestAnimationFrame(render);
+  }
+
+  // Interactivity Handlers (Drag, Mousemove, Click Selection)
+  function setupInteraction() {
+    const tooltip = document.getElementById('movieTooltip');
+    const tooltipTitle = document.getElementById('tooltipTitle');
+    const tooltipGenre = document.getElementById('tooltipGenre');
+    const tooltipScore = document.getElementById('tooltipScore');
+    const tooltipMeta = document.getElementById('tooltipMeta');
+
+    container.addEventListener('mousedown', (e) => {
+      isDragging = true;
+      lastMouse = { x: e.clientX, y: e.clientY };
+    });
+
+    window.addEventListener('mouseup', () => {
+      isDragging = false;
+    });
+
+    container.addEventListener('mousemove', (e) => {
+      const rect = container.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
+
+      if (isDragging) {
+        const dx = e.clientX - lastMouse.x;
+        const dy = e.clientY - lastMouse.y;
+        targetRotY += dx * 0.007;
+        targetRotX -= dy * 0.007;
+        // Restrict pitch
+        targetRotX = Math.max(-1.4, Math.min(1.4, targetRotX));
+        lastMouse = { x: e.clientX, y: e.clientY };
+      } else {
+        // Hover detection against projected nodes
+        const cx = rect.width / 2;
+        const cy = rect.height / 2;
+        let found = null;
+
+        for (let i = 0; i < MOVIES_DATABASE.length; i++) {
+          const m = MOVIES_DATABASE[i];
+          const p = project(m.phi, m.theta, sphereRadius, rotX, rotY, cx, cy);
+          const dist = Math.hypot(mouseX - p.x, mouseY - p.y);
+          if (dist < 22 && p.z > -sphereRadius * 0.4) {
+            found = m;
+            break;
+          }
+        }
+
+        if (found) {
+          hoveredMovie = found;
+          container.style.cursor = 'pointer';
+          tooltipTitle.textContent = found.title;
+          tooltipGenre.textContent = found.genre.split('·')[0];
+          tooltipScore.textContent = `★ ${found.rating}`;
+          tooltipMeta.textContent = `${found.director} · ${found.year}`;
+          tooltip.style.left = `${mouseX}px`;
+          tooltip.style.top = `${mouseY}px`;
+          tooltip.style.opacity = '1';
+        } else {
+          hoveredMovie = null;
+          container.style.cursor = isDragging ? 'grabbing' : 'grab';
+          tooltip.style.opacity = '0';
+        }
+      }
+    });
+
+    // Node click selection
+    container.addEventListener('click', (e) => {
+      const rect = container.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
+      const cx = rect.width / 2;
+      const cy = rect.height / 2;
+
+      for (let i = 0; i < MOVIES_DATABASE.length; i++) {
+        const m = MOVIES_DATABASE[i];
+        const p = project(m.phi, m.theta, sphereRadius, rotX, rotY, cx, cy);
+        const dist = Math.hypot(mouseX - p.x, mouseY - p.y);
+        if (dist < 24 && p.z > -sphereRadius * 0.4) {
+          selectMovie(m);
+          break;
+        }
+      }
+    });
+
+    // Mouse wheel zoom
+    container.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      sphereRadius += e.deltaY * -0.25;
+      sphereRadius = Math.max(160, Math.min(380, sphereRadius));
+    }, { passive: false });
+  }
+
+  // Update Right Dossier Sidebar on Movie Selection
+  function selectMovie(movie) {
+    activeMovie = movie;
+    document.getElementById('cardTitle').textContent = movie.title;
+    document.getElementById('cardDirector').textContent = `Regia: ${movie.director}`;
+    document.getElementById('cardYear').textContent = movie.year;
+    document.getElementById('cardRating').textContent = movie.rating;
+    document.getElementById('cardGenreBadge').textContent = movie.genre;
+    document.getElementById('cardSynopsis').textContent = movie.synopsis;
+    document.getElementById('cardAffinity').textContent = movie.affinity;
+    document.getElementById('cardAffinityBar').style.width = movie.affinity;
+    if (movie.vectorId) {
+      document.getElementById('vectorIdBadge').textContent = movie.vectorId;
+    }
+
+    // Refresh Tags
+    const tagsBox = document.getElementById('cardTags');
+    tagsBox.innerHTML = '';
+    movie.tags.forEach(tag => {
+      const sp = document.createElement('span');
+      sp.className = "text-[11px] px-2.5 py-1 rounded-lg glass-pill text-cyan-300 border-cyan-400/20";
+      sp.textContent = tag;
+      tagsBox.appendChild(sp);
+    });
+
+    // Smooth reorient sphere to center the chosen movie
+    targetRotY = -movie.theta;
+    targetRotX = movie.phi;
+  }
+
+  // Global helper for outside onclick calls
+  window.selectMovieByName = function(name) {
+    const found = MOVIES_DATABASE.find(m => m.title.toLowerCase().includes(name.toLowerCase()));
+    if (found) {
+      selectMovie(found);
+    }
+  };
+
+  // UI Control Listeners
+  document.getElementById('resetCamBtn').addEventListener('click', () => {
+    targetRotX = 0.22;
+    targetRotY = 0.45;
+    sphereRadius = Math.min(container.clientWidth, container.clientHeight) * 0.38;
+  });
+
+  const toggleSpinBtn = document.getElementById('toggleSpinBtn');
+  toggleSpinBtn.addEventListener('click', () => {
+    isRotating = !isRotating;
+    toggleSpinBtn.classList.toggle('text-cyan-400', isRotating);
+    toggleSpinBtn.classList.toggle('text-slate-400', !isRotating);
+  });
+
+  // Mode View Toggles
+  const viewClusterBtn = document.getElementById('viewClusterBtn');
+  const viewNetworkBtn = document.getElementById('viewNetworkBtn');
+  const viewSphereBtn = document.getElementById('viewSphereBtn');
+
+  function updateModeButtons(activeBtn, mode) {
+    [viewClusterBtn, viewNetworkBtn, viewSphereBtn].forEach(b => {
+      b.className = "px-3 py-1 rounded-lg text-xs font-medium text-slate-400 hover:text-white hover:bg-white/5 transition";
+    });
+    activeBtn.className = "px-3 py-1 rounded-lg text-xs font-medium bg-gradient-to-r from-cyan-500/20 to-blue-600/30 text-cyan-300 border border-cyan-400/30 transition";
+    currentViewMode = mode;
+  }
+
+  viewClusterBtn.addEventListener('click', () => updateModeButtons(viewClusterBtn, 'cluster'));
+  viewNetworkBtn.addEventListener('click', () => updateModeButtons(viewNetworkBtn, 'rete'));
+  viewSphereBtn.addEventListener('click', () => updateModeButtons(viewSphereBtn, 'sfera'));
+
+  // Slider and Search handlers
+  const simSlider = document.getElementById('similaritySlider');
+  const simVal = document.getElementById('simVal');
+  if (simSlider) {
+    simSlider.addEventListener('input', (e) => {
+      simVal.textContent = e.target.value;
+    });
+  }
+
+  const sInput = document.getElementById('searchInput');
+  const sBtn = document.getElementById('searchBtn');
+  function doSearch() {
+    if (sInput && sInput.value.trim().length > 0) {
+      window.selectMovieByName(sInput.value.trim());
+    }
+  }
+  if (sBtn) sBtn.addEventListener('click', doSearch);
+  if (sInput) {
+    sInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') doSearch();
+    });
+  }
+
+  // Boot
+  window.addEventListener('DOMContentLoaded', () => {
+    resizeCanvas();
+    setupInteraction();
+    requestAnimationFrame(render);
+  });
+})();
+</script>
+<!-- END: Interactive Holographic 3D Semantic Sphere Engine -->
+</body></html>

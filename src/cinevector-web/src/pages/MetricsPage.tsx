@@ -161,6 +161,7 @@ function LogsTab() {
                 <th>Timestamp</th>
                 <th>Livello</th>
                 <th>Messaggio</th>
+                <th>Trace</th>
               </tr>
             </thead>
             <tbody>
@@ -175,6 +176,9 @@ function LogsTab() {
                     </span>
                   </td>
                   <td>{entry.message}</td>
+                  <td className="muted" style={{ fontSize: 11, fontFamily: "monospace" }} title={entry.traceId ?? undefined}>
+                    {entry.traceId ? `${entry.traceId.slice(0, 8)}…` : "—"}
+                  </td>
                 </tr>
               ))}
             </tbody>

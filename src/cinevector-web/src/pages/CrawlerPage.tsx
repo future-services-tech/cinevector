@@ -1,13 +1,24 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ApiError } from "../api/client";
-import { cancelCrawl, getCrawlJobs, startCrawl, type CrawlQueryMode } from "../api/crawl";
+import {
+  cancelCrawl,
+  cancelCrawlJob,
+  deleteCrawlJob,
+  getCrawlJobs,
+  pauseCrawlJob,
+  resumeCrawlJob,
+  startCrawl,
+  type CrawlQueryMode,
+} from "../api/crawl";
 import { getSources } from "../api/sources";
 
 function statusChipClass(status: string) {
   switch (status) {
     case "Running":
       return "status-chip";
+    case "Paused":
+      return "status-chip status-chip--paused";
     case "Failed":
       return "status-chip status-chip--error";
     case "Cancelled":
@@ -60,6 +71,49 @@ export function CrawlerPage() {
     mutationFn: (sourceId: number) => cancelCrawl(sourceId),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["crawl-jobs"] }),
   });
+
+  const invalidateJobs = () => queryClient.invalidateQueries({ queryKey: ["crawl-jobs"] });
+  const [actingJobId, setActingJobId] = useState<number | null>(null);
+
+  const cancelJobMutation = useMutation({
+    mutationFn: (jobId: number) => {
+      setActingJobId(jobId);
+      return cancelCrawlJob(jobId);
+    },
+    onSettled: () => setActingJobId(null),
+    onSuccess: invalidateJobs,
+  });
+
+  const pauseJobMutation = useMutation({
+    mutationFn: (jobId: number) => {
+      setActingJobId(jobId);
+      return pauseCrawlJob(jobId);
+    },
+    onSettled: () => setActingJobId(null),
+    onSuccess: invalidateJobs,
+  });
+
+  const resumeJobMutation = useMutation({
+    mutationFn: (jobId: number) => {
+      setActingJobId(jobId);
+      return resumeCrawlJob(jobId);
+    },
+    onSettled: () => setActingJobId(null),
+    onSuccess: invalidateJobs,
+  });
+
+  const deleteJobMutation = useMutation({
+    mutationFn: (jobId: number) => {
+      setActingJobId(jobId);
+      return deleteCrawlJob(jobId);
+    },
+    onSettled: () => setActingJobId(null),
+    onSuccess: invalidateJobs,
+  });
+
+  const jobActionPending = (jobId: number) =>
+    actingJobId === jobId &&
+    (cancelJobMutation.isPending || pauseJobMutation.isPending || resumeJobMutation.isPending || deleteJobMutation.isPending);
 
   const canStart = mode === "Popular" || query.trim().length > 0;
 
@@ -174,33 +228,88 @@ export function CrawlerPage() {
               <th>Creati</th>
               <th>Aggiornati</th>
               <th>Errori</th>
+              <th>Azioni</th>
             </tr>
           </thead>
           <tbody>
-            {jobs?.map((job) => (
-              <tr key={job.id}>
-                <td>{job.sourceName ?? job.sourceId}</td>
-                <td className="muted">
-                  {modeLabel(job.queryMode)}
-                  {job.query && `: "${job.query}"`}
-                </td>
-                <td>
-                  <span className={statusChipClass(job.status)}>
-                    <span className="status-chip__dot" />
-                    {job.status}
-                  </span>
-                </td>
-                <td className="muted">{new Date(job.startedAt).toLocaleString("it-IT")}</td>
-                <td>{job.pagesVisited}</td>
-                <td>{job.moviesFound}</td>
-                <td>{job.moviesCreated}</td>
-                <td>{job.moviesUpdated}</td>
-                <td className={job.errors.length > 0 ? "muted" : undefined}>{job.errors.length}</td>
-              </tr>
-            ))}
+            {jobs?.map((job) => {
+              const isActive = job.status === "Running" || job.status === "Paused";
+              const pending = jobActionPending(job.id);
+              return (
+                <tr key={job.id}>
+                  <td>{job.sourceName ?? job.sourceId}</td>
+                  <td className="muted">
+                    {modeLabel(job.queryMode)}
+                    {job.query && `: "${job.query}"`}
+                  </td>
+                  <td>
+                    <span className={statusChipClass(job.status)}>
+                      <span className="status-chip__dot" />
+                      {job.status}
+                    </span>
+                    {job.isOrphaned && (
+                      <span
+                        className="chip chip--warning"
+                        style={{ marginLeft: "0.4rem" }}
+                        title="Il job risulta ancora attivo in DB ma nessuna istanza API lo sta gestendo davvero (es. riavvio del processo): è un job zombie, va fermato o eliminato manualmente."
+                      >
+                        ⚠ Zombie
+                      </span>
+                    )}
+                  </td>
+                  <td className="muted">{new Date(job.startedAt).toLocaleString("it-IT")}</td>
+                  <td>{job.pagesVisited}</td>
+                  <td>{job.moviesFound}</td>
+                  <td>{job.moviesCreated}</td>
+                  <td>{job.moviesUpdated}</td>
+                  <td className={job.errors.length > 0 ? "muted" : undefined}>{job.errors.length}</td>
+                  <td style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap" }}>
+                    {job.status === "Running" && !job.isOrphaned && (
+                      <button
+                        className="btn btn--ghost btn--sm"
+                        onClick={() => pauseJobMutation.mutate(job.id)}
+                        disabled={pending}
+                        title="Metti in pausa questo job"
+                      >
+                        Pausa
+                      </button>
+                    )}
+                    {job.status === "Paused" && !job.isOrphaned && (
+                      <button
+                        className="btn btn--ghost btn--sm"
+                        onClick={() => resumeJobMutation.mutate(job.id)}
+                        disabled={pending}
+                        title="Riprendi questo job"
+                      >
+                        Riprendi
+                      </button>
+                    )}
+                    {isActive && (
+                      <button
+                        className="btn btn--ghost btn--sm"
+                        onClick={() => cancelJobMutation.mutate(job.id)}
+                        disabled={pending}
+                        title="Ferma questo job"
+                      >
+                        Ferma
+                      </button>
+                    )}
+                    <button
+                      className="btn btn--ghost btn--sm"
+                      onClick={() => deleteJobMutation.mutate(job.id)}
+                      disabled={pending}
+                      style={{ color: "var(--color-error)" }}
+                      title="Elimina definitivamente il job (resta traccia solo nei log applicativi)"
+                    >
+                      Elimina
+                    </button>
+                  </td>
+                </tr>
+              );
+            })}
             {jobs && jobs.length === 0 && (
               <tr>
-                <td colSpan={9} className="muted">
+                <td colSpan={10} className="muted">
                   Nessun job eseguito ancora.
                 </td>
               </tr>

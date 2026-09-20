@@ -15,6 +15,10 @@ public class CrawlJobDto
     public int MoviesCreated { get; set; }
     public int MoviesUpdated { get; set; }
     public IReadOnlyCollection<CrawlErrorDto> Errors { get; set; } = [];
+
+    /// <summary>True se lo stato è Running/Paused ma nessuna istanza API attiva sta effettivamente gestendo
+    /// questo job (es. l'istanza che lo eseguiva è stata riavviata): un job "zombie" da fermare manualmente.</summary>
+    public bool IsOrphaned { get; set; }
 }
 
 public class CrawlErrorDto

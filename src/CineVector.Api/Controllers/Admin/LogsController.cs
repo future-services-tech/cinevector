@@ -19,7 +19,8 @@ public class LogsController(IInMemoryLogSink sink) : ControllerBase
             Timestamp = e.Timestamp,
             Level = e.Level,
             Message = e.Message,
-            Exception = e.Exception
+            Exception = e.Exception,
+            TraceId = e.TraceId
         }).ToList());
     }
 }
